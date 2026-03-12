@@ -1,0 +1,51 @@
+site_name: ARF Specification
+site_description: Agentic Reliability Framework – canonical specification
+site_author: ARF Foundation
+repo_url: https://github.com/arf-foundation/arf-spec
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - admonition
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Roadmap: roadmap.md
+  - Design: design.md
+  - Mathematics: mathematics.md
+  - Psychology: psychology.md
+  - Governance: governance.md
+  - Enterprise: enterprise.md
