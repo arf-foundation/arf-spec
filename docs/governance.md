@@ -1,28 +1,67 @@
-# ARF Governance Framework
 
-ARF governance enforces policies, compliance, and reliability standards on agentic workflows.
+# Governance Model
+
+ARF introduces structured governance for autonomous agents.
 
 ---
 
-## 1. Policy Engine
+## Governance Loop
 
-- Implements composable logic: AND, OR, NOT.
-- Supports probabilistic evaluation using risk scores.
-- Determines advisory vs enforcement actions.
+1. Event occurs
+2. Risk computed
+3. Policy evaluated
+4. Action decided
+5. Outcome recorded
 
-## 2. Governance Loop
+---
 
-1. Event processed by EnhancedReliabilityEngine.
-2. Compute risk via Bayesian/HMC/hyperprior fusion.
-3. Apply DPT thresholds:
-   - P(failure) < 0.2 → APPROVE
-   - 0.2 ≤ P(failure) ≤ 0.8 → ESCALATE
-   - P(failure) > 0.8 → DENY
-4. Generate `HealingIntent` advisory JSON.
-5. Persist outcome in audit log.
+## Policy Algebra
 
-## 3. Audit & Compliance
+Policies are composable.
 
-- Thread-safe audit logs (`persistence.py`) ensure reproducibility.
-- Immutable `_audit_ts` timestamps.
-- Enterprise mode includes RBAC, multi-tenancy, and SOC2-ready logging.
+Example:
+
+Policy A = HighLatency
+Policy B = DatabaseChange
+
+Combined policy:
+
+A AND B
+
+Possible operators:
+
+- AND
+- OR
+- NOT
+
+---
+
+## HealingIntent
+
+Instead of blindly denying actions, ARF produces suggestions.
+
+Example:
+
+{
+  "action": "reduce_load",
+  "confidence": 0.72,
+  "reason": "latency anomaly detected"
+}
+
+---
+
+## Compliance
+
+Enterprise deployments support:
+
+- audit logs
+- traceability
+- SOC2 readiness
+
+---
+
+## Recommendations
+
+- Version policies
+- Test policies with simulations
+
