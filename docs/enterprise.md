@@ -1,35 +1,76 @@
-# ARF Enterprise Guidance
 
-ARF Enterprise mode adds **deterministic enforcement, multi-tenant support, and high-availability architecture**.
+# Enterprise & Startup Deployment
+
+ARF can scale from startups to global enterprises.
 
 ---
 
-## 1. Multi-Tenancy & Access Control
+# Startup Mode
 
-- Each tenant has isolated data stores.
-- Role-based access control (RBAC) for projects, agents, policies.
-- JWT or API key authentication.
+For small teams:
 
-## 2. High Availability
+Recommended architecture:
 
-- Deploy backend via Kubernetes with auto-scaling.
-- Rolling updates and global read replicas for databases.
-- Optional caching layer (Redis/Memcached) for advisory queries.
+Frontend: Vercel
+Backend: FastAPI
+Database: Postgres
+Vector Store: FAISS
 
-## 3. Compliance & Auditing
+Benefits:
 
-- Immutable audit logs with retention policies.
-- SOC2/GDPR alignment.
-- Alerting on policy violations, drift detection.
+- simple deployment
+- minimal infrastructure
+- rapid experimentation
 
-## 4. Monitoring & Observability
+---
 
-- Prometheus/Grafana integration.
-- Event streams and metrics exported in real time.
-- Dashboard for tracking agent performance, risk trends, and policy compliance.
+# Enterprise Mode
 
-## 5. Integration Points
+Large organizations require:
 
-- Cloud providers: AWS, Azure, GCP.
-- Terraform/Helm for infra automation.
-- Webhooks for external alerting or incident management.
+- multi-tenancy
+- RBAC
+- audit compliance
+- distributed infrastructure
+
+---
+
+## Infrastructure Example
+
+Kubernetes cluster
+
+Services:
+
+- API service
+- model workers
+- retraining workers
+- monitoring stack
+
+---
+
+## Observability
+
+Recommended stack:
+
+Prometheus
+Grafana
+OpenTelemetry
+
+---
+
+## Compliance
+
+Enterprise features include:
+
+- immutable audit trails
+- encryption
+- retention policies
+
+---
+
+## Recommendations
+
+- separate inference and training workloads
+- implement rate limits
+- maintain incident review processes
+
