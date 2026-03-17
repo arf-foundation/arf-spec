@@ -522,10 +522,60 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-package-structure" class="md-nav__link">
+  <a href="#core-design-principles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Package Structure
+        Core Design Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Design Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-separation-of-concerns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Separation of Concerns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-deterministic-policy-thresholds-dpt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Deterministic Policy Thresholds (DPT)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-system-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. System Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package Structure
       
     </span>
   </a>
@@ -533,10 +583,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-data-flow-overview" class="md-nav__link">
+  <a href="#recommendations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Data Flow Overview
+        Recommendations
       
     </span>
   </a>
@@ -680,58 +730,108 @@
 
 
 <h1 id="arf-design-specification">ARF Design Specification<a class="headerlink" href="#arf-design-specification" title="Permanent link">&para;</a></h1>
-<p>The design of the Agentic Reliability Framework (ARF) is centered on <strong>modular, composable, and extensible architecture</strong> that supports both advisory and enterprise modes. The design is guided by three principles:</p>
-<ol>
-<li><strong>Separation of Concerns</strong></li>
-<li>Core risk computation (EnhancedReliabilityEngine)</li>
-<li>Policy and governance enforcement (PolicyEngine)</li>
-<li>
-<p>Observability and persistence (AuditLog, Metrics)</p>
-</li>
-<li>
-<p><strong>Extensibility</strong></p>
-</li>
-<li>Modular sub-packages for runtime, governance, advisory</li>
-<li>Pluggable risk models: Conjugate, HMC, Hyperprior</li>
-<li>
-<p>Policy algebra supports custom combinators (AND, OR, NOT)</p>
-</li>
-<li>
-<p><strong>Operational Reliability</strong></p>
-</li>
-<li>Thread-safe updates</li>
-<li>Deterministic Probability Thresholds (DPT) for automated decision-making</li>
-<li>Logging and audit trail for reproducibility</li>
-</ol>
+<p>The Agentic Reliability Framework (ARF) is designed as a <strong>modular governance and reliability engine</strong> for AI agents operating in production environments.</p>
+<p>Its architecture emphasizes:</p>
+<ul>
+<li>Modularity</li>
+<li>Deterministic governance</li>
+<li>Bayesian uncertainty modeling</li>
+<li>Extensibility for research and enterprise systems</li>
+</ul>
 <hr />
-<h2 id="1-package-structure">1. Package Structure<a class="headerlink" href="#1-package-structure" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>agentic_reliability_framework/
-├─ init.py
-├─ runtime/
-│ ├─ init.py
-│ └─ engine.py # EnhancedReliabilityEngine
-├─ governance/
-│ ├─ init.py
-│ └─ policy_engine.py
-├─ advisory/
-│ ├─ init.py
-│ └─ advisory.py # HealingIntent generation
-├─ persistence/
-│ ├─ init.py
-│ └─ persistence.py
-├─ tests/
-│ └─ test_advisory.py
-└─ main.py
-</code></pre></div>
+<h2 id="core-design-principles">Core Design Principles<a class="headerlink" href="#core-design-principles" title="Permanent link">&para;</a></h2>
+<h3 id="1-separation-of-concerns">1. Separation of Concerns<a class="headerlink" href="#1-separation-of-concerns" title="Permanent link">&para;</a></h3>
+<p>ARF separates runtime decision logic from governance enforcement and persistence.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runtime Engine</td>
+<td>Bayesian risk computation</td>
+</tr>
+<tr>
+<td>Governance Engine</td>
+<td>Policy enforcement</td>
+</tr>
+<tr>
+<td>Persistence</td>
+<td>Audit trails and logs</td>
+</tr>
+<tr>
+<td>Advisory Layer</td>
+<td>Human-readable remediation suggestions</td>
+</tr>
+</tbody>
+</table>
 <hr />
-<h2 id="2-data-flow-overview">2. Data Flow Overview<a class="headerlink" href="#2-data-flow-overview" title="Permanent link">&para;</a></h2>
-<ol>
-<li>Event ingestion → <code>EnhancedReliabilityEngine.process_event_enhanced()</code></li>
-<li>Metric evaluation → Bayesian + HMC + Hyperprior risk fusion</li>
-<li>Governance check → <code>PolicyEngine</code> applies policy algebra</li>
-<li>Advisory output → <code>HealingIntent</code> JSON for OSS or deterministic action for Enterprise</li>
-<li>Persistence → Append to audit log, metrics, and optional database</li>
-</ol>
+<h3 id="2-deterministic-policy-thresholds-dpt">2. Deterministic Policy Thresholds (DPT)<a class="headerlink" href="#2-deterministic-policy-thresholds-dpt" title="Permanent link">&para;</a></h3>
+<p>Risk predictions are probabilistic, but enforcement must be deterministic.</p>
+<table>
+<thead>
+<tr>
+<th>Risk Probability</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&lt; 0.2</td>
+<td>Approve</td>
+</tr>
+<tr>
+<td>0.2 – 0.8</td>
+<td>Escalate</td>
+</tr>
+<tr>
+<td>&gt; 0.8</td>
+<td>Deny</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="3-system-architecture">3. System Architecture<a class="headerlink" href="#3-system-architecture" title="Permanent link">&para;</a></h3>
+<p>High-level architecture:</p>
+<p>User / Agent
+    ↓
+Frontend (Next.js Dashboard)
+    ↓
+API Control Plane (FastAPI)
+    ↓
+Risk Engine
+    ├── Conjugate Model
+    ├── HMC Model
+    └── Hyperprior Model
+    ↓
+Policy Engine
+    ↓
+Audit / Storage</p>
+<hr />
+<h2 id="package-structure">Package Structure<a class="headerlink" href="#package-structure" title="Permanent link">&para;</a></h2>
+<p>agentic_reliability_framework/</p>
+<p>runtime/
+engine.py</p>
+<p>governance/
+policy_engine.py</p>
+<p>advisory/
+advisory.py</p>
+<p>persistence/
+persistence.py</p>
+<p>tests/
+test_advisory.py</p>
+<hr />
+<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
+<p>Best practices when implementing ARF:</p>
+<ul>
+<li>Keep the runtime engine stateless</li>
+<li>Store posterior parameters externally</li>
+<li>Use versioned policies</li>
+<li>Implement structured logging</li>
+</ul>
 
 
 
