@@ -63,7 +63,7 @@ Audit / Storage
 
 ## Package Structure
 
-```python
+```text
 agentic_reliability_framework/
 
 runtime/
