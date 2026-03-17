@@ -1,50 +1,74 @@
-# ARF Mathematical Foundations
 
-ARF leverages **Bayesian statistics, hierarchical models, and probabilistic programming** to quantify reliability risk in agentic systems.
+# Mathematical Foundations of ARF
 
----
+ARF relies on Bayesian statistical models to estimate risk.
 
-## 1. Online Risk Modeling (Beta-Binomial)
-
-- Each action category \(c\) maintains a conjugate Beta posterior:
-$$
-p_c \sim \text{Beta}(\alpha_c, \beta_c)
-$$
-- Update rule for outcome \(y\):
-$$
-\alpha_c \leftarrow \alpha_c + y, \quad \beta_c \leftarrow \beta_c + (1-y)
-$$
-- Predictive mean: \(\mathbb{E}[p_c] = \frac{\alpha_c}{\alpha_c+\beta_c}\)
-- Posterior variance for confidence intervals.
+The framework intentionally prioritizes **uncertainty awareness** over deterministic predictions.
 
 ---
 
-## 2. Offline Pattern Discovery (HMC)
+## Beta-Binomial Model
 
-- Logistic regression with cyclical time encoding:
-$$
-\text{logit}(p) = \beta_0 + \sum_j \beta_j x_j + \beta_\sin \sin(2\pi t/24) + \beta_\cos \cos(2\pi t/24)
-$$
-- NUTS/HMC used to obtain posterior distributions for \(\beta\) coefficients.
-- Enables quantification of uncertainty and detection of interactions.
+Each category maintains a posterior:
+
+p ~ Beta(alpha, beta)
+
+Update rules:
+
+alpha ← alpha + failures
+beta ← beta + successes
+
+Expected risk:
+
+E[p] = alpha / (alpha + beta)
+
+Variance:
+
+Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
 
 ---
 
-## 3. Hierarchical Hyperpriors
+## Hamiltonian Monte Carlo
 
-- Global hyperparameters \(\alpha_0, \beta_0 \sim \text{Gamma}(\cdot)\)
-- Category posteriors shrink toward global mean:
-$$
-p_c \sim \text{Beta}(\alpha_0, \beta_0)
-$$
-- Weighting by data availability ensures safe generalization across sparse categories.
+Offline learning identifies patterns missed by the conjugate model.
+
+logit(p) = β0 + Σ βi xi
+
+Sampling performed using NUTS (No-U-Turn Sampler).
+
+Advantages:
+
+- Efficient sampling
+- Avoids random walk
+- Scales to high-dimensional parameter spaces
 
 ---
 
-## 4. Risk Fusion
+## Hierarchical Shrinkage
 
-- Combine online, HMC, and hyperprior predictions:
-$$
-R = w_\text{conj} \cdot p_\text{conj} + w_\text{hmc} \cdot p_\text{hmc} + w_\text{hyper} \cdot p_\text{hyper}
-$$
-- Contextual multipliers \(\kappa\) scale risk based on environment, cost, violations.
+Categories share statistical strength.
+
+p_c ~ Beta(alpha0, beta0)
+
+alpha0, beta0 ~ Gamma(2,1)
+
+This prevents overfitting when category data is sparse.
+
+---
+
+## Risk Fusion
+
+Final risk:
+
+R = w_conj * p_conj + w_hmc * p_hmc + w_hyper * p_hyper
+
+Weights depend on available data volume.
+
+---
+
+## Recommendations
+
+- Use posterior predictive checks
+- Monitor R-hat convergence
+- Maintain reproducible training pipelines
+
