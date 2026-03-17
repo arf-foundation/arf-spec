@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#arf-governance-framework" class="md-skip">
+        <a href="#governance-model" class="md-skip">
           Skip to content
         </a>
       
@@ -603,10 +603,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-policy-engine" class="md-nav__link">
+  <a href="#governance-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Policy Engine
+        Governance Loop
       
     </span>
   </a>
@@ -614,10 +614,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-governance-loop" class="md-nav__link">
+  <a href="#policy-algebra" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Governance Loop
+        Policy Algebra
       
     </span>
   </a>
@@ -625,10 +625,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-audit-compliance" class="md-nav__link">
+  <a href="#healingintent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Audit &amp; Compliance
+        HealingIntent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compliance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendations
       
     </span>
   </a>
@@ -690,31 +712,53 @@
   
 
 
-<h1 id="arf-governance-framework">ARF Governance Framework<a class="headerlink" href="#arf-governance-framework" title="Permanent link">&para;</a></h1>
-<p>ARF governance enforces policies, compliance, and reliability standards on agentic workflows.</p>
+<h1 id="governance-model">Governance Model<a class="headerlink" href="#governance-model" title="Permanent link">&para;</a></h1>
+<p>ARF introduces structured governance for autonomous agents.</p>
 <hr />
-<h2 id="1-policy-engine">1. Policy Engine<a class="headerlink" href="#1-policy-engine" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Implements composable logic: AND, OR, NOT.</li>
-<li>Supports probabilistic evaluation using risk scores.</li>
-<li>Determines advisory vs enforcement actions.</li>
-</ul>
-<h2 id="2-governance-loop">2. Governance Loop<a class="headerlink" href="#2-governance-loop" title="Permanent link">&para;</a></h2>
+<h2 id="governance-loop">Governance Loop<a class="headerlink" href="#governance-loop" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Event processed by EnhancedReliabilityEngine.</li>
-<li>Compute risk via Bayesian/HMC/hyperprior fusion.</li>
-<li>Apply DPT thresholds:</li>
-<li>P(failure) &lt; 0.2 → APPROVE</li>
-<li>0.2 ≤ P(failure) ≤ 0.8 → ESCALATE</li>
-<li>P(failure) &gt; 0.8 → DENY</li>
-<li>Generate <code>HealingIntent</code> advisory JSON.</li>
-<li>Persist outcome in audit log.</li>
+<li>Event occurs</li>
+<li>Risk computed</li>
+<li>Policy evaluated</li>
+<li>Action decided</li>
+<li>Outcome recorded</li>
 </ol>
-<h2 id="3-audit-compliance">3. Audit &amp; Compliance<a class="headerlink" href="#3-audit-compliance" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="policy-algebra">Policy Algebra<a class="headerlink" href="#policy-algebra" title="Permanent link">&para;</a></h2>
+<p>Policies are composable.</p>
+<p>Example:</p>
+<p>Policy A = HighLatency
+Policy B = DatabaseChange</p>
+<p>Combined policy:</p>
+<p>A AND B</p>
+<p>Possible operators:</p>
 <ul>
-<li>Thread-safe audit logs (<code>persistence.py</code>) ensure reproducibility.</li>
-<li>Immutable <code>_audit_ts</code> timestamps.</li>
-<li>Enterprise mode includes RBAC, multi-tenancy, and SOC2-ready logging.</li>
+<li>AND</li>
+<li>OR</li>
+<li>NOT</li>
+</ul>
+<hr />
+<h2 id="healingintent">HealingIntent<a class="headerlink" href="#healingintent" title="Permanent link">&para;</a></h2>
+<p>Instead of blindly denying actions, ARF produces suggestions.</p>
+<p>Example:</p>
+<p>{
+  "action": "reduce_load",
+  "confidence": 0.72,
+  "reason": "latency anomaly detected"
+}</p>
+<hr />
+<h2 id="compliance">Compliance<a class="headerlink" href="#compliance" title="Permanent link">&para;</a></h2>
+<p>Enterprise deployments support:</p>
+<ul>
+<li>audit logs</li>
+<li>traceability</li>
+<li>SOC2 readiness</li>
+</ul>
+<hr />
+<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Version policies</li>
+<li>Test policies with simulations</li>
 </ul>
 
 
