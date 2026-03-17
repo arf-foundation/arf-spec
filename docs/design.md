@@ -63,6 +63,7 @@ Audit / Storage
 
 ## Package Structure
 
+```python
 agentic_reliability_framework/
 
 runtime/
@@ -79,6 +80,7 @@ persistence.py
 
 tests/
 test_advisory.py
+```
 
 ---
 
