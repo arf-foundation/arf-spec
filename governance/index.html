@@ -636,6 +636,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#action-reduce_load-confidence-072-reason-latency-anomaly-detected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        { &quot;action&quot;: &quot;reduce_load&quot;, &quot;confidence&quot;: 0.72, &quot;reason&quot;: &quot;latency anomaly detected&quot; }
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#compliance" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -727,26 +738,29 @@
 <h2 id="policy-algebra">Policy Algebra<a class="headerlink" href="#policy-algebra" title="Permanent link">&para;</a></h2>
 <p>Policies are composable.</p>
 <p>Example:</p>
-<p>Policy A = HighLatency
-Policy B = DatabaseChange</p>
-<p>Combined policy:</p>
-<p>A AND B</p>
-<p>Possible operators:</p>
-<ul>
-<li>AND</li>
-<li>OR</li>
-<li>NOT</li>
-</ul>
+<div class="highlight"><pre><span></span><code>Policy A = HighLatency
+Policy B = DatabaseChange
+
+Combined policy:
+
+A AND B
+
+Possible operators:
+
+- AND
+- OR
+- NOT
+</code></pre></div>
 <hr />
 <h2 id="healingintent">HealingIntent<a class="headerlink" href="#healingintent" title="Permanent link">&para;</a></h2>
 <p>Instead of blindly denying actions, ARF produces suggestions.</p>
 <p>Example:</p>
-<p>{
-  "action": "reduce_load",
-  "confidence": 0.72,
-  "reason": "latency anomaly detected"
-}</p>
-<hr />
+<h2 id="action-reduce_load-confidence-072-reason-latency-anomaly-detected"><div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;reduce_load&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="mf">0.72</span><span class="p">,</span>
+  <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;latency anomaly detected&quot;</span>
+<span class="p">}</span>
+</code></pre></div><a class="headerlink" href="#action-reduce_load-confidence-072-reason-latency-anomaly-detected" title="Permanent link">&para;</a></h2>
 <h2 id="compliance">Compliance<a class="headerlink" href="#compliance" title="Permanent link">&para;</a></h2>
 <p>Enterprise deployments support:</p>
 <ul>
