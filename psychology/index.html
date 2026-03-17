@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#arf-psychological-principles" class="md-skip">
+        <a href="#psychological-foundations" class="md-skip">
           Skip to content
         </a>
       
@@ -576,10 +576,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-explainability" class="md-nav__link">
+  <a href="#explainability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Explainability
+        Explainability
       
     </span>
   </a>
@@ -587,10 +587,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-trust-calibration" class="md-nav__link">
+  <a href="#trust-calibration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Trust Calibration
+        Trust Calibration
       
     </span>
   </a>
@@ -598,10 +598,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-bias-mitigation" class="md-nav__link">
+  <a href="#cognitive-load-reduction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Bias Mitigation
+        Cognitive Load Reduction
       
     </span>
   </a>
@@ -609,10 +609,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-cognitive-load-management" class="md-nav__link">
+  <a href="#human-in-the-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Cognitive Load Management
+        Human-in-the-Loop
       
     </span>
   </a>
@@ -620,10 +620,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-feedback-loops" class="md-nav__link">
+  <a href="#recommendations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Feedback Loops
+        Recommendations
       
     </span>
   </a>
@@ -712,34 +712,50 @@
   
 
 
-<h1 id="arf-psychological-principles">ARF Psychological Principles<a class="headerlink" href="#arf-psychological-principles" title="Permanent link">&para;</a></h1>
-<p>ARF aligns AI risk outputs with human cognitive models to <strong>ensure trust, transparency, and usability</strong>.</p>
+<h1 id="psychological-foundations">Psychological Foundations<a class="headerlink" href="#psychological-foundations" title="Permanent link">&para;</a></h1>
+<p>Technical correctness alone does not produce trust.</p>
+<p>ARF incorporates cognitive science principles.</p>
 <hr />
-<h2 id="1-explainability">1. Explainability<a class="headerlink" href="#1-explainability" title="Permanent link">&para;</a></h2>
+<h2 id="explainability">Explainability<a class="headerlink" href="#explainability" title="Permanent link">&para;</a></h2>
+<p>Each decision must answer:</p>
 <ul>
-<li>Risk scores are accompanied by textual explanations of contributing factors.</li>
-<li>Counterfactual reasoning: “If latency decreased from 100ms to 50ms, risk would drop from 0.7 → 0.4.”</li>
+<li>What happened?</li>
+<li>Why did it happen?</li>
+<li>What would change the decision?</li>
 </ul>
-<h2 id="2-trust-calibration">2. Trust Calibration<a class="headerlink" href="#2-trust-calibration" title="Permanent link">&para;</a></h2>
+<p>Example explanation:</p>
+<p>"Risk increased because latency exceeded normal thresholds and historical incidents show 35% failure probability."</p>
+<hr />
+<h2 id="trust-calibration">Trust Calibration<a class="headerlink" href="#trust-calibration" title="Permanent link">&para;</a></h2>
+<p>Humans trust systems more when uncertainty is visible.</p>
+<p>ARF shows:</p>
 <ul>
-<li>90% HDI intervals visualized alongside point estimates.</li>
-<li>Visual and textual indicators allow users to understand uncertainty.</li>
+<li>credible intervals</li>
+<li>probability ranges</li>
+<li>confidence levels</li>
 </ul>
-<h2 id="3-bias-mitigation">3. Bias Mitigation<a class="headerlink" href="#3-bias-mitigation" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="cognitive-load-reduction">Cognitive Load Reduction<a class="headerlink" href="#cognitive-load-reduction" title="Permanent link">&para;</a></h2>
+<p>Dashboards prioritize:</p>
+<ol>
+<li>Critical alerts</li>
+<li>System status</li>
+<li>Historical trends</li>
+</ol>
+<hr />
+<h2 id="human-in-the-loop">Human-in-the-Loop<a class="headerlink" href="#human-in-the-loop" title="Permanent link">&para;</a></h2>
+<p>Escalations occur when:</p>
 <ul>
-<li>Priors adjusted for pessimism in high-impact categories.</li>
-<li>Periodic bias audits detect systemic discrepancies (role, location, environment).</li>
+<li>uncertainty interval &gt; threshold</li>
+<li>risk in escalation band</li>
+<li>model confidence low</li>
 </ul>
-<h2 id="4-cognitive-load-management">4. Cognitive Load Management<a class="headerlink" href="#4-cognitive-load-management" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Dashboards prioritize critical alerts.</li>
-<li>Color-coded severity levels (INFO, WARNING, CRITICAL).</li>
-<li>Drill-down support for detailed metrics.</li>
-</ul>
-<h2 id="5-feedback-loops">5. Feedback Loops<a class="headerlink" href="#5-feedback-loops" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Human-in-the-loop feedback incorporated for retraining.</li>
-<li>Overrides are logged with justification for continuous learning.</li>
+<li>Avoid overprecision</li>
+<li>Use plain language explanations</li>
+<li>Log human overrides</li>
 </ul>
 
 
