@@ -1,53 +1,91 @@
+
 # ARF Design Specification
 
-The design of the Agentic Reliability Framework (ARF) is centered on **modular, composable, and extensible architecture** that supports both advisory and enterprise modes. The design is guided by three principles:
+The Agentic Reliability Framework (ARF) is designed as a **modular governance and reliability engine** for AI agents operating in production environments.
 
-1. **Separation of Concerns**
-   - Core risk computation (EnhancedReliabilityEngine)
-   - Policy and governance enforcement (PolicyEngine)
-   - Observability and persistence (AuditLog, Metrics)
+Its architecture emphasizes:
 
-2. **Extensibility**
-   - Modular sub-packages for runtime, governance, advisory
-   - Pluggable risk models: Conjugate, HMC, Hyperprior
-   - Policy algebra supports custom combinators (AND, OR, NOT)
-
-3. **Operational Reliability**
-   - Thread-safe updates
-   - Deterministic Probability Thresholds (DPT) for automated decision-making
-   - Logging and audit trail for reproducibility
+- Modularity
+- Deterministic governance
+- Bayesian uncertainty modeling
+- Extensibility for research and enterprise systems
 
 ---
 
-## 1. Package Structure
+## Core Design Principles
 
-```
+### 1. Separation of Concerns
+ARF separates runtime decision logic from governance enforcement and persistence.
+
+| Layer | Responsibility |
+|------|----------------|
+| Runtime Engine | Bayesian risk computation |
+| Governance Engine | Policy enforcement |
+| Persistence | Audit trails and logs |
+| Advisory Layer | Human-readable remediation suggestions |
+
+---
+
+### 2. Deterministic Policy Thresholds (DPT)
+
+Risk predictions are probabilistic, but enforcement must be deterministic.
+
+| Risk Probability | Action |
+|---|---|
+| < 0.2 | Approve |
+| 0.2 – 0.8 | Escalate |
+| > 0.8 | Deny |
+
+---
+
+### 3. System Architecture
+
+High-level architecture:
+
+User / Agent
+    ↓
+Frontend (Next.js Dashboard)
+    ↓
+API Control Plane (FastAPI)
+    ↓
+Risk Engine
+    ├── Conjugate Model
+    ├── HMC Model
+    └── Hyperprior Model
+    ↓
+Policy Engine
+    ↓
+Audit / Storage
+
+---
+
+## Package Structure
+
 agentic_reliability_framework/
-├─ init.py
-├─ runtime/
-│ ├─ init.py
-│ └─ engine.py # EnhancedReliabilityEngine
-├─ governance/
-│ ├─ init.py
-│ └─ policy_engine.py
-├─ advisory/
-│ ├─ init.py
-│ └─ advisory.py # HealingIntent generation
-├─ persistence/
-│ ├─ init.py
-│ └─ persistence.py
-├─ tests/
-│ └─ test_advisory.py
-└─ main.py
-```
 
+runtime/
+engine.py
+
+governance/
+policy_engine.py
+
+advisory/
+advisory.py
+
+persistence/
+persistence.py
+
+tests/
+test_advisory.py
 
 ---
 
-## 2. Data Flow Overview
+## Recommendations
 
-1. Event ingestion → `EnhancedReliabilityEngine.process_event_enhanced()`
-2. Metric evaluation → Bayesian + HMC + Hyperprior risk fusion
-3. Governance check → `PolicyEngine` applies policy algebra
-4. Advisory output → `HealingIntent` JSON for OSS or deterministic action for Enterprise
-5. Persistence → Append to audit log, metrics, and optional database
+Best practices when implementing ARF:
+
+- Keep the runtime engine stateless
+- Store posterior parameters externally
+- Use versioned policies
+- Implement structured logging
+
