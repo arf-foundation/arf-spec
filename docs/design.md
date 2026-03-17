@@ -42,6 +42,7 @@ Risk predictions are probabilistic, but enforcement must be deterministic.
 
 High-level architecture:
 
+```text
 User / Agent
     ↓
 Frontend (Next.js Dashboard)
@@ -56,6 +57,7 @@ Risk Engine
 Policy Engine
     ↓
 Audit / Storage
+```
 
 ---
 
