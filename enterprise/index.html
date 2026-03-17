@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#arf-enterprise-guidance" class="md-skip">
+        <a href="#enterprise-startup-deployment" class="md-skip">
           Skip to content
         </a>
       
@@ -577,24 +577,6 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Enterprise
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -611,80 +593,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-multi-tenancy-access-control" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Multi-Tenancy &amp; Access Control
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-high-availability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. High Availability
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-compliance-auditing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Compliance &amp; Auditing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-monitoring-observability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Monitoring &amp; Observability
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-integration-points" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Integration Points
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -710,38 +618,61 @@
   
 
 
-<h1 id="arf-enterprise-guidance">ARF Enterprise Guidance<a class="headerlink" href="#arf-enterprise-guidance" title="Permanent link">&para;</a></h1>
-<p>ARF Enterprise mode adds <strong>deterministic enforcement, multi-tenant support, and high-availability architecture</strong>.</p>
+<h1 id="enterprise-startup-deployment">Enterprise &amp; Startup Deployment<a class="headerlink" href="#enterprise-startup-deployment" title="Permanent link">&para;</a></h1>
+<p>ARF can scale from startups to global enterprises.</p>
 <hr />
-<h2 id="1-multi-tenancy-access-control">1. Multi-Tenancy &amp; Access Control<a class="headerlink" href="#1-multi-tenancy-access-control" title="Permanent link">&para;</a></h2>
+<h1 id="startup-mode">Startup Mode<a class="headerlink" href="#startup-mode" title="Permanent link">&para;</a></h1>
+<p>For small teams:</p>
+<p>Recommended architecture:</p>
+<p>Frontend: Vercel
+Backend: FastAPI
+Database: Postgres
+Vector Store: FAISS</p>
+<p>Benefits:</p>
 <ul>
-<li>Each tenant has isolated data stores.</li>
-<li>Role-based access control (RBAC) for projects, agents, policies.</li>
-<li>JWT or API key authentication.</li>
+<li>simple deployment</li>
+<li>minimal infrastructure</li>
+<li>rapid experimentation</li>
 </ul>
-<h2 id="2-high-availability">2. High Availability<a class="headerlink" href="#2-high-availability" title="Permanent link">&para;</a></h2>
+<hr />
+<h1 id="enterprise-mode">Enterprise Mode<a class="headerlink" href="#enterprise-mode" title="Permanent link">&para;</a></h1>
+<p>Large organizations require:</p>
 <ul>
-<li>Deploy backend via Kubernetes with auto-scaling.</li>
-<li>Rolling updates and global read replicas for databases.</li>
-<li>Optional caching layer (Redis/Memcached) for advisory queries.</li>
+<li>multi-tenancy</li>
+<li>RBAC</li>
+<li>audit compliance</li>
+<li>distributed infrastructure</li>
 </ul>
-<h2 id="3-compliance-auditing">3. Compliance &amp; Auditing<a class="headerlink" href="#3-compliance-auditing" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="infrastructure-example">Infrastructure Example<a class="headerlink" href="#infrastructure-example" title="Permanent link">&para;</a></h2>
+<p>Kubernetes cluster</p>
+<p>Services:</p>
 <ul>
-<li>Immutable audit logs with retention policies.</li>
-<li>SOC2/GDPR alignment.</li>
-<li>Alerting on policy violations, drift detection.</li>
+<li>API service</li>
+<li>model workers</li>
+<li>retraining workers</li>
+<li>monitoring stack</li>
 </ul>
-<h2 id="4-monitoring-observability">4. Monitoring &amp; Observability<a class="headerlink" href="#4-monitoring-observability" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="observability">Observability<a class="headerlink" href="#observability" title="Permanent link">&para;</a></h2>
+<p>Recommended stack:</p>
+<p>Prometheus
+Grafana
+OpenTelemetry</p>
+<hr />
+<h2 id="compliance">Compliance<a class="headerlink" href="#compliance" title="Permanent link">&para;</a></h2>
+<p>Enterprise features include:</p>
 <ul>
-<li>Prometheus/Grafana integration.</li>
-<li>Event streams and metrics exported in real time.</li>
-<li>Dashboard for tracking agent performance, risk trends, and policy compliance.</li>
+<li>immutable audit trails</li>
+<li>encryption</li>
+<li>retention policies</li>
 </ul>
-<h2 id="5-integration-points">5. Integration Points<a class="headerlink" href="#5-integration-points" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Cloud providers: AWS, Azure, GCP.</li>
-<li>Terraform/Helm for infra automation.</li>
-<li>Webhooks for external alerting or incident management.</li>
+<li>separate inference and training workloads</li>
+<li>implement rate limits</li>
+<li>maintain incident review processes</li>
 </ul>
 
 
