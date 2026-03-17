@@ -1,31 +1,61 @@
-# ARF Psychological Principles
 
-ARF aligns AI risk outputs with human cognitive models to **ensure trust, transparency, and usability**.
+# Psychological Foundations
+
+Technical correctness alone does not produce trust.
+
+ARF incorporates cognitive science principles.
 
 ---
 
-## 1. Explainability
+## Explainability
 
-- Risk scores are accompanied by textual explanations of contributing factors.
-- Counterfactual reasoning: “If latency decreased from 100ms to 50ms, risk would drop from 0.7 → 0.4.”
+Each decision must answer:
 
-## 2. Trust Calibration
+- What happened?
+- Why did it happen?
+- What would change the decision?
 
-- 90% HDI intervals visualized alongside point estimates.
-- Visual and textual indicators allow users to understand uncertainty.
+Example explanation:
 
-## 3. Bias Mitigation
+"Risk increased because latency exceeded normal thresholds and historical incidents show 35% failure probability."
 
-- Priors adjusted for pessimism in high-impact categories.
-- Periodic bias audits detect systemic discrepancies (role, location, environment).
+---
 
-## 4. Cognitive Load Management
+## Trust Calibration
 
-- Dashboards prioritize critical alerts.
-- Color-coded severity levels (INFO, WARNING, CRITICAL).
-- Drill-down support for detailed metrics.
+Humans trust systems more when uncertainty is visible.
 
-## 5. Feedback Loops
+ARF shows:
 
-- Human-in-the-loop feedback incorporated for retraining.
-- Overrides are logged with justification for continuous learning.
+- credible intervals
+- probability ranges
+- confidence levels
+
+---
+
+## Cognitive Load Reduction
+
+Dashboards prioritize:
+
+1. Critical alerts
+2. System status
+3. Historical trends
+
+---
+
+## Human-in-the-Loop
+
+Escalations occur when:
+
+- uncertainty interval > threshold
+- risk in escalation band
+- model confidence low
+
+---
+
+## Recommendations
+
+- Avoid overprecision
+- Use plain language explanations
+- Log human overrides
+
