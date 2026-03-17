@@ -560,6 +560,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        p ~ Beta(alpha, beta) Update rules: alpha ← alpha + failures beta ← beta + successes Expected risk: E[p] = alpha / (alpha + beta) Variance: Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#hamiltonian-monte-carlo" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -718,18 +729,25 @@
 <hr />
 <h2 id="beta-binomial-model">Beta-Binomial Model<a class="headerlink" href="#beta-binomial-model" title="Permanent link">&para;</a></h2>
 <p>Each category maintains a posterior:</p>
-<p>p ~ Beta(alpha, beta)</p>
-<p>Update rules:</p>
-<p>alpha ← alpha + failures
-beta ← beta + successes</p>
-<p>Expected risk:</p>
-<p>E[p] = alpha / (alpha + beta)</p>
-<p>Variance:</p>
-<p>Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))</p>
-<hr />
+<h2 id="p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1"><div class="highlight"><pre><span></span><code>p ~ Beta(alpha, beta)
+
+Update rules:
+
+alpha ← alpha + failures
+beta ← beta + successes
+
+Expected risk:
+
+E[p] = alpha / (alpha + beta)
+
+Variance:
+
+Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
+</code></pre></div><a class="headerlink" href="#p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1" title="Permanent link">&para;</a></h2>
 <h2 id="hamiltonian-monte-carlo">Hamiltonian Monte Carlo<a class="headerlink" href="#hamiltonian-monte-carlo" title="Permanent link">&para;</a></h2>
 <p>Offline learning identifies patterns missed by the conjugate model.</p>
-<p>logit(p) = β0 + Σ βi xi</p>
+<div class="highlight"><pre><span></span><code>logit(p) = β0 + Σ βi xi
+</code></pre></div>
 <p>Sampling performed using NUTS (No-U-Turn Sampler).</p>
 <p>Advantages:</p>
 <ul>
@@ -740,13 +758,16 @@ beta ← beta + successes</p>
 <hr />
 <h2 id="hierarchical-shrinkage">Hierarchical Shrinkage<a class="headerlink" href="#hierarchical-shrinkage" title="Permanent link">&para;</a></h2>
 <p>Categories share statistical strength.</p>
-<p>p_c ~ Beta(alpha0, beta0)</p>
-<p>alpha0, beta0 ~ Gamma(2,1)</p>
+<div class="highlight"><pre><span></span><code>p_c ~ Beta(alpha0, beta0)
+
+alpha0, beta0 ~ Gamma(2,1)
+</code></pre></div>
 <p>This prevents overfitting when category data is sparse.</p>
 <hr />
 <h2 id="risk-fusion">Risk Fusion<a class="headerlink" href="#risk-fusion" title="Permanent link">&para;</a></h2>
 <p>Final risk:</p>
-<p>R = w_conj * p_conj + w_hmc * p_hmc + w_hyper * p_hyper</p>
+<div class="highlight"><pre><span></span><code>R = w_conj * p_conj + w_hmc * p_hmc + w_hyper * p_hyper
+</code></pre></div>
 <p>Weights depend on available data volume.</p>
 <hr />
 <h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
