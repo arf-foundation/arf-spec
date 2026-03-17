@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#mathematics" class="md-skip">
+        <a href="#arf-mathematical-foundations" class="md-skip">
           Skip to content
         </a>
       
@@ -498,6 +498,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mathematics
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -514,6 +532,69 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-online-risk-modeling-beta-binomial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Online Risk Modeling (Beta-Binomial)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-offline-pattern-discovery-hmc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Offline Pattern Discovery (HMC)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-hierarchical-hyperpriors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Hierarchical Hyperpriors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-risk-fusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Risk Fusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -620,7 +701,51 @@
   
 
 
-<h1 id="mathematics">Mathematics<a class="headerlink" href="#mathematics" title="Permanent link">&para;</a></h1>
+<h1 id="arf-mathematical-foundations">ARF Mathematical Foundations<a class="headerlink" href="#arf-mathematical-foundations" title="Permanent link">&para;</a></h1>
+<p>ARF leverages <strong>Bayesian statistics, hierarchical models, and probabilistic programming</strong> to quantify reliability risk in agentic systems.</p>
+<hr />
+<h2 id="1-online-risk-modeling-beta-binomial">1. Online Risk Modeling (Beta-Binomial)<a class="headerlink" href="#1-online-risk-modeling-beta-binomial" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Each action category <span class="arithmatex">\(c\)</span> maintains a conjugate Beta posterior:
+$$
+p_c \sim \text{Beta}(\alpha_c, \beta_c)
+$$</li>
+<li>Update rule for outcome <span class="arithmatex">\(y\)</span>:
+$$
+\alpha_c \leftarrow \alpha_c + y, \quad \beta_c \leftarrow \beta_c + (1-y)
+$$</li>
+<li>Predictive mean: <span class="arithmatex">\(\mathbb{E}[p_c] = \frac{\alpha_c}{\alpha_c+\beta_c}\)</span></li>
+<li>Posterior variance for confidence intervals.</li>
+</ul>
+<hr />
+<h2 id="2-offline-pattern-discovery-hmc">2. Offline Pattern Discovery (HMC)<a class="headerlink" href="#2-offline-pattern-discovery-hmc" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Logistic regression with cyclical time encoding:
+$$
+\text{logit}(p) = \beta_0 + \sum_j \beta_j x_j + \beta_\sin \sin(2\pi t/24) + \beta_\cos \cos(2\pi t/24)
+$$</li>
+<li>NUTS/HMC used to obtain posterior distributions for <span class="arithmatex">\(\beta\)</span> coefficients.</li>
+<li>Enables quantification of uncertainty and detection of interactions.</li>
+</ul>
+<hr />
+<h2 id="3-hierarchical-hyperpriors">3. Hierarchical Hyperpriors<a class="headerlink" href="#3-hierarchical-hyperpriors" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Global hyperparameters <span class="arithmatex">\(\alpha_0, \beta_0 \sim \text{Gamma}(\cdot)\)</span></li>
+<li>Category posteriors shrink toward global mean:
+$$
+p_c \sim \text{Beta}(\alpha_0, \beta_0)
+$$</li>
+<li>Weighting by data availability ensures safe generalization across sparse categories.</li>
+</ul>
+<hr />
+<h2 id="4-risk-fusion">4. Risk Fusion<a class="headerlink" href="#4-risk-fusion" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Combine online, HMC, and hyperprior predictions:
+$$
+R = w_\text{conj} \cdot p_\text{conj} + w_\text{hmc} \cdot p_\text{hmc} + w_\text{hyper} \cdot p_\text{hyper}
+$$</li>
+<li>Contextual multipliers <span class="arithmatex">\(\kappa\)</span> scale risk based on environment, cost, violations.</li>
+</ul>
 
 
 
