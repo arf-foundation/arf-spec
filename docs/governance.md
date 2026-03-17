@@ -21,6 +21,7 @@ Policies are composable.
 
 Example:
 
+```math
 Policy A = HighLatency
 Policy B = DatabaseChange
 
@@ -33,6 +34,7 @@ Possible operators:
 - AND
 - OR
 - NOT
+```
 
 ---
 
@@ -42,12 +44,13 @@ Instead of blindly denying actions, ARF produces suggestions.
 
 Example:
 
+```python
 {
   "action": "reduce_load",
   "confidence": 0.72,
   "reason": "latency anomaly detected"
 }
-
+```
 ---
 
 ## Compliance
