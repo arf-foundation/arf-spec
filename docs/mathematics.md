@@ -11,6 +11,7 @@ The framework intentionally prioritizes **uncertainty awareness** over determini
 
 Each category maintains a posterior:
 
+```math
 p ~ Beta(alpha, beta)
 
 Update rules:
@@ -25,14 +26,16 @@ E[p] = alpha / (alpha + beta)
 Variance:
 
 Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
-
+```
 ---
 
 ## Hamiltonian Monte Carlo
 
 Offline learning identifies patterns missed by the conjugate model.
 
+```math
 logit(p) = β0 + Σ βi xi
+```
 
 Sampling performed using NUTS (No-U-Turn Sampler).
 
@@ -48,9 +51,11 @@ Advantages:
 
 Categories share statistical strength.
 
+```math
 p_c ~ Beta(alpha0, beta0)
 
 alpha0, beta0 ~ Gamma(2,1)
+```
 
 This prevents overfitting when category data is sparse.
 
@@ -60,7 +65,9 @@ This prevents overfitting when category data is sparse.
 
 Final risk:
 
+```math
 R = w_conj * p_conj + w_hmc * p_hmc + w_hyper * p_hyper
+```
 
 Weights depend on available data volume.
 
