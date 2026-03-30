@@ -9,6 +9,7 @@ Its architecture emphasizes:
 - Deterministic governance
 - Bayesian uncertainty modeling
 - Extensibility for research and enterprise systems
+- Clear separation between core execution and optional longitudinal trust layers
 
 ---
 
