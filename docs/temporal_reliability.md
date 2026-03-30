@@ -84,7 +84,8 @@ Implementations MAY choose one or more windowing strategies. The spec only requi
 ### 3.4 `ReliabilityDimensions`
 
 `ReliabilityDimensions` specifies the scored axes available for temporal aggregation.
-This is an optional envelope. Implementations MAY use a subset of dimensions or add custom ones.
+This is an optional envelope. Implementations MAY use a subset of these axes or add custom axes;
+the three named axes (`delivery_score`, `calibration_delta`, `adaptation_score`) are canonical but not mandatory.
 
 Three dimensions are specified here for concrete reference; they are not the only valid ones.
 
@@ -130,8 +131,9 @@ class WindowedReliabilityResult:
     # Linear regression slope over ordered session scores within the window.
     # Positive: improving. Negative: degrading. None if fewer than 2 sessions.
 
-    sample_count: int = 0
+    sample_count: int
     # Number of sessions contributing to this result after window filtering and decay.
+    # MUST be provided explicitly by the implementation. There is no valid default.
 
     window_start: Optional[datetime] = None
     # Earliest observed_at timestamp contributing to this result.
@@ -238,6 +240,7 @@ A conforming implementation MUST be able to:
 4. Operate with temporal features disabled
 5. Return `sample_count` that accurately reflects how many sessions contributed to the result
 6. Return `trend_slope` when two or more sessions are available in the window
+7. If `window_start` and `window_end` are provided in a `WindowedReliabilityResult`, they MUST be valid ISO 8601 timestamps with `window_start <= window_end`. Consumers MAY reject results that violate this constraint.
 
 ## 9. Reference Implementations
 
