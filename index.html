@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -352,6 +352,25 @@
   
 
       
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="temporal_reliability/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Temporal Reliability
+
+      </a>
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -415,6 +434,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="." class="md-nav__link md-nav__link--active">
         
   
@@ -431,6 +468,47 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#specification-sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specification sections
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#boundary-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boundary note
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -598,6 +676,33 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="temporal_reliability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Reliability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -620,6 +725,15 @@
 
 <h1 id="arf-specification">ARF Specification<a class="headerlink" href="#arf-specification" title="Permanent link">&para;</a></h1>
 <p>Welcome to the canonical specification of the Agentic Reliability Framework.</p>
+<p>ARF is organized as a layered specification:</p>
+<ul>
+<li>Core reliability and governance concepts</li>
+<li>Mathematical foundations for probabilistic scoring and control</li>
+<li>Psychological principles for trust calibration and explanation</li>
+<li>Enterprise boundary definitions for higher-order capabilities</li>
+<li>Temporal reliability as a separate extension boundary</li>
+</ul>
+<h2 id="specification-sections">Specification sections<a class="headerlink" href="#specification-sections" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="roadmap/">Roadmap</a></li>
 <li><a href="design/">Design</a></li>
@@ -627,7 +741,16 @@
 <li><a href="psychology/">Psychology</a></li>
 <li><a href="governance/">Governance</a></li>
 <li><a href="enterprise/">Enterprise</a></li>
+<li><a href="temporal_reliability/">Temporal Reliability</a></li>
 </ul>
+<h2 id="boundary-note">Boundary note<a class="headerlink" href="#boundary-note" title="Permanent link">&para;</a></h2>
+<p>Temporal reliability is intentionally defined as a separate specification layer.</p>
+<p>It must remain:
+- optional
+- external to in-session scoring
+- outside the core ARF execution path
+- suitable for implementation in enterprise or extension layers</p>
+<p>This keeps the core deterministic, session-scoped, and easy to audit.</p>
 
 
 

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -354,6 +354,25 @@
   
 
       
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../temporal_reliability/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Temporal Reliability
+
+      </a>
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -522,22 +541,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#core-design-principles" class="md-nav__link">
+  <a href="#1-overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Design Principles
+        1. Overview
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Design Principles">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-design-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Design Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-core-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Core Design Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Core Design Principles">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-separation-of-concerns" class="md-nav__link">
+  <a href="#31-separation-of-concerns" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Separation of Concerns
+        3.1 Separation of Concerns
       
     </span>
   </a>
@@ -545,10 +586,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-deterministic-policy-thresholds-dpt" class="md-nav__link">
+  <a href="#32-deterministic-policy-thresholds" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Deterministic Policy Thresholds (DPT)
+        3.2 Deterministic Policy Thresholds
       
     </span>
   </a>
@@ -556,10 +597,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-system-architecture" class="md-nav__link">
+  <a href="#33-modularity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. System Architecture
+        3.3 Modularity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-determinism-at-the-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Determinism at the Boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-extensibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Extensibility
       
     </span>
   </a>
@@ -572,10 +635,271 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#package-structure" class="md-nav__link">
+  <a href="#4-system-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Package Structure
+        4. System Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. System Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-core-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Core Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-extended-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Extended Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-architectural-consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Architectural Consequences
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-package-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Package Structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Package Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-core-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Core Package
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-optional-enterprise-or-extension-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Optional Enterprise or Extension Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-package-boundary-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Package Boundary Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-runtime-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Runtime Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Runtime Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-session-scoped-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Session-Scoped Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-advisory-vs-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Advisory vs Enforcement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-reliabilitysignal-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 ReliabilitySignal Boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-deterministic-policy-thresholding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Deterministic Policy Thresholding
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Deterministic Policy Thresholding">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-core-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Core Rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-design-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Design Constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-temporal-reliability-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Temporal Reliability Boundary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Temporal Reliability Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-why-it-is-separate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Why It Is Separate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-allowed-temporal-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Allowed Temporal Inputs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-temporal-layer-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Temporal Layer Constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-observability-and-auditability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Observability and Auditability
       
     </span>
   </a>
@@ -583,10 +907,82 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recommendations" class="md-nav__link">
+  <a href="#10-extensibility-strategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recommendations
+        10. Extensibility Strategy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Extensibility Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-core-extension-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Core Extension Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-recommended-extension-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Recommended Extension Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-extension-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Extension Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-enterprise-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Enterprise Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-design-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Design Recommendations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Status
       
     </span>
   </a>
@@ -709,6 +1105,33 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../temporal_reliability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Temporal Reliability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -730,18 +1153,35 @@
 
 
 <h1 id="arf-design-specification">ARF Design Specification<a class="headerlink" href="#arf-design-specification" title="Permanent link">&para;</a></h1>
-<p>The Agentic Reliability Framework (ARF) is designed as a <strong>modular governance and reliability engine</strong> for AI agents operating in production environments.</p>
-<p>Its architecture emphasizes:</p>
+<h2 id="1-overview">1. Overview<a class="headerlink" href="#1-overview" title="Permanent link">&para;</a></h2>
+<p>The Agentic Reliability Framework (ARF) is a modular governance and reliability engine for AI agents operating in production environments. It is designed to provide a deterministic decision boundary around agent execution while preserving the flexibility required for experimentation, research, and enterprise deployment.</p>
+<p>ARF is intentionally structured so that core scoring remains session-scoped, stateless, and auditable. Optional layers may add persistence, longitudinal analysis, or enterprise controls, but those extensions must not change the meaning of the core runtime decision.</p>
+<p>The design goals are:</p>
 <ul>
-<li>Modularity</li>
-<li>Deterministic governance</li>
-<li>Bayesian uncertainty modeling</li>
-<li>Extensibility for research and enterprise systems</li>
+<li>provide deterministic governance at execution time</li>
+<li>separate advisory reasoning from enforcement</li>
+<li>support Bayesian uncertainty modeling</li>
+<li>enable observability and auditability</li>
+<li>preserve a clean boundary between core logic and optional extensions</li>
+<li>allow enterprise-grade capabilities without compromising OSS simplicity</li>
 </ul>
 <hr />
-<h2 id="core-design-principles">Core Design Principles<a class="headerlink" href="#core-design-principles" title="Permanent link">&para;</a></h2>
-<h3 id="1-separation-of-concerns">1. Separation of Concerns<a class="headerlink" href="#1-separation-of-concerns" title="Permanent link">&para;</a></h3>
-<p>ARF separates runtime decision logic from governance enforcement and persistence.</p>
+<h2 id="2-design-philosophy">2. Design Philosophy<a class="headerlink" href="#2-design-philosophy" title="Permanent link">&para;</a></h2>
+<p>ARF is built around the principle that reliability is not a single model output. Reliability is a system property that emerges from clear boundaries, structured policy evaluation, strong observability, and careful separation of concerns.</p>
+<p>The framework therefore avoids collapsing multiple responsibilities into a single component. Instead, it separates:</p>
+<ul>
+<li>risk estimation</li>
+<li>policy evaluation</li>
+<li>execution gating</li>
+<li>advisory explanation</li>
+<li>persistence and audit logging</li>
+<li>optional temporal analysis</li>
+</ul>
+<p>This separation makes the system easier to test, easier to reason about, and easier to adapt to different deployment environments.</p>
+<hr />
+<h2 id="3-core-design-principles">3. Core Design Principles<a class="headerlink" href="#3-core-design-principles" title="Permanent link">&para;</a></h2>
+<h3 id="31-separation-of-concerns">3.1 Separation of Concerns<a class="headerlink" href="#31-separation-of-concerns" title="Permanent link">&para;</a></h3>
+<p>ARF separates runtime decision logic from governance enforcement, persistence, and longitudinal analysis.</p>
 <table>
 <thead>
 <tr>
@@ -756,20 +1196,24 @@
 </tr>
 <tr>
 <td>Governance Engine</td>
-<td>Policy enforcement</td>
+<td>Policy evaluation and execution gating</td>
 </tr>
 <tr>
 <td>Persistence</td>
-<td>Audit trails and logs</td>
+<td>Audit trails, logs, and outcome storage</td>
 </tr>
 <tr>
 <td>Advisory Layer</td>
 <td>Human-readable remediation suggestions</td>
 </tr>
+<tr>
+<td>Temporal Layer</td>
+<td>Optional cross-session reliability aggregation</td>
+</tr>
 </tbody>
 </table>
-<hr />
-<h3 id="2-deterministic-policy-thresholds-dpt">2. Deterministic Policy Thresholds (DPT)<a class="headerlink" href="#2-deterministic-policy-thresholds-dpt" title="Permanent link">&para;</a></h3>
+<p>The core runtime must remain session-scoped and deterministic. Optional layers may add history-aware behavior without changing the semantics of in-session scoring.</p>
+<h3 id="32-deterministic-policy-thresholds">3.2 Deterministic Policy Thresholds<a class="headerlink" href="#32-deterministic-policy-thresholds" title="Permanent link">&para;</a></h3>
 <p>Risk predictions are probabilistic, but enforcement must be deterministic.</p>
 <table>
 <thead>
@@ -793,9 +1237,32 @@
 </tr>
 </tbody>
 </table>
+<p>This thresholding behavior is a core execution boundary. It must not depend on hidden memory, external trust aggregation, or cross-session state.</p>
+<h3 id="33-modularity">3.3 Modularity<a class="headerlink" href="#33-modularity" title="Permanent link">&para;</a></h3>
+<p>Each ARF capability should be independently testable and replaceable. Modules should communicate through explicit interfaces rather than implicit side effects.</p>
+<p>This enables:</p>
+<ul>
+<li>isolated unit testing</li>
+<li>incremental development</li>
+<li>safe replacement of components</li>
+<li>easier external contribution</li>
+<li>cleaner enterprise extension paths</li>
+</ul>
+<h3 id="34-determinism-at-the-boundary">3.4 Determinism at the Boundary<a class="headerlink" href="#34-determinism-at-the-boundary" title="Permanent link">&para;</a></h3>
+<p>The same inputs must always produce the same decision under the same policy configuration. Where probabilistic methods are used, they serve as advisory or scoring inputs, not as sources of nondeterministic enforcement.</p>
+<h3 id="35-extensibility">3.5 Extensibility<a class="headerlink" href="#35-extensibility" title="Permanent link">&para;</a></h3>
+<p>ARF should support:</p>
+<ul>
+<li>research modules</li>
+<li>enterprise modules</li>
+<li>optional adapters</li>
+<li>external scoring layers</li>
+<li>additional observability tools</li>
+</ul>
+<p>Extensibility must not degrade the predictability of the core engine.</p>
 <hr />
-<h3 id="3-system-architecture">3. System Architecture<a class="headerlink" href="#3-system-architecture" title="Permanent link">&para;</a></h3>
-<p>High-level architecture:</p>
+<h2 id="4-system-architecture">4. System Architecture<a class="headerlink" href="#4-system-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="41-core-architecture">4.1 Core Architecture<a class="headerlink" href="#41-core-architecture" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>User / Agent
     ↓
 Frontend (Next.js Dashboard)
@@ -811,34 +1278,240 @@ Policy Engine
     ↓
 Audit / Storage
 </code></pre></div>
+<h3 id="42-extended-architecture">4.2 Extended Architecture<a class="headerlink" href="#42-extended-architecture" title="Permanent link">&para;</a></h3>
+<p>Optional temporal behavior is not part of the core flow. When used, it should be attached externally through a separate adapter or service.</p>
+<div class="highlight"><pre><span></span><code>User / Agent
+    ↓
+Frontend (Next.js Dashboard)
+    ↓
+API Control Plane (FastAPI)
+    ↓
+Core Risk Engine (session-scoped)
+    ↓
+Policy Engine / DPT
+    ↓
+Audit / Storage
+
+Optional:
+Core Signals → Temporal Reliability Adapter → Cross-session Aggregator → Enterprise Analytics / Governance
+</code></pre></div>
+<h3 id="43-architectural-consequences">4.3 Architectural Consequences<a class="headerlink" href="#43-architectural-consequences" title="Permanent link">&para;</a></h3>
+<p>This structure implies:</p>
+<ul>
+<li>the OSS core is optimized for immediate, session-level reliability scoring</li>
+<li>temporal or longitudinal analysis is not assumed by default</li>
+<li>enterprise users may add higher-order stateful capabilities without altering the runtime contract</li>
+<li>contributors can extend ARF without needing to modify the core execution semantics</li>
+</ul>
 <hr />
-<h2 id="package-structure">Package Structure<a class="headerlink" href="#package-structure" title="Permanent link">&para;</a></h2>
+<h2 id="5-package-structure">5. Package Structure<a class="headerlink" href="#5-package-structure" title="Permanent link">&para;</a></h2>
+<h3 id="51-core-package">5.1 Core Package<a class="headerlink" href="#51-core-package" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>agentic_reliability_framework/
 
 runtime/
-engine.py
+  engine.py
 
 governance/
-policy_engine.py
+  policy_engine.py
 
 advisory/
-advisory.py
+  advisory.py
 
 persistence/
-persistence.py
+  persistence.py
 
 tests/
-test_advisory.py
+  test_advisory.py
 </code></pre></div>
+<h3 id="52-optional-enterprise-or-extension-structure">5.2 Optional Enterprise or Extension Structure<a class="headerlink" href="#52-optional-enterprise-or-extension-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>enterprise/
+
+temporal/
+  adapter.py
+  aggregator.py
+  decay.py
+  storage.py
+
+audit/
+  audit_trail.py
+
+governance/
+  longitudinal_controls.py
+
+tests/
+  test_temporal_reliability.py
+</code></pre></div>
+<h3 id="53-package-boundary-rules">5.3 Package Boundary Rules<a class="headerlink" href="#53-package-boundary-rules" title="Permanent link">&para;</a></h3>
+<p>The temporal layer must not be imported by the core runtime engine unless explicitly activated in an external integration layer.</p>
+<p>Core runtime modules should not depend on:</p>
+<ul>
+<li>session history databases</li>
+<li>identity systems</li>
+<li>cross-session aggregation services</li>
+<li>hidden stateful indicators</li>
+</ul>
 <hr />
-<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
-<p>Best practices when implementing ARF:</p>
+<h2 id="6-runtime-model">6. Runtime Model<a class="headerlink" href="#6-runtime-model" title="Permanent link">&para;</a></h2>
+<h3 id="61-session-scoped-execution">6.1 Session-Scoped Execution<a class="headerlink" href="#61-session-scoped-execution" title="Permanent link">&para;</a></h3>
+<p>The core runtime operates on a single event or session at a time. It evaluates the immediate context and produces a decision or advisory artifact based on the current inputs.</p>
+<p>This is the default operating mode for ARF.</p>
+<h3 id="62-advisory-vs-enforcement">6.2 Advisory vs Enforcement<a class="headerlink" href="#62-advisory-vs-enforcement" title="Permanent link">&para;</a></h3>
+<p>ARF distinguishes between:</p>
+<ul>
+<li>advisory reasoning: what should happen</li>
+<li>enforcement logic: what is allowed to happen</li>
+</ul>
+<p>This distinction prevents uncertainty estimates from directly becoming execution side effects.</p>
+<h3 id="63-reliabilitysignal-boundary">6.3 ReliabilitySignal Boundary<a class="headerlink" href="#63-reliabilitysignal-boundary" title="Permanent link">&para;</a></h3>
+<p>A <code>ReliabilitySignal</code> should represent a single-session reliability assessment. It should remain pure with respect to session-level inputs and not be mutated by longitudinal history.</p>
+<p>Any cross-session extension must be implemented outside the core signal semantics.</p>
+<hr />
+<h2 id="7-deterministic-policy-thresholding">7. Deterministic Policy Thresholding<a class="headerlink" href="#7-deterministic-policy-thresholding" title="Permanent link">&para;</a></h2>
+<h3 id="71-purpose">7.1 Purpose<a class="headerlink" href="#71-purpose" title="Permanent link">&para;</a></h3>
+<p>Deterministic Policy Thresholding (DPT) ensures that execution decisions are stable and explainable.</p>
+<h3 id="72-core-rule">7.2 Core Rule<a class="headerlink" href="#72-core-rule" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Approve when the estimated safe probability is below the approval threshold</li>
+<li>Escalate when the signal is ambiguous or partially confident</li>
+<li>Deny when the risk exceeds the denial threshold</li>
+</ul>
+<h3 id="73-design-constraints">7.3 Design Constraints<a class="headerlink" href="#73-design-constraints" title="Permanent link">&para;</a></h3>
+<p>The thresholding layer must:</p>
+<ul>
+<li>be deterministic</li>
+<li>be transparent</li>
+<li>be auditable</li>
+<li>remain independent of any temporal trust layer</li>
+</ul>
+<p>It must not:</p>
+<ul>
+<li>adjust based on hidden longitudinal memory</li>
+<li>vary based on prior sessions unless explicitly configured in a separate layer</li>
+<li>embed enterprise-specific heuristics in the OSS path</li>
+</ul>
+<hr />
+<h2 id="8-temporal-reliability-boundary">8. Temporal Reliability Boundary<a class="headerlink" href="#8-temporal-reliability-boundary" title="Permanent link">&para;</a></h2>
+<h3 id="81-purpose">8.1 Purpose<a class="headerlink" href="#81-purpose" title="Permanent link">&para;</a></h3>
+<p>Temporal reliability is a separate concern from in-session reliability.</p>
+<p>It answers a different question:</p>
+<ul>
+<li>Core ARF: Is this safe now?</li>
+<li>Temporal layer: Has this been reliable over time?</li>
+</ul>
+<h3 id="82-why-it-is-separate">8.2 Why It Is Separate<a class="headerlink" href="#82-why-it-is-separate" title="Permanent link">&para;</a></h3>
+<p>Cross-session reliability introduces:</p>
+<ul>
+<li>storage requirements</li>
+<li>identity linkage</li>
+<li>time window semantics</li>
+<li>decay functions</li>
+<li>aggregation policies</li>
+<li>data retention implications</li>
+</ul>
+<p>Those concerns are important, but they belong outside the core deterministic runtime.</p>
+<h3 id="83-allowed-temporal-inputs">8.3 Allowed Temporal Inputs<a class="headerlink" href="#83-allowed-temporal-inputs" title="Permanent link">&para;</a></h3>
+<p>Temporal extensions may use:</p>
+<ul>
+<li><code>session_id</code></li>
+<li><code>observed_at</code></li>
+<li>time windows</li>
+<li>decay functions</li>
+<li>cross-session aggregation</li>
+</ul>
+<h3 id="84-temporal-layer-constraints">8.4 Temporal Layer Constraints<a class="headerlink" href="#84-temporal-layer-constraints" title="Permanent link">&para;</a></h3>
+<p>Temporal layers must not:</p>
+<ul>
+<li>alter in-session scoring behavior</li>
+<li>alter DPT thresholds</li>
+<li>mutate the meaning of <code>ReliabilitySignal</code></li>
+<li>force persistence into the core runtime path</li>
+<li>create hidden coupling to enterprise identity or analytics systems</li>
+</ul>
+<hr />
+<h2 id="9-observability-and-auditability">9. Observability and Auditability<a class="headerlink" href="#9-observability-and-auditability" title="Permanent link">&para;</a></h2>
+<p>ARF is designed to be inspectable.</p>
+<p>Every decision path should support:</p>
+<ul>
+<li>audit logging</li>
+<li>structured explanations</li>
+<li>trace IDs</li>
+<li>policy version tracking</li>
+<li>override recording</li>
+<li>replayability for analysis</li>
+</ul>
+<p>Observability should cover:</p>
+<ul>
+<li>scoring latency</li>
+<li>policy evaluation outcome</li>
+<li>escalation frequency</li>
+<li>denial frequency</li>
+<li>confidence distribution</li>
+<li>optional longitudinal trends if enabled externally</li>
+</ul>
+<p>The goal is not just to know what happened, but to know why it happened and how the system reached that result.</p>
+<hr />
+<h2 id="10-extensibility-strategy">10. Extensibility Strategy<a class="headerlink" href="#10-extensibility-strategy" title="Permanent link">&para;</a></h2>
+<h3 id="101-core-extension-model">10.1 Core Extension Model<a class="headerlink" href="#101-core-extension-model" title="Permanent link">&para;</a></h3>
+<p>Extensions should attach through explicit interfaces. They should not depend on undocumented internal assumptions.</p>
+<h3 id="102-recommended-extension-types">10.2 Recommended Extension Types<a class="headerlink" href="#102-recommended-extension-types" title="Permanent link">&para;</a></h3>
+<ul>
+<li>adapters</li>
+<li>aggregators</li>
+<li>policy modules</li>
+<li>storage backends</li>
+<li>analysis services</li>
+<li>enterprise governance modules</li>
+</ul>
+<h3 id="103-extension-rules">10.3 Extension Rules<a class="headerlink" href="#103-extension-rules" title="Permanent link">&para;</a></h3>
+<p>Extensions should:</p>
+<ul>
+<li>preserve core behavior</li>
+<li>be optional</li>
+<li>have explicit configuration</li>
+<li>be independently testable</li>
+<li>fail safely</li>
+</ul>
+<hr />
+<h2 id="11-enterprise-boundary">11. Enterprise Boundary<a class="headerlink" href="#11-enterprise-boundary" title="Permanent link">&para;</a></h2>
+<p>Enterprise capabilities may include:</p>
+<ul>
+<li>multi-tenancy</li>
+<li>RBAC</li>
+<li>audit compliance</li>
+<li>distributed infrastructure</li>
+<li>policy versioning</li>
+<li>temporal aggregation</li>
+<li>custom retention policies</li>
+<li>reporting and analytics</li>
+</ul>
+<p>Enterprise systems should separate:</p>
+<ul>
+<li>core risk computation</li>
+<li>policy enforcement</li>
+<li>audit logging</li>
+<li>temporal aggregation</li>
+<li>analytics and reporting</li>
+</ul>
+<p>The enterprise layer may introduce stateful longitudinal trust tracking, but this should always be isolated from the OSS core.</p>
+<hr />
+<h2 id="12-design-recommendations">12. Design Recommendations<a class="headerlink" href="#12-design-recommendations" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Keep the runtime engine stateless</li>
-<li>Store posterior parameters externally</li>
+<li>Store posterior parameters externally when persistence is needed</li>
 <li>Use versioned policies</li>
 <li>Implement structured logging</li>
+<li>Treat temporal reliability as an adapter or service, not a core primitive</li>
+<li>Preserve deterministic scoring boundaries in the OSS runtime</li>
+<li>Add longitudinal analysis only through explicit extension points</li>
+<li>Avoid hidden state in execution paths</li>
+<li>Ensure every extension has a clear ownership boundary</li>
 </ul>
+<hr />
+<h2 id="13-status">13. Status<a class="headerlink" href="#13-status" title="Permanent link">&para;</a></h2>
+<p>This document defines the architectural boundary of ARF.</p>
+<p>The core execution model remains session-scoped and deterministic.</p>
+<p>Temporal reliability is intentionally externalized for optional enterprise or extension-layer implementation.</p>
+<p>This preserves the current product direction while leaving room for more advanced longitudinal governance capabilities in the future.</p>
 
 
 
