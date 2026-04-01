@@ -581,10 +581,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hyperpriors-hierarchical-shrinkage" class="md-nav__link">
+  <a href="#hierarchical-beta-model-optional-hyperpriors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hyperpriors (Hierarchical Shrinkage)
+        Hierarchical Beta Model (Optional Hyperpriors)
       
     </span>
   </a>
@@ -797,40 +797,40 @@
 <p>ARF relies on Bayesian statistical models to estimate risk, combining <strong>online conjugate updates</strong>, <strong>optional hierarchical shrinkage</strong>, and <strong>offline Hamiltonian Monte Carlo</strong> into a single fused risk score. The framework intentionally prioritizes <strong>uncertainty awareness</strong> over deterministic predictions.</p>
 <hr />
 <h2 id="betabinomial-model-online-conjugate-prior">Beta‑Binomial Model (Online Conjugate Prior)<a class="headerlink" href="#betabinomial-model-online-conjugate-prior" title="Permanent link">&para;</a></h2>
-<p>Each action category maintains a Beta posterior:</p>
+<p>Each action category maintains a <strong>Beta posterior</strong> derived from a fixed prior.</p>
+<p>Let <span class="arithmatex">\((\alpha_0, \beta_0)\)</span> be the fixed prior parameters for a category (e.g., <span class="arithmatex">\(\alpha_0=1.5,\beta_0=8.0\)</span> for <code>database</code>). After observing <span class="arithmatex">\(f\)</span> failures and <span class="arithmatex">\(s\)</span> successes, the posterior is:</p>
 <div class="arithmatex">\[
-p \sim \operatorname{Beta}(\alpha, \beta)
+p \sim \operatorname{Beta}(\alpha_0 + f,\; \beta_0 + s)
 \]</div>
-<p><strong>Update rules</strong> (after observing an outcome):</p>
+<p><strong>Posterior mean</strong> (expected risk):</p>
 <div class="arithmatex">\[
-\alpha \leftarrow \alpha + \text{failures}, \qquad \beta \leftarrow \beta + \text{successes}
-\]</div>
-<p><strong>Expected risk</strong> (posterior mean):</p>
-<div class="arithmatex">\[
-\mathbb{E}[p] = \frac{\alpha}{\alpha + \beta}
+\mathbb{E}[p] = \frac{\alpha_0 + f}{\alpha_0 + f + \beta_0 + s}
 \]</div>
 <p><strong>Posterior variance</strong>:</p>
 <div class="arithmatex">\[
-\operatorname{Var}(p) = \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)}
+\operatorname{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
 \]</div>
+<p>This model is always active and updates in real time as outcomes are recorded.</p>
 <hr />
-<h2 id="hyperpriors-hierarchical-shrinkage">Hyperpriors (Hierarchical Shrinkage)<a class="headerlink" href="#hyperpriors-hierarchical-shrinkage" title="Permanent link">&para;</a></h2>
-<p>When enabled, category‑specific success probabilities share a common prior:</p>
+<h2 id="hierarchical-beta-model-optional-hyperpriors">Hierarchical Beta Model (Optional Hyperpriors)<a class="headerlink" href="#hierarchical-beta-model-optional-hyperpriors" title="Permanent link">&para;</a></h2>
+<p>When enabled (<code>use_hyperpriors=True</code>), the framework adds a second layer of Bayesian inference: a <strong>beta prior on the beta parameters</strong>. This allows statistical strength to be shared across categories, improving estimates for categories with little data.</p>
+<p>Hierarchical model:</p>
 <div class="arithmatex">\[
-p_c \sim \operatorname{Beta}(\alpha_0, \beta_0)
+p_c \sim \operatorname{Beta}(\alpha_0, \beta_0), \qquad
+\alpha_0 \sim \operatorname{Gamma}(2,1), \qquad
+\beta_0 \sim \operatorname{Gamma}(2,1)
 \]</div>
-<p>where the hyperparameters themselves are drawn from Gamma distributions:</p>
-<div class="arithmatex">\[
-\alpha_0, \beta_0 \sim \operatorname{Gamma}(2, 1)
-\]</div>
-<p>This prevents overfitting when category data is sparse and is implemented using <strong>Pyro</strong> for variational inference.</p>
+<p>The hyperparameters <span class="arithmatex">\(\alpha_0, \beta_0\)</span> are learned from all categories simultaneously using variational inference (Pyro). The resulting posterior mean for a category is a <strong>shrunk estimate</strong> that borrows information from other categories.</p>
+<blockquote>
+<p><strong>Note:</strong> This model is <em>optional</em> and incurs additional computational overhead. It is intended for scenarios where categories have varying amounts of data and you want to avoid overfitting.</p>
+</blockquote>
 <hr />
 <h2 id="hamiltonian-monte-carlo-offline-logistic-regression">Hamiltonian Monte Carlo (Offline Logistic Regression)<a class="headerlink" href="#hamiltonian-monte-carlo-offline-logistic-regression" title="Permanent link">&para;</a></h2>
 <p>For complex patterns (time of day, user role, environment), a logistic regression is trained offline using the No‑U‑Turn Sampler:</p>
 <div class="arithmatex">\[
 \operatorname{logit}(p) = \beta_0 + \sum_{i} \beta_i x_i
 \]</div>
-<p>where <span class="arithmatex">\(x_i\)</span> include cyclical time encodings (sin/cos of hour), environment indicators, and one‑hot encoded categories.</p>
+<p>where <span class="arithmatex">\(x_i\)</span> include cyclical time encodings (<span class="arithmatex">\(\sin(2\pi t/24)\)</span>, <span class="arithmatex">\(\cos(2\pi t/24)\)</span>), environment indicators, and one‑hot encoded categories.</p>
 <hr />
 <h2 id="risk-fusion-dynamic-weighted-average">Risk Fusion (Dynamic Weighted Average)<a class="headerlink" href="#risk-fusion-dynamic-weighted-average" title="Permanent link">&para;</a></h2>
 <p>The final risk score is a weighted combination of the three components:</p>
@@ -876,7 +876,7 @@ R_{\text{final}} = \min(R \cdot m, 1.0)
 <h2 id="posterior-variance-for-decisiontheoretic-loss">Posterior Variance for Decision‑Theoretic Loss<a class="headerlink" href="#posterior-variance-for-decisiontheoretic-loss" title="Permanent link">&para;</a></h2>
 <p>The governance loop uses the <strong>posterior variance</strong> of the conjugate component as a measure of statistical uncertainty in the expected loss calculations:</p>
 <div class="arithmatex">\[
-\sigma^2 = \operatorname{Var}(p) = \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)}
+\sigma^2 = \operatorname{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
 \]</div>
 <p>This variance is combined with other uncertainty terms (epistemic, predictive) to compute the expected loss of each possible action.</p>
 <hr />
