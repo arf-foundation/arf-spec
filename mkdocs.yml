@@ -4,6 +4,11 @@ site_author: ARF Foundation
 repo_url: https://github.com/arf-foundation/arf-spec
 edit_uri: edit/main/docs/
 
+# Versioning (optional, requires plugin)
+# extra:
+#   version:
+#     provider: mike
+
 theme:
   name: material
   palette:
@@ -22,24 +27,44 @@ theme:
   features:
     - navigation.tabs
     - navigation.sections
+    - navigation.indexes
     - toc.integrate
     - search.suggest
     - search.highlight
+    - content.code.copy
 
 plugins:
   - search
+  # Uncomment if using versioning
+  # - mike:
+  #     version_selector: true
+  #     canonical_version: latest
 
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
-  - pymdownx.highlight
-  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
   - toc:
       permalink: true
+  - attr_list
+  - md_in_html
 
 extra_javascript:
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js
+
+extra_css:
+  - https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.css
 
 nav:
   - Home: index.md
