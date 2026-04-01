@@ -570,10 +570,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#beta-binomial-model" class="md-nav__link">
+  <a href="#betabinomial-model-online-conjugate-prior" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Beta-Binomial Model
+        Beta‑Binomial Model (Online Conjugate Prior)
       
     </span>
   </a>
@@ -581,10 +581,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1" class="md-nav__link">
+  <a href="#hyperpriors-hierarchical-shrinkage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        p ~ Beta(alpha, beta) Update rules: alpha ← alpha + failures beta ← beta + successes Expected risk: E[p] = alpha / (alpha + beta) Variance: Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
+        Hyperpriors (Hierarchical Shrinkage)
       
     </span>
   </a>
@@ -592,10 +592,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hamiltonian-monte-carlo" class="md-nav__link">
+  <a href="#hamiltonian-monte-carlo-offline-logistic-regression" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hamiltonian Monte Carlo
+        Hamiltonian Monte Carlo (Offline Logistic Regression)
       
     </span>
   </a>
@@ -603,10 +603,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hierarchical-shrinkage" class="md-nav__link">
+  <a href="#risk-fusion-dynamic-weighted-average" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hierarchical Shrinkage
+        Risk Fusion (Dynamic Weighted Average)
       
     </span>
   </a>
@@ -614,10 +614,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#risk-fusion" class="md-nav__link">
+  <a href="#context-multiplier" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Risk Fusion
+        Context Multiplier
       
     </span>
   </a>
@@ -625,10 +625,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recommendations" class="md-nav__link">
+  <a href="#posterior-variance-for-decisiontheoretic-loss" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recommendations
+        Posterior Variance for Decision‑Theoretic Loss
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
       
     </span>
   </a>
@@ -772,57 +794,104 @@
 
 
 <h1 id="mathematical-foundations-of-arf">Mathematical Foundations of ARF<a class="headerlink" href="#mathematical-foundations-of-arf" title="Permanent link">&para;</a></h1>
-<p>ARF relies on Bayesian statistical models to estimate risk.</p>
-<p>The framework intentionally prioritizes <strong>uncertainty awareness</strong> over deterministic predictions.</p>
+<p>ARF relies on Bayesian statistical models to estimate risk, combining <strong>online conjugate updates</strong>, <strong>optional hierarchical shrinkage</strong>, and <strong>offline Hamiltonian Monte Carlo</strong> into a single fused risk score. The framework intentionally prioritizes <strong>uncertainty awareness</strong> over deterministic predictions.</p>
 <hr />
-<h2 id="beta-binomial-model">Beta-Binomial Model<a class="headerlink" href="#beta-binomial-model" title="Permanent link">&para;</a></h2>
-<p>Each category maintains a posterior:</p>
-<h2 id="p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1"><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>p ~ Beta(alpha, beta)
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Update rules:
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>alpha ← alpha + failures
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>beta ← beta + successes
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>Expected risk:
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>E[p] = alpha / (alpha + beta)
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>Variance:
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
-</code></pre></div><a class="headerlink" href="#p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1" title="Permanent link">&para;</a></h2>
-<h2 id="hamiltonian-monte-carlo">Hamiltonian Monte Carlo<a class="headerlink" href="#hamiltonian-monte-carlo" title="Permanent link">&para;</a></h2>
-<p>Offline learning identifies patterns missed by the conjugate model.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>logit(p) = β0 + Σ βi xi
-</code></pre></div>
-<p>Sampling performed using NUTS (No-U-Turn Sampler).</p>
-<p>Advantages:</p>
+<h2 id="betabinomial-model-online-conjugate-prior">Beta‑Binomial Model (Online Conjugate Prior)<a class="headerlink" href="#betabinomial-model-online-conjugate-prior" title="Permanent link">&para;</a></h2>
+<p>Each action category maintains a Beta posterior:</p>
+<div class="arithmatex">\[
+p \sim \operatorname{Beta}(\alpha, \beta)
+\]</div>
+<p><strong>Update rules</strong> (after observing an outcome):</p>
+<div class="arithmatex">\[
+\alpha \leftarrow \alpha + \text{failures}, \qquad \beta \leftarrow \beta + \text{successes}
+\]</div>
+<p><strong>Expected risk</strong> (posterior mean):</p>
+<div class="arithmatex">\[
+\mathbb{E}[p] = \frac{\alpha}{\alpha + \beta}
+\]</div>
+<p><strong>Posterior variance</strong>:</p>
+<div class="arithmatex">\[
+\operatorname{Var}(p) = \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)}
+\]</div>
+<hr />
+<h2 id="hyperpriors-hierarchical-shrinkage">Hyperpriors (Hierarchical Shrinkage)<a class="headerlink" href="#hyperpriors-hierarchical-shrinkage" title="Permanent link">&para;</a></h2>
+<p>When enabled, category‑specific success probabilities share a common prior:</p>
+<div class="arithmatex">\[
+p_c \sim \operatorname{Beta}(\alpha_0, \beta_0)
+\]</div>
+<p>where the hyperparameters themselves are drawn from Gamma distributions:</p>
+<div class="arithmatex">\[
+\alpha_0, \beta_0 \sim \operatorname{Gamma}(2, 1)
+\]</div>
+<p>This prevents overfitting when category data is sparse and is implemented using <strong>Pyro</strong> for variational inference.</p>
+<hr />
+<h2 id="hamiltonian-monte-carlo-offline-logistic-regression">Hamiltonian Monte Carlo (Offline Logistic Regression)<a class="headerlink" href="#hamiltonian-monte-carlo-offline-logistic-regression" title="Permanent link">&para;</a></h2>
+<p>For complex patterns (time of day, user role, environment), a logistic regression is trained offline using the No‑U‑Turn Sampler:</p>
+<div class="arithmatex">\[
+\operatorname{logit}(p) = \beta_0 + \sum_{i} \beta_i x_i
+\]</div>
+<p>where <span class="arithmatex">\(x_i\)</span> include cyclical time encodings (sin/cos of hour), environment indicators, and one‑hot encoded categories.</p>
+<hr />
+<h2 id="risk-fusion-dynamic-weighted-average">Risk Fusion (Dynamic Weighted Average)<a class="headerlink" href="#risk-fusion-dynamic-weighted-average" title="Permanent link">&para;</a></h2>
+<p>The final risk score is a weighted combination of the three components:</p>
+<div class="arithmatex">\[
+R = w_{\text{conj}} \cdot p_{\text{conj}} + w_{\text{hyper}} \cdot p_{\text{hyper}} + w_{\text{hmc}} \cdot p_{\text{hmc}}
+\]</div>
+<p>Weights depend on the amount of observed data (<span class="arithmatex">\(n\)</span>) and are computed as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Available components</th>
+<th>Weight formulas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Only conjugate</td>
+<td><span class="arithmatex">\(w_{\text{conj}} = 1.0\)</span></td>
+</tr>
+<tr>
+<td>Conjugate + HMC</td>
+<td><span class="arithmatex">\(w_{\text{hmc}} = \min\left(1.0, \frac{n}{n_0}\right)\)</span>, <span class="arithmatex">\(w_{\text{conj}} = 1 - w_{\text{hmc}}\)</span></td>
+</tr>
+<tr>
+<td>Conjugate + hyperprior</td>
+<td><span class="arithmatex">\(w_{\text{hyper}} = \min\left(w_{\text{hyper\_base}}, \frac{n}{100}\right)\)</span>, <span class="arithmatex">\(w_{\text{conj}} = 1 - w_{\text{hyper}}\)</span></td>
+</tr>
+<tr>
+<td>All three</td>
+<td><span class="arithmatex">\(w_{\text{hmc}} = \min\left(0.6, \frac{n}{n_0}\right)\)</span><br><span class="arithmatex">\(w_{\text{hyper}} = \min\left(w_{\text{hyper\_base}}, \frac{n}{100}\right) \cdot (1 - w_{\text{hmc}})\)</span><br><span class="arithmatex">\(w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>where <span class="arithmatex">\(n_0 = 1000\)</span> is the threshold for HMC confidence and <span class="arithmatex">\(w_{\text{hyper\_base}} = 0.3\)</span> is the base hyperprior weight.</p>
+<hr />
+<h2 id="context-multiplier">Context Multiplier<a class="headerlink" href="#context-multiplier" title="Permanent link">&para;</a></h2>
+<p>Before finalising the risk, a <strong>context multiplier</strong> <span class="arithmatex">\(m\)</span> may be applied to account for environmental risk factors (e.g., production vs. development):</p>
+<div class="arithmatex">\[
+R_{\text{final}} = \min(R \cdot m, 1.0)
+\]</div>
+<p>In the OSS code, <span class="arithmatex">\(m = 1.5\)</span> for production environments; otherwise <span class="arithmatex">\(m = 1.0\)</span>.</p>
+<hr />
+<h2 id="posterior-variance-for-decisiontheoretic-loss">Posterior Variance for Decision‑Theoretic Loss<a class="headerlink" href="#posterior-variance-for-decisiontheoretic-loss" title="Permanent link">&para;</a></h2>
+<p>The governance loop uses the <strong>posterior variance</strong> of the conjugate component as a measure of statistical uncertainty in the expected loss calculations:</p>
+<div class="arithmatex">\[
+\sigma^2 = \operatorname{Var}(p) = \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)}
+\]</div>
+<p>This variance is combined with other uncertainty terms (epistemic, predictive) to compute the expected loss of each possible action.</p>
+<hr />
+<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Efficient sampling</li>
-<li>Avoids random walk</li>
-<li>Scales to high-dimensional parameter spaces</li>
+<li>The formulas above match the implementation in <a href="https://github.com/arf-foundation/agentic_reliability_framework/blob/main/agentic_reliability_framework/core/governance/risk_engine.py"><code>agentic_reliability_framework/core/governance/risk_engine.py</code></a></li>
+<li>Hyperpriors are disabled by default and must be explicitly enabled with <code>use_hyperpriors=True</code></li>
+<li>The HMC model must be pre‑trained and loaded from a JSON file (<code>hmc_model.json</code> by default)</li>
 </ul>
 <hr />
-<h2 id="hierarchical-shrinkage">Hierarchical Shrinkage<a class="headerlink" href="#hierarchical-shrinkage" title="Permanent link">&para;</a></h2>
-<p>Categories share statistical strength.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>p_c ~ Beta(alpha0, beta0)
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>alpha0, beta0 ~ Gamma(2,1)
-</code></pre></div>
-<p>This prevents overfitting when category data is sparse.</p>
-<hr />
-<h2 id="risk-fusion">Risk Fusion<a class="headerlink" href="#risk-fusion" title="Permanent link">&para;</a></h2>
-<p>Final risk:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>R = w_conj * p_conj + w_hmc * p_hmc + w_hyper * p_hyper
-</code></pre></div>
-<p>Weights depend on available data volume.</p>
-<hr />
-<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Use posterior predictive checks</li>
-<li>Monitor R-hat convergence</li>
-<li>Maintain reproducible training pipelines</li>
+<li>Gelman, A. et al. (2013). <em>Bayesian Data Analysis</em>. Chapman &amp; Hall.</li>
+<li>Betancourt, M. (2017). <em>A Conceptual Introduction to Hamiltonian Monte Carlo</em>. <a href="https://arxiv.org/abs/1701.02434">arXiv:1701.02434</a></li>
+<li>McElreath, R. (2020). <em>Statistical Rethinking</em>. CRC Press.</li>
 </ul>
 
 
