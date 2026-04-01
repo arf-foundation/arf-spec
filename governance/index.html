@@ -646,6 +646,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#governance-loop-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Governance Loop Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#constants-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -849,8 +860,20 @@
 </li>
 <li>
 <p><strong>Build the HealingIntent</strong>All data (risk factors, expected losses, epistemic breakdown, forecasts, business impact, etc.) are stored in the metadata field. The risk_factors field contains additive contributions from each Bayesian component (conjugate, hyperprior, hmc), using the weights returned by the risk engine.</p>
+<h2 id="governance-loop-flow">Governance Loop Flow<a class="headerlink" href="#governance-loop-flow" title="Permanent link">&para;</a></h2>
 </li>
 </ol>
+<pre class="mermaid"><code>graph TD
+    A[InfrastructureIntent] --&gt; B{Cost Estimation}
+    B --&gt; C{Policy Evaluation}
+    C --&gt;|Violations| D[Deny]
+    C --&gt;|No violations| E{Risk Calculation}
+    E --&gt; F{Predictive Foresight}
+    F --&gt; G{Epistemic Uncertainty}
+    G --&gt; H{Expected Loss Minimization}
+    H --&gt; I[APPROVE / DENY / ESCALATE]
+    D --&gt; J[HealingIntent]
+    I --&gt; J</code></pre>
 <h2 id="constants-and-configuration">Constants and Configuration<a class="headerlink" href="#constants-and-configuration" title="Permanent link">&para;</a></h2>
 <p>The following constants are defined in core.config.constants:</p>
 <table>
