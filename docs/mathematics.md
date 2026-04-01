@@ -6,47 +6,45 @@ ARF relies on Bayesian statistical models to estimate risk, combining **online c
 
 ## Beta‑Binomial Model (Online Conjugate Prior)
 
-Each action category maintains a Beta posterior:
+Each action category maintains a **Beta posterior** derived from a fixed prior.
+
+Let $(\alpha_0, \beta_0)$ be the fixed prior parameters for a category (e.g., $\alpha_0=1.5,\beta_0=8.0$ for `database`). After observing $f$ failures and $s$ successes, the posterior is:
 
 $$
-p \sim \operatorname{Beta}(\alpha, \beta)
+p \sim \operatorname{Beta}(\alpha_0 + f,\; \beta_0 + s)
 $$
 
-**Update rules** (after observing an outcome):
+**Posterior mean** (expected risk):
 
 $$
-\alpha \leftarrow \alpha + \text{failures}, \qquad \beta \leftarrow \beta + \text{successes}
-$$
-
-**Expected risk** (posterior mean):
-
-$$
-\mathbb{E}[p] = \frac{\alpha}{\alpha + \beta}
+\mathbb{E}[p] = \frac{\alpha_0 + f}{\alpha_0 + f + \beta_0 + s}
 $$
 
 **Posterior variance**:
 
 $$
-\operatorname{Var}(p) = \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)}
+\operatorname{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
 $$
+
+This model is always active and updates in real time as outcomes are recorded.
 
 ---
 
-## Hyperpriors (Hierarchical Shrinkage)
+## Hierarchical Beta Model (Optional Hyperpriors)
 
-When enabled, category‑specific success probabilities share a common prior:
+When enabled (`use_hyperpriors=True`), the framework adds a second layer of Bayesian inference: a **beta prior on the beta parameters**. This allows statistical strength to be shared across categories, improving estimates for categories with little data.
 
-$$
-p_c \sim \operatorname{Beta}(\alpha_0, \beta_0)
-$$
-
-where the hyperparameters themselves are drawn from Gamma distributions:
+Hierarchical model:
 
 $$
-\alpha_0, \beta_0 \sim \operatorname{Gamma}(2, 1)
+p_c \sim \operatorname{Beta}(\alpha_0, \beta_0), \qquad
+\alpha_0 \sim \operatorname{Gamma}(2,1), \qquad
+\beta_0 \sim \operatorname{Gamma}(2,1)
 $$
 
-This prevents overfitting when category data is sparse and is implemented using **Pyro** for variational inference.
+The hyperparameters $\alpha_0, \beta_0$ are learned from all categories simultaneously using variational inference (Pyro). The resulting posterior mean for a category is a **shrunk estimate** that borrows information from other categories.
+
+> **Note:** This model is *optional* and incurs additional computational overhead. It is intended for scenarios where categories have varying amounts of data and you want to avoid overfitting.
 
 ---
 
@@ -58,7 +56,7 @@ $$
 \operatorname{logit}(p) = \beta_0 + \sum_{i} \beta_i x_i
 $$
 
-where $x_i$ include cyclical time encodings (sin/cos of hour), environment indicators, and one‑hot encoded categories.
+where $x_i$ include cyclical time encodings ($\sin(2\pi t/24)$, $\cos(2\pi t/24)$), environment indicators, and one‑hot encoded categories.
 
 ---
 
@@ -100,7 +98,7 @@ In the OSS code, $m = 1.5$ for production environments; otherwise $m = 1.0$.
 The governance loop uses the **posterior variance** of the conjugate component as a measure of statistical uncertainty in the expected loss calculations:
 
 $$
-\sigma^2 = \operatorname{Var}(p) = \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)}
+\sigma^2 = \operatorname{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
 $$
 
 This variance is combined with other uncertainty terms (epistemic, predictive) to compute the expected loss of each possible action.
