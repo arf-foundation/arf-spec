@@ -53,6 +53,8 @@
       
     
     
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.css">
+    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1004,40 +1006,40 @@
 <h2 id="3-mathematical-foundations">3. Mathematical Foundations<a class="headerlink" href="#3-mathematical-foundations" title="Permanent link">&para;</a></h2>
 <h3 id="31-conjugate-betabinomial-model-online-learning">3.1 Conjugate Beta‑Binomial Model (Online Learning)<a class="headerlink" href="#31-conjugate-betabinomial-model-online-learning" title="Permanent link">&para;</a></h3>
 <p>For each action category <span class="arithmatex">\(c \in \mathcal{C}\)</span>, we maintain a Beta posterior:
-<div class="highlight"><pre><span></span><code>p_c \sim \text{Beta}(\alpha_c, \beta_c)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>p_c \sim \text{Beta}(\alpha_c, \beta_c)
 </code></pre></div>
 where <span class="arithmatex">\((\alpha_c, \beta_c)\)</span> start from expert‑elicited priors. Upon observing a binary outcome <span class="arithmatex">\(y \in \{0,1\}\)</span> (<span class="arithmatex">\(y=1\)</span> = failure), we update:
-<div class="highlight"><pre><span></span><code>(\alpha_c, \beta_c) \leftarrow (\alpha_c + y,\; \beta_c + (1-y))
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>(\alpha_c, \beta_c) \leftarrow (\alpha_c + y,\; \beta_c + (1-y))
 </code></pre></div>
 The predictive mean <span class="arithmatex">\(\mathbb{E}[p_c] = \frac{\alpha_c}{\alpha_c + \beta_c}\)</span> provides the baseline risk. The posterior variance:
-<div class="highlight"><pre><span></span><code>\text{Var}(p_c) = \frac{\alpha_c \beta_c}{(\alpha_c+\beta_c)^2(\alpha_c+\beta_c+1)}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>\text{Var}(p_c) = \frac{\alpha_c \beta_c}{(\alpha_c+\beta_c)^2(\alpha_c+\beta_c+1)}
 </code></pre></div>
 allows us to construct credible intervals (e.g., 90% HDI) and express uncertainty.</p>
 <p><strong>Choice of Priors:</strong> To encode domain expertise, we use informative priors that are <strong>pessimistic</strong> for high‑impact categories (e.g., database modifications: <span class="arithmatex">\(\alpha=1.5, \beta=8.0\)</span> gives prior mean <span class="arithmatex">\(\approx 0.16\)</span>). This counteracts optimism bias and ensures safe early decisions.</p>
 <h3 id="32-hamiltonian-monte-carlo-for-offline-pattern-discovery">3.2 Hamiltonian Monte Carlo for Offline Pattern Discovery<a class="headerlink" href="#32-hamiltonian-monte-carlo-for-offline-pattern-discovery" title="Permanent link">&para;</a></h3>
 <p>Complex interactions (time‑of‑day, user role, environment) are captured by a logistic regression with HMC sampling:
-<div class="highlight"><pre><span></span><code>\operatorname{logit}(p) = \beta_0 + \beta_{\text{role}} x_{\text{role}} + \beta_{\text{env}} x_{\text{env}} + \beta_{\sin}\sin\!\left(\frac{2\pi t}{24}\right) + \beta_{\cos}\cos\!\left(\frac{2\pi t}{24}\right) + \sum_{k}\beta_k x_k
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>\operatorname{logit}(p) = \beta_0 + \beta_{\text{role}} x_{\text{role}} + \beta_{\text{env}} x_{\text{env}} + \beta_{\sin}\sin\!\left(\frac{2\pi t}{24}\right) + \beta_{\cos}\cos\!\left(\frac{2\pi t}{24}\right) + \sum_{k}\beta_k x_k
 </code></pre></div>
 We place weakly informative priors on coefficients, e.g., <span class="arithmatex">\(\beta_j \sim \operatorname{Normal}(0, 1)\)</span>. The posterior is sampled using the No‑U‑Turn Sampler (NUTS) implemented in PyMC. The resulting posterior over coefficients gives us not only point estimates but also full uncertainty about predictions, which we propagate into the final risk.</p>
 <p><strong>Why HMC?</strong> HMC efficiently explores high‑dimensional parameter spaces, avoids random‑walk behavior, and yields effective sample sizes orders of magnitude higher than Metropolis‑Hastings. This is critical for learning from sparse historical data.</p>
 <h3 id="33-hierarchical-hyperpriors-shrinkage">3.3 Hierarchical Hyperpriors (Shrinkage)<a class="headerlink" href="#33-hierarchical-hyperpriors-shrinkage" title="Permanent link">&para;</a></h3>
 <p>To share statistical strength across categories, we introduce a hierarchical Beta model:
-<div class="highlight"><pre><span></span><code>p_c \sim \operatorname{Beta}(\alpha_0, \beta_0) \quad\text{for all }c
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>p_c \sim \operatorname{Beta}(\alpha_0, \beta_0) \quad\text{for all }c
 </code></pre></div>
 with global hyperparameters <span class="arithmatex">\(\alpha_0, \beta_0 \sim \operatorname{Gamma}(2,1)\)</span>. This model is fit via variational inference (SVI) in Pyro, yielding posterior summaries for each category that are shrunk toward the global mean. The hyperprior contribution is weighted by data availability:
-<div class="highlight"><pre><span></span><code>w_{\text{hyper}} = \min\!\left( \frac{n}{n_{\text{hyper}}},\, w_{\text{max}} \right)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>w_{\text{hyper}} = \min\!\left( \frac{n}{n_{\text{hyper}}},\, w_{\text{max}} \right)
 </code></pre></div>
 where <span class="arithmatex">\(n\)</span> is the total number of outcomes.</p>
 <h3 id="34-hybrid-risk-fusion">3.4 Hybrid Risk Fusion<a class="headerlink" href="#34-hybrid-risk-fusion" title="Permanent link">&para;</a></h3>
 <p>The final risk <span class="arithmatex">\(R\)</span> for a given intent is a weighted combination:
-<div class="highlight"><pre><span></span><code>R = w_{\text{conj}} \cdot \frac{\alpha_c}{\alpha_c+\beta_c} + w_{\text{hmc}} \cdot p_{\text{hmc}} + w_{\text{hyper}} \cdot p_{\text{hyper}}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>R = w_{\text{conj}} \cdot \frac{\alpha_c}{\alpha_c+\beta_c} + w_{\text{hmc}} \cdot p_{\text{hmc}} + w_{\text{hyper}} \cdot p_{\text{hyper}}
 </code></pre></div>
 Weights are dynamic:
-<div class="highlight"><pre><span></span><code>w_{\text{hmc}} = \min\!\left(1,\, \frac{n}{n_0}\right)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>w_{\text{hmc}} = \min\!\left(1,\, \frac{n}{n_0}\right)
 </code></pre></div>
-<div class="highlight"><pre><span></span><code>w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\text{hyper}}}\right)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\text{hyper}}}\right)
 </code></pre></div>
-<div class="highlight"><pre><span></span><code>w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
 </code></pre></div>
 with <span class="arithmatex">\(n_0 = 1000\)</span> and <span class="arithmatex">\(n_{\text{hyper}} = 100\)</span> as defaults. The final risk is then multiplied by a context factor <span class="arithmatex">\(\kappa(\text{env}, \text{cost}, \text{violations})\)</span> to account for external factors.</p>
 <h3 id="35-uncertainty-quantification">3.5 Uncertainty Quantification<a class="headerlink" href="#35-uncertainty-quantification" title="Permanent link">&para;</a></h3>
@@ -1087,22 +1089,22 @@ with <span class="arithmatex">\(n_0 = 1000\)</span> and <span class="arithmatex"
 </table>
 <hr />
 <h2 id="5-architectural-overview">5. Architectural Overview<a class="headerlink" href="#5-architectural-overview" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>graph TD
-    A[User/Agent] --&gt; B[Frontend (Next.js)]
-    B --&gt; C[API Gateway / Vercel]
-    C --&gt; D[Backend (FastAPI)]
-    D --&gt; E[RiskEngine]
-    E --&gt; F[Conjugate Store]
-    E --&gt; G[HMC Model]
-    E --&gt; H[Hyperprior Model]
-    D --&gt; I[(PostgreSQL)]
-    D --&gt; J[Policy Engine]
-    E --&gt; K[Explanation Generator]
-    D --&gt; L[Prometheus Metrics]
-    D --&gt; M[Rate Limiter]
-    F --&gt; N[Update on Outcome]
-    G --&gt; O[Periodic Retraining]
-    H --&gt; P[SVI Updates]
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>graph TD
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    A[User/Agent] --&gt; B[Frontend (Next.js)]
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    B --&gt; C[API Gateway / Vercel]
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    C --&gt; D[Backend (FastAPI)]
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    D --&gt; E[RiskEngine]
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    E --&gt; F[Conjugate Store]
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    E --&gt; G[HMC Model]
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    E --&gt; H[Hyperprior Model]
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    D --&gt; I[(PostgreSQL)]
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>    D --&gt; J[Policy Engine]
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    E --&gt; K[Explanation Generator]
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    D --&gt; L[Prometheus Metrics]
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    D --&gt; M[Rate Limiter]
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    F --&gt; N[Update on Outcome]
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    G --&gt; O[Periodic Retraining]
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>    H --&gt; P[SVI Updates]
 </code></pre></div>
 <h2 id="6-roadmap-phases-stories">6. Roadmap – Phases &amp; Stories<a class="headerlink" href="#6-roadmap-phases-stories" title="Permanent link">&para;</a></h2>
 <h3 id="phase-1-foundation-completed">Phase 1: Foundation (Completed)<a class="headerlink" href="#phase-1-foundation-completed" title="Permanent link">&para;</a></h3>
@@ -1278,12 +1280,14 @@ with <span class="arithmatex">\(n_0 = 1000\)</span> and <span class="arithmatex"
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
       
     
   </body>

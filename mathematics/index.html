@@ -53,6 +53,8 @@
       
     
     
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.css">
+    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -775,24 +777,24 @@
 <hr />
 <h2 id="beta-binomial-model">Beta-Binomial Model<a class="headerlink" href="#beta-binomial-model" title="Permanent link">&para;</a></h2>
 <p>Each category maintains a posterior:</p>
-<h2 id="p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1"><div class="highlight"><pre><span></span><code>p ~ Beta(alpha, beta)
-
-Update rules:
-
-alpha ← alpha + failures
-beta ← beta + successes
-
-Expected risk:
-
-E[p] = alpha / (alpha + beta)
-
-Variance:
-
-Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
+<h2 id="p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1"><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>p ~ Beta(alpha, beta)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Update rules:
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>alpha ← alpha + failures
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>beta ← beta + successes
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>Expected risk:
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>E[p] = alpha / (alpha + beta)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>Variance:
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
 </code></pre></div><a class="headerlink" href="#p-betaalpha-beta-update-rules-alpha-alpha-failures-beta-beta-successes-expected-risk-ep-alpha-alpha-beta-variance-varp-alpha-beta-alphabeta2-alphabeta1" title="Permanent link">&para;</a></h2>
 <h2 id="hamiltonian-monte-carlo">Hamiltonian Monte Carlo<a class="headerlink" href="#hamiltonian-monte-carlo" title="Permanent link">&para;</a></h2>
 <p>Offline learning identifies patterns missed by the conjugate model.</p>
-<div class="highlight"><pre><span></span><code>logit(p) = β0 + Σ βi xi
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>logit(p) = β0 + Σ βi xi
 </code></pre></div>
 <p>Sampling performed using NUTS (No-U-Turn Sampler).</p>
 <p>Advantages:</p>
@@ -804,15 +806,15 @@ Var(p) = alpha * beta / ((alpha+beta)^2 (alpha+beta+1))
 <hr />
 <h2 id="hierarchical-shrinkage">Hierarchical Shrinkage<a class="headerlink" href="#hierarchical-shrinkage" title="Permanent link">&para;</a></h2>
 <p>Categories share statistical strength.</p>
-<div class="highlight"><pre><span></span><code>p_c ~ Beta(alpha0, beta0)
-
-alpha0, beta0 ~ Gamma(2,1)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>p_c ~ Beta(alpha0, beta0)
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>alpha0, beta0 ~ Gamma(2,1)
 </code></pre></div>
 <p>This prevents overfitting when category data is sparse.</p>
 <hr />
 <h2 id="risk-fusion">Risk Fusion<a class="headerlink" href="#risk-fusion" title="Permanent link">&para;</a></h2>
 <p>Final risk:</p>
-<div class="highlight"><pre><span></span><code>R = w_conj * p_conj + w_hmc * p_hmc + w_hyper * p_hyper
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>R = w_conj * p_conj + w_hmc * p_hmc + w_hyper * p_hyper
 </code></pre></div>
 <p>Weights depend on available data volume.</p>
 <hr />
@@ -871,12 +873,14 @@ alpha0, beta0 ~ Gamma(2,1)
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
       
     
   </body>
