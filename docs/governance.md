@@ -77,7 +77,22 @@ L_escalate = COST_REVIEW + COST_UNCERTAINTY * psi_mean
 9.  **Semantic memory retrieval** (optional)If a RAGGraphMemory is available, the loop retrieves similar past incidents and adds them to the metadata.
     
 10.  **Build the HealingIntent**All data (risk factors, expected losses, epistemic breakdown, forecasts, business impact, etc.) are stored in the metadata field. The risk\_factors field contains additive contributions from each Bayesian component (conjugate, hyperprior, hmc), using the weights returned by the risk engine.
-    
+
+    ## Governance Loop Flow
+
+```mermaid
+graph TD
+    A[InfrastructureIntent] --> B{Cost Estimation}
+    B --> C{Policy Evaluation}
+    C -->|Violations| D[Deny]
+    C -->|No violations| E{Risk Calculation}
+    E --> F{Predictive Foresight}
+    F --> G{Epistemic Uncertainty}
+    G --> H{Expected Loss Minimization}
+    H --> I[APPROVE / DENY / ESCALATE]
+    D --> J[HealingIntent]
+    I --> J
+```
 
 Constants and Configuration
 ---------------------------
