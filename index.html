@@ -487,10 +487,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#the-framework-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Framework at a Glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-framework-at-a-glance_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Framework at a Glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-arf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why ARF?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#specification-sections" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Specification sections
+        Specification Sections
       
     </span>
   </a>
@@ -501,7 +534,7 @@
   <a href="#boundary-note" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Boundary note
+        Boundary Note
       
     </span>
   </a>
@@ -726,33 +759,86 @@
 
 
 <h1 id="arf-specification">ARF Specification<a class="headerlink" href="#arf-specification" title="Permanent link">&para;</a></h1>
-<p>Welcome to the canonical specification of the Agentic Reliability Framework.</p>
-<p>ARF is organized as a layered specification:</p>
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center; color: white;">
+  <h1 style="margin: 0; font-size: 2.5rem;">Agentic Reliability Framework</h1>
+  <p style="font-size: 1.2rem; opacity: 0.9;">Provably safe, mathematically grounded governance for AI‑powered infrastructure.</p>
+  <div style="margin-top: 1.5rem;">
+    <a href="https://github.com/arf-foundation/agentic_reliability_framework" style="background: white; color: #667eea; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 0 0.5rem;">GitHub</a>
+    <a href="https://huggingface.co/spaces/A-R-F/Agentic-Reliability-Framework-v4" style="background: white; color: #667eea; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 0 0.5rem;">Live Demo</a>
+  </div>
+</div>
+
+<h2 id="the-framework-at-a-glance">The Framework at a Glance<a class="headerlink" href="#the-framework-at-a-glance" title="Permanent link">&para;</a></h2>
+<p>ARF is organized as a <strong>layered specification</strong>, each building on the one before:</p>
+<pre class="mermaid"><code>graph LR
+    A[Core Concepts] --&gt; B[Mathematics]
+    B --&gt; C[Psychology]
+    C --&gt; D[Governance]
+    D --&gt; E[Enterprise]
+    D -.-&gt; F[Temporal Reliability]
+    style F stroke-dasharray: 5 5</code></pre>
+<h2 id="the-framework-at-a-glance_1">The Framework at a Glance<a class="headerlink" href="#the-framework-at-a-glance_1" title="Permanent link">&para;</a></h2>
+<p>ARF is organized as a <strong>layered specification</strong>, each building on the one before:</p>
 <ul>
-<li>Core reliability and governance concepts</li>
-<li>Mathematical foundations for probabilistic scoring and control</li>
-<li>Psychological principles for trust calibration and explanation</li>
-<li>Enterprise boundary definitions for higher-order capabilities</li>
-<li>Temporal reliability as a separate extension boundary</li>
+<li><strong>Core Concepts</strong> – reliability, observability, and traceability for AI agents.</li>
+<li><strong>Mathematics</strong> – Bayesian risk scoring, HMC, and deterministic probability thresholds.</li>
+<li><strong>Psychology</strong> – trust calibration, human‑in‑the‑loop design, and explainability.</li>
+<li><strong>Governance</strong> – policy evaluation, cost estimation, and the full governance loop.</li>
+<li><strong>Enterprise</strong> – execution ladder, audit trails, and deployment architectures.</li>
+<li><strong>Temporal Reliability</strong> – optional extension for time‑series anomaly detection and forecasting.</li>
 </ul>
-<h2 id="specification-sections">Specification sections<a class="headerlink" href="#specification-sections" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="why-arf">Why ARF?<a class="headerlink" href="#why-arf" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Challenge</th>
+<th>ARF Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Risky AI actions</strong></td>
+<td>Bayesian risk scoring with dynamic fusion of online and offline models</td>
+</tr>
+<tr>
+<td><strong>Brittle policy rules</strong></td>
+<td>Deterministic Probability Thresholding (DPT) with approve/escalate/deny zones</td>
+</tr>
+<tr>
+<td><strong>Lack of auditability</strong></td>
+<td>Full traceability in every decision, with optional enterprise audit trails</td>
+</tr>
+<tr>
+<td><strong>Complex decision context</strong></td>
+<td>Governance loop integrates cost, policy, risk, epistemic uncertainty, and memory</td>
+</tr>
+<tr>
+<td><strong>Scaling from prototype to production</strong></td>
+<td>Clear boundaries between OSS advisory and enterprise enforcement</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="specification-sections">Specification Sections<a class="headerlink" href="#specification-sections" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="roadmap/">Roadmap</a></li>
-<li><a href="design/">Design</a></li>
-<li><a href="mathematics/">Mathematics</a></li>
-<li><a href="psychology/">Psychology</a></li>
-<li><a href="governance/">Governance</a></li>
-<li><a href="enterprise/">Enterprise</a></li>
-<li><a href="temporal_reliability/">Temporal Reliability</a></li>
+<li><a href="roadmap/">Roadmap</a> – future direction and milestones</li>
+<li><a href="design/">Design</a> – architectural decisions and trade‑offs</li>
+<li><a href="mathematics/">Mathematics</a> – the Bayesian engine behind risk scoring</li>
+<li><a href="psychology/">Psychology</a> – building trust through transparency</li>
+<li><a href="governance/">Governance</a> – the decision‑making loop in action</li>
+<li><a href="enterprise/">Enterprise</a> – scaling to production with enforcement and audit</li>
+<li><a href="temporal_reliability/">Temporal Reliability</a> – optional time‑series extensions</li>
 </ul>
-<h2 id="boundary-note">Boundary note<a class="headerlink" href="#boundary-note" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="boundary-note">Boundary Note<a class="headerlink" href="#boundary-note" title="Permanent link">&para;</a></h2>
 <p>Temporal reliability is intentionally defined as a separate specification layer.</p>
 <p>It must remain:
 - optional
-- external to in-session scoring
+- external to in‑session scoring
 - outside the core ARF execution path
 - suitable for implementation in enterprise or extension layers</p>
-<p>This keeps the core deterministic, session-scoped, and easy to audit.</p>
+<p>This keeps the core deterministic, session‑scoped, and easy to audit.</p>
 
 
 
