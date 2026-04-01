@@ -600,6 +600,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Enterprise
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -616,6 +634,147 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#enterprise-features-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enterprise Features Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-ladder-treeofthought-reasoning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Ladder (Tree‑of‑Thought Reasoning)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Ladder (Tree‑of‑Thought Reasoning)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#autonomy-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autonomy Levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audit-trail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit Trail
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-architectures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Architectures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployment Architectures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#startup-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Startup Mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enterprise-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enterprise Mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-with-oss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with OSS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendations-for-enterprise-deployments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendations for Enterprise Deployments
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -669,60 +828,221 @@
 
 
 <h1 id="enterprise-startup-deployment">Enterprise &amp; Startup Deployment<a class="headerlink" href="#enterprise-startup-deployment" title="Permanent link">&para;</a></h1>
-<p>ARF can scale from startups to global enterprises.</p>
+<p>ARF scales from startups to global enterprises. This section describes the features, architecture, and deployment models available in the <strong>Enterprise</strong> edition.</p>
 <hr />
-<h1 id="startup-mode">Startup Mode<a class="headerlink" href="#startup-mode" title="Permanent link">&para;</a></h1>
-<p>For small teams:</p>
-<p>Recommended architecture:</p>
-<p>Frontend: Vercel
-Backend: FastAPI
-Database: Postgres
-Vector Store: FAISS</p>
-<p>Benefits:</p>
+<h2 id="enterprise-features-overview">Enterprise Features Overview<a class="headerlink" href="#enterprise-features-overview" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Execution Ladder</strong></td>
+<td>Tree‑of‑thought reasoning with gate‑based validation (risk, cost, policy, epistemic). Determines autonomy level.</td>
+</tr>
+<tr>
+<td><strong>Audit Trails</strong></td>
+<td>Immutable, queryable logs of all decisions and executions.</td>
+</tr>
+<tr>
+<td><strong>Enforcement</strong></td>
+<td>Automatic rollback, blast radius limits, and circuit breakers.</td>
+</tr>
+<tr>
+<td><strong>Multi‑tenancy</strong></td>
+<td>Isolated workspaces with RBAC.</td>
+</tr>
+<tr>
+<td><strong>Compliance</strong></td>
+<td>SOC2, ISO 27001 reporting, data retention policies.</td>
+</tr>
+<tr>
+<td><strong>Advanced Risk Fusion</strong></td>
+<td>Full hyperprior + HMC with real‑time model updates.</td>
+</tr>
+<tr>
+<td><strong>Semantic Memory</strong></td>
+<td>FAISS vector search with sentence‑transformers for context‑aware retrieval.</td>
+</tr>
+<tr>
+<td><strong>Observability</strong></td>
+<td>Prometheus metrics, Grafana dashboards, OpenTelemetry tracing.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="execution-ladder-treeofthought-reasoning">Execution Ladder (Tree‑of‑Thought Reasoning)<a class="headerlink" href="#execution-ladder-treeofthought-reasoning" title="Permanent link">&para;</a></h2>
+<p>The <strong>execution ladder</strong> is a Rust‑based engine that evaluates a <code>HealingIntent</code> through a sequence of gates. It determines whether an action can be executed autonomously and at what level.</p>
+<pre class="mermaid"><code>graph TD
+    A[HealingIntent] --&gt; B{Risk Gate}
+    B --&gt;|Risk ≤ mode_tolerance| C{Cost Gate}
+    B --&gt;|Risk &gt; tolerance| D[Escalate]
+    C --&gt;|Cost ≤ budget| E{Policy Gate}
+    C --&gt;|Cost &gt; budget| D
+    E --&gt;|No violations| F{Epistemic Gate}
+    E --&gt;|Violations| D
+    F --&gt;|Uncertainty ≤ threshold| G[Execute at autonomy level]
+    F --&gt;|Uncertainty &gt; threshold| H[Human‑in‑the‑Loop]
+    G --&gt; I[Log Audit Trail]
+    H --&gt; I</code></pre>
+<p>Each gate returns a boolean and a reason. The overall result is an object with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;allowed&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LowRisk&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;All gates passed&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;gates_passed&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;risk&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cost&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;epistemic&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&quot;gates_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">&quot;tree_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;risk_gate&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cost_gate&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">]</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="autonomy-levels">Autonomy Levels<a class="headerlink" href="#autonomy-levels" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Advisory</code></td>
+<td>Recommendation only; execution requires human approval.</td>
+</tr>
+<tr>
+<td><code>LowRisk</code></td>
+<td>Automated execution with monitoring.</td>
+</tr>
+<tr>
+<td><code>MediumRisk</code></td>
+<td>Automated with alerting.</td>
+</tr>
+<tr>
+<td><code>HighRisk</code></td>
+<td>Requires human‑in‑the‑loop review.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="audit-trail">Audit Trail<a class="headerlink" href="#audit-trail" title="Permanent link">&para;</a></h2>
+<p>All decisions and executions are persisted in a SQLite (or PostgreSQL) database with full traceability.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">AuditLogger</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">log_decision</span><span class="p">(</span><span class="n">decision</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">log_execution</span><span class="p">(</span><span class="n">execution</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_decision</span><span class="p">(</span><span class="n">decision_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_executions_for_decision</span><span class="p">(</span><span class="n">decision_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+</code></pre></div>
+<p>Each entry includes:</p>
 <ul>
-<li>simple deployment</li>
-<li>minimal infrastructure</li>
-<li>rapid experimentation</li>
+<li>
+<p>id (UUID)</p>
+</li>
+<li>
+<p>timestamp</p>
+</li>
+<li>
+<p>action (APPROVE/DENY/ESCALATE)</p>
+</li>
+<li>
+<p>component</p>
+</li>
+<li>
+<p>risk_score</p>
+</li>
+<li>
+<p>outcome</p>
+</li>
+<li>
+<p>details (JSON with explanation, epistemic breakdown, etc.)</p>
+</li>
 </ul>
-<hr />
-<h1 id="enterprise-mode">Enterprise Mode<a class="headerlink" href="#enterprise-mode" title="Permanent link">&para;</a></h1>
-<p>Large organizations require:</p>
+<h2 id="deployment-architectures">Deployment Architectures<a class="headerlink" href="#deployment-architectures" title="Permanent link">&para;</a></h2>
+<h3 id="startup-mode">Startup Mode<a class="headerlink" href="#startup-mode" title="Permanent link">&para;</a></h3>
 <ul>
-<li>multi-tenancy</li>
-<li>RBAC</li>
-<li>audit compliance</li>
-<li>distributed infrastructure</li>
+<li>
+<p><strong>Frontend</strong>: Vercel (Next.js)</p>
+</li>
+<li>
+<p><strong>Backend</strong>: FastAPI (single instance)</p>
+</li>
+<li>
+<p><strong>Database</strong>: PostgreSQL</p>
+</li>
+<li>
+<p><strong>Vector Store</strong>: FAISS in‑memory</p>
+</li>
+<li>
+<p><strong>Model</strong>: Pre‑trained HMC JSON</p>
+</li>
 </ul>
-<hr />
-<h2 id="infrastructure-example">Infrastructure Example<a class="headerlink" href="#infrastructure-example" title="Permanent link">&para;</a></h2>
-<p>Kubernetes cluster</p>
-<p>Services:</p>
+<h3 id="enterprise-mode">Enterprise Mode<a class="headerlink" href="#enterprise-mode" title="Permanent link">&para;</a></h3>
 <ul>
-<li>API service</li>
-<li>model workers</li>
-<li>retraining workers</li>
-<li>monitoring stack</li>
+<li>
+<p><strong>Frontend</strong>: Vercel + custom dashboard</p>
+</li>
+<li>
+<p><strong>Backend</strong>: FastAPI, horizontally scaled</p>
+</li>
+<li>
+<p><strong>Database</strong>: PostgreSQL (RDS) with read replicas</p>
+</li>
+<li>
+<p><strong>Vector Store</strong>: FAISS with persistence (S3)</p>
+</li>
+<li>
+<p><strong>Model Training</strong>: Scheduled retraining workers</p>
+</li>
+<li>
+<p><strong>Observability</strong>: Prometheus, Grafana, OpenTelemetry</p>
+</li>
+<li>
+<p><strong>Logging</strong>: Centralised logging (ELK)</p>
+</li>
 </ul>
-<hr />
-<h2 id="observability">Observability<a class="headerlink" href="#observability" title="Permanent link">&para;</a></h2>
-<p>Recommended stack:</p>
-<p>Prometheus
-Grafana
-OpenTelemetry</p>
-<hr />
-<h2 id="compliance">Compliance<a class="headerlink" href="#compliance" title="Permanent link">&para;</a></h2>
-<p>Enterprise features include:</p>
+<h2 id="integration-with-oss">Integration with OSS<a class="headerlink" href="#integration-with-oss" title="Permanent link">&para;</a></h2>
+<p>The Enterprise edition extends the OSS core by providing:</p>
 <ul>
-<li>immutable audit trails</li>
-<li>encryption</li>
-<li>retention policies</li>
+<li>
+<p><strong>Execution enforcement</strong> (wrapping the OSS HealingIntent with the Rust ladder)</p>
+</li>
+<li>
+<p><strong>Persistent audit</strong> (beyond the OSS SQLite mock)</p>
+</li>
+<li>
+<p><strong>Advanced memory</strong> (sentence‑transformers, FAISS)</p>
+</li>
+<li>
+<p><strong>Real‑time HMC updates</strong> (online training of the logistic regression)</p>
+</li>
 </ul>
-<hr />
-<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
+<p>The OSS engine remains the canonical source of advisory decisions; Enterprise adds the execution layer.</p>
+<h2 id="related-code">Related Code<a class="headerlink" href="#related-code" title="Permanent link">&para;</a></h2>
 <ul>
-<li>separate inference and training workloads</li>
-<li>implement rate limits</li>
-<li>maintain incident review processes</li>
+<li>
+<p>Execution Ladder: <a href="https://github.com/arf-foundation/enterprise/blob/main/src/arf_enterprise/execution_ladder.py">src/arf_enterprise/execution_ladder.py</a></p>
+</li>
+<li>
+<p>Audit Logger: <a href="https://github.com/arf-foundation/enterprise/blob/main/src/arf_enterprise/audit.py">src/arf_enterprise/audit.py</a></p>
+</li>
+<li>
+<p>Configuration: <a href="https://github.com/arf-foundation/enterprise/blob/main/src/arf_enterprise/config.py">src/arf_enterprise/config.py</a></p>
+</li>
+</ul>
+<h2 id="recommendations-for-enterprise-deployments">Recommendations for Enterprise Deployments<a class="headerlink" href="#recommendations-for-enterprise-deployments" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p><strong>Separate inference from training</strong> – run HMC retraining on a schedule, not inline.</p>
+</li>
+<li>
+<p><strong>Use rate limiting</strong> – protect APIs from abuse.</p>
+</li>
+<li>
+<p><strong>Maintain incident review processes</strong> – periodically audit escalation decisions.</p>
+</li>
+<li>
+<p><strong>Enable telemetry</strong> – Prometheus metrics for all gates and decisions.</p>
+</li>
 </ul>
 
 
