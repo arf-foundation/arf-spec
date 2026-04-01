@@ -570,6 +570,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#interactive-threshold-simulator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive Threshold Simulator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#betabinomial-model-online-conjugate-prior" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -796,6 +807,79 @@
 <h1 id="mathematical-foundations-of-arf">Mathematical Foundations of ARF<a class="headerlink" href="#mathematical-foundations-of-arf" title="Permanent link">&para;</a></h1>
 <p>ARF relies on Bayesian statistical models to estimate risk, combining <strong>online conjugate updates</strong>, <strong>optional hierarchical shrinkage</strong>, and <strong>offline Hamiltonian Monte Carlo</strong> into a single fused risk score. The framework intentionally prioritizes <strong>uncertainty awareness</strong> over deterministic predictions.</p>
 <hr />
+<h2 id="interactive-threshold-simulator">Interactive Threshold Simulator<a class="headerlink" href="#interactive-threshold-simulator" title="Permanent link">&para;</a></h2>
+<p>Use the sliders below to see how the <strong>Deterministic Probability Thresholding</strong> (DPT) zones change. The risk gauge updates in real time.</p>
+<div id="dpt-simulator">
+  <label>Low Threshold (Approve): <span id="low-val">0.2</span></label>
+  <input type="range" id="low-slider" min="0" max="1" step="0.01" value="0.2">
+  <label>High Threshold (Deny): <span id="high-val">0.8</span></label>
+  <input type="range" id="high-slider" min="0" max="1" step="0.01" value="0.8">
+  <div id="dpt-plot" style="width:100%; height:400px;"></div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+  function updatePlot(low, high) {
+    var x = [];
+    var y = [];
+    for (var i = 0; i <= 100; i++) {
+      var risk = i / 100;
+      x.push(risk);
+      y.push(0);
+    }
+    var trace = {
+      x: x,
+      y: y,
+      marker: {
+        color: x.map(v => v < low ? 'green' : (v > high ? 'red' : 'orange')),
+        size: 10,
+        symbol: 'circle'
+      },
+      mode: 'markers',
+      type: 'scatter',
+      text: x.map(v => `Risk: ${v.toFixed(2)}`),
+      hoverinfo: 'text'
+    };
+    var layout = {
+      title: 'DPT Zones',
+      xaxis: { title: 'Risk Score', range: [0,1] },
+      yaxis: { title: '', visible: false },
+      shapes: [
+        { type: 'rect', x0: 0, x1: low, y0: -0.5, y1: 0.5, fillcolor: 'rgba(0,255,0,0.2)', line: { width: 0 } },
+        { type: 'rect', x0: low, x1: high, y0: -0.5, y1: 0.5, fillcolor: 'rgba(255,165,0,0.2)', line: { width: 0 } },
+        { type: 'rect', x0: high, x1: 1, y0: -0.5, y1: 0.5, fillcolor: 'rgba(255,0,0,0.2)', line: { width: 0 } }
+      ]
+    };
+    Plotly.newPlot('dpt-plot', [trace], layout);
+  }
+  document.getElementById('low-slider').addEventListener('input', function() {
+    var low = parseFloat(this.value);
+    var high = parseFloat(document.getElementById('high-slider').value);
+    if (low >= high) {
+      low = high - 0.01;
+      if (low < 0) low = 0;
+      this.value = low;
+    }
+    document.getElementById('low-val').innerText = low.toFixed(2);
+    document.getElementById('high-val').innerText = high.toFixed(2);
+    updatePlot(low, high);
+  });
+  document.getElementById('high-slider').addEventListener('input', function() {
+    var high = parseFloat(this.value);
+    var low = parseFloat(document.getElementById('low-slider').value);
+    if (high <= low) {
+      high = low + 0.01;
+      if (high > 1) high = 1;
+      this.value = high;
+    }
+    document.getElementById('low-val').innerText = low.toFixed(2);
+    document.getElementById('high-val').innerText = high.toFixed(2);
+    updatePlot(low, high);
+  });
+  updatePlot(0.2, 0.8);
+</script>
+
+<hr />
 <h2 id="betabinomial-model-online-conjugate-prior">Beta‑Binomial Model (Online Conjugate Prior)<a class="headerlink" href="#betabinomial-model-online-conjugate-prior" title="Permanent link">&para;</a></h2>
 <p>Each action category maintains a <strong>Beta posterior</strong> derived from a fixed prior.</p>
 <p>Let <span class="arithmatex">\((\alpha_0, \beta_0)\)</span> be the fixed prior parameters for a category (e.g., <span class="arithmatex">\(\alpha_0=1.5,\beta_0=8.0\)</span> for <code>database</code>). After observing <span class="arithmatex">\(f\)</span> failures and <span class="arithmatex">\(s\)</span> successes, the posterior is:</p>
@@ -882,16 +966,29 @@ R_{\text{final}} = \min(R \cdot m, 1.0)
 <hr />
 <h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The formulas above match the implementation in <a href="https://github.com/arf-foundation/agentic_reliability_framework/blob/main/agentic_reliability_framework/core/governance/risk_engine.py"><code>agentic_reliability_framework/core/governance/risk_engine.py</code></a></li>
-<li>Hyperpriors are disabled by default and must be explicitly enabled with <code>use_hyperpriors=True</code></li>
-<li>The HMC model must be pre‑trained and loaded from a JSON file (<code>hmc_model.json</code> by default)</li>
+<li>
+<p>The formulas above match the implementation in:
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">agentic_reliability_framework</span><span class="o">/</span><span class="n">core</span><span class="o">/</span><span class="n">governance</span><span class="o">/</span><span class="n">risk_engine</span><span class="o">.</span><span class="n">py</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Hyperpriors are disabled by default and must be explicitly enabled with use_hyperpriors=True</p>
+</li>
+<li>
+<p>The HMC model must be pre‑trained and loaded from a JSON file (hmc_model.json by default)</p>
+</li>
 </ul>
-<hr />
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Gelman, A. et al. (2013). <em>Bayesian Data Analysis</em>. Chapman &amp; Hall.</li>
-<li>Betancourt, M. (2017). <em>A Conceptual Introduction to Hamiltonian Monte Carlo</em>. <a href="https://arxiv.org/abs/1701.02434">arXiv:1701.02434</a></li>
-<li>McElreath, R. (2020). <em>Statistical Rethinking</em>. CRC Press.</li>
+<li>
+<p>Gelman, A. et al. (2013). <em>Bayesian Data Analysis</em>. Chapman &amp; Hall.</p>
+</li>
+<li>
+<p>Betancourt, M. (2017). <em>A Conceptual Introduction to Hamiltonian Monte Carlo</em>. <a href="https://arxiv.org/abs/1701.02434">arXiv:1701.02434</a></p>
+</li>
+<li>
+<p>McElreath, R. (2020). <em>Statistical Rethinking</em>. CRC Press.</p>
+</li>
 </ul>
 
 
