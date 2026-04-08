@@ -17,9 +17,9 @@ The governance loop does **not** use fixed probability thresholds (e.g., 0.2, 0.
 
 For each component, a smoothed risk score \(\tilde{\theta}_t\) is maintained:
 
-\[
+$$
 \tilde{\theta}_t = \gamma \cdot \tilde{\theta}_{t-1} + (1 - \gamma) \cdot \theta_t,\qquad \gamma = 0.9\ \text{(default)},
-\]
+$$
 
 with initial value \(\tilde{\theta}_0 = 0.5\). Here \(\theta_t\) is the Bayesian posterior failure probability (risk score) at time \(t\). This smoothed value replaces \(\theta\) in all loss calculations (except the variance term, which already quantifies uncertainty).
 
@@ -47,20 +47,42 @@ where:
 
 ### CVaR‑Based Approve Loss (optional, enabled by `USE_CVAR = True`)
 
-When `USE_CVAR` is enabled, the approve loss is computed as the average of the worst \(\alpha\) fraction of per‑sample losses from the posterior distribution, plus the variance penalty:
+When `USE_CVAR` is enabled, the approve loss is computed as the **average of the worst α‑fraction** of per‑sample losses from the posterior distribution, plus the variance penalty. This makes the decision more conservative when the posterior has heavy tails or high uncertainty.
 
-1. Draw \(N\) samples from the posterior Beta distribution: \(p_i \sim \operatorname{Beta}(\alpha, \beta)\) (posterior parameters of the conjugate model).
-2. Compute per‑sample approve loss (without variance term):
-   \[
+**Procedure:**
+
+1. Draw \(N\) samples from the posterior Beta distribution:  
+   $$
+   p_i \sim \operatorname{Beta}(\alpha, \beta), \quad i = 1,\dots,N
+   $$
+   where \((\alpha, \beta)\) are the posterior parameters of the conjugate model.
+
+2. Compute the per‑sample approve loss **without** the variance term:  
+   $$
    L_{\text{approve}}^{(i)} = c_{FP}\,p_i + c_{\text{impact}}\,\text{revenue\_loss} + c_{\text{pred}}\,\text{pred\_risk}.
-   \]
-3. Sort the losses and take the mean of the smallest \(k = \lceil \alpha N \rceil\) values:
-   \[
+   $$
+
+3. Sort the losses in ascending order: \(L_{\text{approve}}^{([1])} \le L_{\text{approve}}^{([2])} \le \dots \le L_{\text{approve}}^{([N])}\).
+
+4. Take the average of the smallest \(k = \lceil \alpha N \rceil\) values:  
+   $$
    L_{\text{approve}}^{\text{CVaR}} = \frac{1}{k}\sum_{i=1}^{k} L_{\text{approve}}^{([i])} + c_{\text{var}}\,\sigma^2.
-   \]
+   $$
+
    Here \(\alpha = \text{CVAR\_ALPHA}\) (default \(0.05\), i.e., 95% CVaR) and \(N = 1000\) samples.
 
-The deny and escalate losses remain unchanged, as they are linear in risk (or constant).
+The **deny** and **escalate** losses remain unchanged, as they are linear in risk (or constant).
+
+#### Why Use CVaR?
+
+- **Standard expected loss** (mean) ignores the shape of the posterior distribution. Two distributions with the same mean but different variances or skewness produce the same \(L_{\text{approve}}^{\text{mean}}\), which may be inappropriate when tail risk matters.
+- **CVaR** focuses on the worst outcomes, making the decision robust against extreme (but rare) high‑risk scenarios. This is especially valuable in safety‑critical environments (e.g., healthcare, finance, autonomous systems).
+
+#### Example Use Case
+
+Suppose a model predicts a risk score \(\theta = 0.3\) with **high variance** (e.g., Beta(3,7) gives variance 0.021). The expected approve loss might be low, but there is a non‑negligible probability that the true risk is much higher (e.g., 0.6). Using CVaR (α = 0.05) would average the worst 5% of the posterior samples, capturing this tail risk and potentially **escalating or denying** an action that would otherwise be approved under the mean loss.
+
+This aligns with a **risk‑averse** business policy: avoid actions that could occasionally cause catastrophic failure, even if they are safe on average.
 
 ---
 
@@ -111,7 +133,7 @@ Use the sliders below to adjust the key parameters and see how the expected loss
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
-  // Constants (defaults) – same as before, but includes decay and CVaR flags only in text.
+  // Constants (defaults) – same as before
   const constants = {
     cFP: 10.0,
     cFN: 8.0,
@@ -124,7 +146,7 @@ Use the sliders below to adjust the key parameters and see how the expected loss
     psiThresh: 0.5
   };
 
-  // DOM elements – unchanged
+  // DOM elements
   const riskSlider = document.getElementById('risk-slider');
   const riskVal = document.getElementById('risk-val');
   const varSlider = document.getElementById('var-slider');
@@ -205,13 +227,14 @@ Use the sliders below to adjust the key parameters and see how the expected loss
 
   updatePlot();
 </script>
+
 ---
 
 ## Beta‑Binomial Model (Online Conjugate Prior)
 
 Each action category maintains a **Beta posterior** derived from a fixed prior.
 
-Let $(\alpha_0, \beta_0)$ be the fixed prior parameters for a category (e.g., $\alpha_0=1.5,\beta_0=8.0$ for `database`). After observing $f$ failures and $s$ successes, the posterior is:
+Let \((\alpha_0, \beta_0)\) be the fixed prior parameters for a category (e.g., \(\alpha_0=1.5,\beta_0=8.0\) for `database`). After observing \(f\) failures and \(s\) successes, the posterior is:
 
 $$
 p \sim \operatorname{Beta}(\alpha_0 + f,\; \beta_0 + s)
@@ -245,7 +268,7 @@ p_c \sim \operatorname{Beta}(\alpha_0, \beta_0), \qquad
 \beta_0 \sim \operatorname{Gamma}(2,1)
 $$
 
-The hyperparameters $\alpha_0, \beta_0$ are learned from all categories simultaneously using variational inference (Pyro). The resulting posterior mean for a category is a **shrunk estimate** that borrows information from other categories.
+The hyperparameters \(\alpha_0, \beta_0\) are learned from all categories simultaneously using variational inference (Pyro). The resulting posterior mean for a category is a **shrunk estimate** that borrows information from other categories.
 
 > **Note:** This model is *optional* and incurs additional computational overhead. It is intended for scenarios where categories have varying amounts of data and you want to avoid overfitting.
 
@@ -259,7 +282,7 @@ $$
 \operatorname{logit}(p) = \beta_0 + \sum_{i} \beta_i x_i
 $$
 
-where $x_i$ include cyclical time encodings ($\sin(2\pi t/24)$, $\cos(2\pi t/24)$), environment indicators, and one‑hot encoded categories.
+where \(x_i\) include cyclical time encodings (\(\sin(2\pi t/24)\), \(\cos(2\pi t/24)\)), environment indicators, and one‑hot encoded categories.
 
 ---
 
@@ -271,28 +294,28 @@ $$
 R = w_{\text{conj}} \cdot p_{\text{conj}} + w_{\text{hyper}} \cdot p_{\text{hyper}} + w_{\text{hmc}} \cdot p_{\text{hmc}}
 $$
 
-Weights depend on the amount of observed data ($n$) and are computed as follows:
+Weights depend on the amount of observed data (\(n\)) and are computed as follows:
 
 | Available components | Weight formulas |
 |----------------------|-----------------|
-| Only conjugate | $w_{\text{conj}} = 1.0$ |
-| Conjugate + HMC | $w_{\text{hmc}} = \min\left(1.0, \frac{n}{n_0}\right)$, $w_{\text{conj}} = 1 - w_{\text{hmc}}$ |
-| Conjugate + hyperprior | $w_{\text{hyper}} = \min\left(w_{\text{hyper\_base}}, \frac{n}{100}\right)$, $w_{\text{conj}} = 1 - w_{\text{hyper}}$ |
-| All three | $w_{\text{hmc}} = \min\left(0.6, \frac{n}{n_0}\right)$<br>$w_{\text{hyper}} = \min\left(w_{\text{hyper\_base}}, \frac{n}{100}\right) \cdot (1 - w_{\text{hmc}})$<br>$w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}$ |
+| Only conjugate | \(w_{\text{conj}} = 1.0\) |
+| Conjugate + HMC | \(w_{\text{hmc}} = \min\left(1.0, \frac{n}{n_0}\right)\), \(w_{\text{conj}} = 1 - w_{\text{hmc}}\) |
+| Conjugate + hyperprior | \(w_{\text{hyper}} = \min\left(w_{\text{hyper\_base}}, \frac{n}{100}\right)\), \(w_{\text{conj}} = 1 - w_{\text{hyper}}\) |
+| All three | \(w_{\text{hmc}} = \min\left(0.6, \frac{n}{n_0}\right)\)<br>\(w_{\text{hyper}} = \min\left(w_{\text{hyper\_base}}, \frac{n}{100}\right) \cdot (1 - w_{\text{hmc}})\)<br>\(w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}\) |
 
-where $n_0 = 1000$ is the threshold for HMC confidence and $w_{\text{hyper\_base}} = 0.3$ is the base hyperprior weight.
+where \(n_0 = 1000\) is the threshold for HMC confidence and \(w_{\text{hyper\_base}} = 0.3\) is the base hyperprior weight.
 
 ---
 
 ## Context Multiplier
 
-Before finalising the risk, a **context multiplier** $m$ may be applied to account for environmental risk factors (e.g., production vs. development):
+Before finalising the risk, a **context multiplier** \(m\) may be applied to account for environmental risk factors (e.g., production vs. development):
 
 $$
 R_{\text{final}} = \min(R \cdot m, 1.0)
 $$
 
-In the OSS code, $m = 1.5$ for production environments; otherwise $m = 1.0$.
+In the OSS code, \(m = 1.5\) for production environments; otherwise \(m = 1.0\).
 
 ---
 
@@ -314,14 +337,15 @@ This variance is combined with other uncertainty terms (epistemic, predictive) t
   ```python
   agentic_reliability_framework/core/governance/risk_engine.py
   ```
-
-*   Hyperpriors are disabled by default and must be explicitly enabled with use\_hyperpriors=True
+  *   Hyperpriors are disabled by default and must be explicitly enabled with use\_hyperpriors=True.
     
-*   The HMC model must be pre‑trained and loaded from a JSON file (hmc\_model.json by default)
-
-- Time‑decaying risk is always active (with default \(\gamma = 0.9\)). It can be disabled by setting `RISK_DECAY_FACTOR = 1.0` in `constants.py`.
-- CVaR is disabled by default (`USE_CVAR = False`). To enable robust approval decisions, set `USE_CVAR = True` and optionally adjust `CVAR_ALPHA`.
+*   The HMC model must be pre‑trained and loaded from a JSON file (hmc\_model.json by default).
     
+*   **Time‑decaying risk** is always active (with default γ=0.9_γ_\=0.9). It can be disabled by setting RISK\_DECAY\_FACTOR = 1.0 in constants.py.
+    
+*   **CVaR** is disabled by default (USE\_CVAR = False). To enable robust approval decisions, set USE\_CVAR = True and optionally adjust CVAR\_ALPHA.
+    
+
 References
 ----------
 
