@@ -4,78 +4,172 @@ ARF relies on Bayesian statistical models to estimate risk, combining **online c
 
 ---
 
-## Interactive Threshold Simulator
+## Expected Loss Minimisation
 
-Use the sliders below to see how the **Deterministic Probability Thresholding** (DPT) zones change. The risk gauge updates in real time.
+The governance loop does **not** use fixed probability thresholds (e.g., 0.2, 0.8). Instead, it selects the optimal action (APPROVE, DENY, or ESCALATE) by **minimising expected loss**, defined as:
 
-<div id="dpt-simulator">
-  <label>Low Threshold (Approve): <span id="low-val">0.2</span></label>
-  <input type="range" id="low-slider" min="0" max="1" step="0.01" value="0.2">
-  <label>High Threshold (Deny): <span id="high-val">0.8</span></label>
-  <input type="range" id="high-slider" min="0" max="1" step="0.01" value="0.8">
-  <div id="dpt-plot" style="width:100%; height:400px;"></div>
+\[
+\begin{aligned}
+L_{\text{approve}} &= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2,\\[4pt]
+L_{\text{deny}} &= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}},\\[4pt]
+L_{\text{escalate}} &= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
+\end{aligned}
+\]
+
+where:
+
+- \(\theta\) = Bayesian posterior failure probability (risk score) ∈ [0,1],
+- \(\sigma^2\) = posterior variance (uncertainty in \(\theta\)),
+- \(\psi\) = composite epistemic uncertainty ∈ [0,1],
+- \(v_{\text{mean}}\) = estimated opportunity value (e.g., potential revenue if approved),
+- \(c_{FP}\) = cost of a false positive (approving a risky action),
+- \(c_{FN}\) = cost of a false negative (denying a safe action),
+- \(c_{\text{impact}}\) = weight for business impact,
+- \(c_{\text{pred}}\) = weight for predictive risk,
+- \(c_{\text{var}}\) = weight for posterior variance,
+- \(c_{\text{opp}}\) = opportunity cost weight,
+- \(c_{\text{review}}\) = fixed cost of human review,
+- \(c_{\text{unc}}\) = weight for epistemic uncertainty.
+
+**Decision rule:**
+
+1. If policy violations exist → `DENY`.
+2. Else if `USE_EPISTEMIC_GATE` and \(\psi > \psi_{\text{thresh}}\) (default \(\psi_{\text{thresh}} = 0.5\)) → `ESCALATE`.
+3. Else → action with the smallest \(L\).
+
+All cost constants are configurable in `core/config/constants.py`. The default values (as of ARF v4) are:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| \(c_{FP}\) | 10.0 | False positive cost |
+| \(c_{FN}\) | 8.0  | False negative cost |
+| \(c_{\text{impact}}\) | 5.0 | Business impact weight |
+| \(c_{\text{pred}}\) | 2.0 | Predictive risk weight |
+| \(c_{\text{var}}\) | 5.0 | Variance penalty weight |
+| \(c_{\text{opp}}\) | 3.0 | Opportunity cost weight |
+| \(c_{\text{review}}\) | 2.0 | Human review cost |
+| \(c_{\text{unc}}\) | 4.0 | Epistemic uncertainty weight |
+| \(\psi_{\text{thresh}}\) | 0.5 | Epistemic escalation threshold |
+
+---
+
+### Interactive Expected Loss Simulator
+
+Use the sliders below to adjust the key parameters and see how the expected losses change in real time. The decision (minimum expected loss action) is highlighted.
+
+<div id="elm-simulator">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 15px;">
+    <div><label>Risk score (θ): <span id="risk-val">0.38</span></label><input type="range" id="risk-slider" min="0" max="1" step="0.01" value="0.38"></div>
+    <div><label>Posterior variance (σ²): <span id="var-val">0.05</span></label><input type="range" id="var-slider" min="0" max="0.25" step="0.005" value="0.05"></div>
+    <div><label>Epistemic uncertainty (ψ): <span id="psi-val">0.45</span></label><input type="range" id="psi-slider" min="0" max="1" step="0.01" value="0.45"></div>
+    <div><label>Revenue loss ($): <span id="rev-val">1000</span></label><input type="range" id="rev-slider" min="0" max="5000" step="100" value="1000"></div>
+    <div><label>Predictive risk: <span id="pred-val">0.25</span></label><input type="range" id="pred-slider" min="0" max="1" step="0.01" value="0.25"></div>
+    <div><label>Opportunity value ($): <span id="opp-val">2000</span></label><input type="range" id="opp-slider" min="0" max="5000" step="100" value="2000"></div>
+  </div>
+  <div style="margin-top: 20px;">
+    <button id="reset-defaults">Reset to Defaults</button>
+  </div>
+  <div id="elm-plot" style="width:100%; height:500px; margin-top:20px;"></div>
+  <div id="elm-decision" style="font-weight: bold; text-align: center; margin-top: 10px;"></div>
 </div>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
-  function updatePlot(low, high) {
-    var x = [];
-    var y = [];
-    for (var i = 0; i <= 100; i++) {
-      var risk = i / 100;
-      x.push(risk);
-      y.push(0);
-    }
-    var trace = {
-      x: x,
-      y: y,
-      marker: {
-        color: x.map(v => v < low ? 'green' : (v > high ? 'red' : 'orange')),
-        size: 10,
-        symbol: 'circle'
-      },
-      mode: 'markers',
-      type: 'scatter',
-      text: x.map(v => `Risk: ${v.toFixed(2)}`),
-      hoverinfo: 'text'
-    };
-    var layout = {
-      title: 'DPT Zones',
-      xaxis: { title: 'Risk Score', range: [0,1] },
-      yaxis: { title: '', visible: false },
-      shapes: [
-        { type: 'rect', x0: 0, x1: low, y0: -0.5, y1: 0.5, fillcolor: 'rgba(0,255,0,0.2)', line: { width: 0 } },
-        { type: 'rect', x0: low, x1: high, y0: -0.5, y1: 0.5, fillcolor: 'rgba(255,165,0,0.2)', line: { width: 0 } },
-        { type: 'rect', x0: high, x1: 1, y0: -0.5, y1: 0.5, fillcolor: 'rgba(255,0,0,0.2)', line: { width: 0 } }
-      ]
-    };
-    Plotly.newPlot('dpt-plot', [trace], layout);
+  // Constants (defaults)
+  const constants = {
+    cFP: 10.0,
+    cFN: 8.0,
+    cImpact: 5.0,
+    cPred: 2.0,
+    cVar: 5.0,
+    cOpp: 3.0,
+    cReview: 2.0,
+    cUnc: 4.0,
+    psiThresh: 0.5
+  };
+
+  // DOM elements
+  const riskSlider = document.getElementById('risk-slider');
+  const riskVal = document.getElementById('risk-val');
+  const varSlider = document.getElementById('var-slider');
+  const varVal = document.getElementById('var-val');
+  const psiSlider = document.getElementById('psi-slider');
+  const psiVal = document.getElementById('psi-val');
+  const revSlider = document.getElementById('rev-slider');
+  const revVal = document.getElementById('rev-val');
+  const predSlider = document.getElementById('pred-slider');
+  const predVal = document.getElementById('pred-val');
+  const oppSlider = document.getElementById('opp-slider');
+  const oppVal = document.getElementById('opp-val');
+  const resetBtn = document.getElementById('reset-defaults');
+
+  function computeLosses(theta, variance, psi, revenueLoss, predRisk, oppValue) {
+    const L_approve = constants.cFP * theta + constants.cImpact * revenueLoss / 1000 + constants.cPred * predRisk + constants.cVar * variance;
+    const L_deny = constants.cFN * (1 - theta) + constants.cOpp * oppValue / 1000;
+    const L_escalate = constants.cReview + constants.cUnc * psi;
+    return { L_approve, L_deny, L_escalate };
   }
-  document.getElementById('low-slider').addEventListener('input', function() {
-    var low = parseFloat(this.value);
-    var high = parseFloat(document.getElementById('high-slider').value);
-    if (low >= high) {
-      low = high - 0.01;
-      if (low < 0) low = 0;
-      this.value = low;
-    }
-    document.getElementById('low-val').innerText = low.toFixed(2);
-    document.getElementById('high-val').innerText = high.toFixed(2);
-    updatePlot(low, high);
-  });
-  document.getElementById('high-slider').addEventListener('input', function() {
-    var high = parseFloat(this.value);
-    var low = parseFloat(document.getElementById('low-slider').value);
-    if (high <= low) {
-      high = low + 0.01;
-      if (high > 1) high = 1;
-      this.value = high;
-    }
-    document.getElementById('low-val').innerText = low.toFixed(2);
-    document.getElementById('high-val').innerText = high.toFixed(2);
-    updatePlot(low, high);
-  });
-  updatePlot(0.2, 0.8);
+
+  function updatePlot() {
+    const theta = parseFloat(riskSlider.value);
+    const variance = parseFloat(varSlider.value);
+    const psi = parseFloat(psiSlider.value);
+    const revenueLoss = parseFloat(revSlider.value);
+    const predRisk = parseFloat(predSlider.value);
+    const oppValue = parseFloat(oppSlider.value);
+
+    riskVal.innerText = theta.toFixed(3);
+    varVal.innerText = variance.toFixed(3);
+    psiVal.innerText = psi.toFixed(3);
+    revVal.innerText = revenueLoss;
+    predVal.innerText = predRisk.toFixed(3);
+    oppVal.innerText = oppValue;
+
+    const losses = computeLosses(theta, variance, psi, revenueLoss, predRisk, oppValue);
+    const actions = ['APPROVE', 'DENY', 'ESCALATE'];
+    const values = [losses.L_approve, losses.L_deny, losses.L_escalate];
+    const minIdx = values.indexOf(Math.min(...values));
+    const decision = actions[minIdx];
+
+    const trace = {
+      x: actions,
+      y: values,
+      type: 'bar',
+      marker: { color: values.map((_, i) => i === minIdx ? 'green' : 'steelblue') },
+      text: values.map(v => v.toFixed(2)),
+      textposition: 'auto'
+    };
+    const layout = {
+      title: 'Expected Loss by Action',
+      xaxis: { title: 'Action' },
+      yaxis: { title: 'Expected Loss' },
+      shapes: []
+    };
+    Plotly.newPlot('elm-plot', [trace], layout);
+    document.getElementById('elm-decision').innerHTML = `✅ Recommended action: <span style="color:green">${decision}</span> (lowest expected loss = ${Math.min(...values).toFixed(2)})`;
+  }
+
+  function resetDefaults() {
+    riskSlider.value = '0.38';
+    varSlider.value = '0.05';
+    psiSlider.value = '0.45';
+    revSlider.value = '1000';
+    predSlider.value = '0.25';
+    oppSlider.value = '2000';
+    updatePlot();
+  }
+
+  // Attach event listeners
+  riskSlider.addEventListener('input', updatePlot);
+  varSlider.addEventListener('input', updatePlot);
+  psiSlider.addEventListener('input', updatePlot);
+  revSlider.addEventListener('input', updatePlot);
+  predSlider.addEventListener('input', updatePlot);
+  oppSlider.addEventListener('input', updatePlot);
+  resetBtn.addEventListener('click', resetDefaults);
+
+  // Initial plot
+  updatePlot();
 </script>
 
 ---
