@@ -6,36 +6,69 @@ ARF relies on Bayesian statistical models to estimate risk, combining **online c
 
 ## Expected Loss Minimisation
 
-The governance loop does **not** use fixed probability thresholds (e.g., 0.2, 0.8). Instead, it selects the optimal action (APPROVE, DENY, or ESCALATE) by **minimising expected loss**, defined as:
+The governance loop does **not** use fixed probability thresholds (e.g., 0.2, 0.8). Instead, it selects the optimal action (APPROVE, DENY, or ESCALATE) by **minimising expected loss**, with two key enhancements:
+
+1. **Time‑decaying risk** – the risk score is exponentially smoothed across consecutive evaluations for the same component, making the system sensitive to recent incidents.
+2. **Conditional Value at Risk (CVaR)** – for the approve loss, the expected value can be replaced by the average of the worst‑case tail of the posterior distribution, providing robustness against extreme uncertainty.
+
+---
+
+### Time‑Decaying Risk
+
+For each component, a smoothed risk score \(\tilde{\theta}_t\) is maintained:
+
+\[
+\tilde{\theta}_t = \gamma \cdot \tilde{\theta}_{t-1} + (1 - \gamma) \cdot \theta_t,\qquad \gamma = 0.9\ \text{(default)},
+\]
+
+with initial value \(\tilde{\theta}_0 = 0.5\). Here \(\theta_t\) is the Bayesian posterior failure probability (risk score) at time \(t\). This smoothed value replaces \(\theta\) in all loss calculations (except the variance term, which already quantifies uncertainty).
+
+---
+
+### Standard Expected Loss (default)
 
 \[
 \begin{aligned}
-L_{\text{approve}} &= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2,\\[4pt]
-L_{\text{deny}} &= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}},\\[4pt]
+L_{\text{approve}}^{\text{mean}} &= c_{FP}\,\tilde{\theta} \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2,\\[4pt]
+L_{\text{deny}} &= c_{FN}\,(1-\tilde{\theta}) \;+\; c_{\text{opp}}\,v_{\text{mean}},\\[4pt]
 L_{\text{escalate}} &= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
 \end{aligned}
 \]
 
 where:
 
-- \(\theta\) = Bayesian posterior failure probability (risk score) ∈ [0,1],
-- \(\sigma^2\) = posterior variance (uncertainty in \(\theta\)),
-- \(\psi\) = composite epistemic uncertainty ∈ [0,1],
-- \(v_{\text{mean}}\) = estimated opportunity value (e.g., potential revenue if approved),
-- \(c_{FP}\) = cost of a false positive (approving a risky action),
-- \(c_{FN}\) = cost of a false negative (denying a safe action),
-- \(c_{\text{impact}}\) = weight for business impact,
-- \(c_{\text{pred}}\) = weight for predictive risk,
-- \(c_{\text{var}}\) = weight for posterior variance,
-- \(c_{\text{opp}}\) = opportunity cost weight,
-- \(c_{\text{review}}\) = fixed cost of human review,
-- \(c_{\text{unc}}\) = weight for epistemic uncertainty.
+- \(\tilde{\theta}\) = decayed risk score,
+- \(\sigma^2\) = posterior variance (from conjugate Beta model),
+- \(\psi\) = composite epistemic uncertainty,
+- \(v_{\text{mean}}\) = estimated opportunity value,
+- all \(c\) constants are defined below.
 
-**Decision rule:**
+---
+
+### CVaR‑Based Approve Loss (optional, enabled by `USE_CVAR = True`)
+
+When `USE_CVAR` is enabled, the approve loss is computed as the average of the worst \(\alpha\) fraction of per‑sample losses from the posterior distribution, plus the variance penalty:
+
+1. Draw \(N\) samples from the posterior Beta distribution: \(p_i \sim \operatorname{Beta}(\alpha, \beta)\) (posterior parameters of the conjugate model).
+2. Compute per‑sample approve loss (without variance term):
+   \[
+   L_{\text{approve}}^{(i)} = c_{FP}\,p_i + c_{\text{impact}}\,\text{revenue\_loss} + c_{\text{pred}}\,\text{pred\_risk}.
+   \]
+3. Sort the losses and take the mean of the smallest \(k = \lceil \alpha N \rceil\) values:
+   \[
+   L_{\text{approve}}^{\text{CVaR}} = \frac{1}{k}\sum_{i=1}^{k} L_{\text{approve}}^{([i])} + c_{\text{var}}\,\sigma^2.
+   \]
+   Here \(\alpha = \text{CVAR\_ALPHA}\) (default \(0.05\), i.e., 95% CVaR) and \(N = 1000\) samples.
+
+The deny and escalate losses remain unchanged, as they are linear in risk (or constant).
+
+---
+
+### Decision Rule
 
 1. If policy violations exist → `DENY`.
 2. Else if `USE_EPISTEMIC_GATE` and \(\psi > \psi_{\text{thresh}}\) (default \(\psi_{\text{thresh}} = 0.5\)) → `ESCALATE`.
-3. Else → action with the smallest \(L\).
+3. Else → action with the smallest expected loss (using the chosen approve loss variant).
 
 All cost constants are configurable in `core/config/constants.py`. The default values (as of ARF v4) are:
 
@@ -50,12 +83,15 @@ All cost constants are configurable in `core/config/constants.py`. The default v
 | \(c_{\text{review}}\) | 2.0 | Human review cost |
 | \(c_{\text{unc}}\) | 4.0 | Epistemic uncertainty weight |
 | \(\psi_{\text{thresh}}\) | 0.5 | Epistemic escalation threshold |
+| \(\gamma\) (RISK_DECAY_FACTOR) | 0.9 | Smoothing factor for time‑decaying risk |
+| `USE_CVAR` | False | Enable CVaR (tail risk) for approve loss |
+| `CVAR_ALPHA` | 0.05 | Tail probability for CVaR (0.05 = 95%) |
 
 ---
 
 ### Interactive Expected Loss Simulator
 
-Use the sliders below to adjust the key parameters and see how the expected losses change in real time. The decision (minimum expected loss action) is highlighted.
+Use the sliders below to adjust the key parameters and see how the expected losses change in real time. The decision (minimum expected loss action) is highlighted. *(The simulator currently shows the standard mean loss; CVaR behaviour is not yet visualised but can be enabled in the code.)*
 
 <div id="elm-simulator">
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 15px;">
@@ -75,7 +111,7 @@ Use the sliders below to adjust the key parameters and see how the expected loss
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
-  // Constants (defaults)
+  // Constants (defaults) – same as before, but includes decay and CVaR flags only in text.
   const constants = {
     cFP: 10.0,
     cFN: 8.0,
@@ -88,7 +124,7 @@ Use the sliders below to adjust the key parameters and see how the expected loss
     psiThresh: 0.5
   };
 
-  // DOM elements
+  // DOM elements – unchanged
   const riskSlider = document.getElementById('risk-slider');
   const riskVal = document.getElementById('risk-val');
   const varSlider = document.getElementById('var-slider');
@@ -159,7 +195,6 @@ Use the sliders below to adjust the key parameters and see how the expected loss
     updatePlot();
   }
 
-  // Attach event listeners
   riskSlider.addEventListener('input', updatePlot);
   varSlider.addEventListener('input', updatePlot);
   psiSlider.addEventListener('input', updatePlot);
@@ -168,10 +203,8 @@ Use the sliders below to adjust the key parameters and see how the expected loss
   oppSlider.addEventListener('input', updatePlot);
   resetBtn.addEventListener('click', resetDefaults);
 
-  // Initial plot
   updatePlot();
 </script>
-
 ---
 
 ## Beta‑Binomial Model (Online Conjugate Prior)
@@ -285,8 +318,10 @@ This variance is combined with other uncertainty terms (epistemic, predictive) t
 *   Hyperpriors are disabled by default and must be explicitly enabled with use\_hyperpriors=True
     
 *   The HMC model must be pre‑trained and loaded from a JSON file (hmc\_model.json by default)
-    
 
+- Time‑decaying risk is always active (with default \(\gamma = 0.9\)). It can be disabled by setting `RISK_DECAY_FACTOR = 1.0` in `constants.py`.
+- CVaR is disabled by default (`USE_CVAR = False`). To enable robust approval decisions, set `USE_CVAR = True` and optionally adjust `CVAR_ALPHA`.
+    
 References
 ----------
 
