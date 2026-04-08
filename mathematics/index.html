@@ -570,13 +570,30 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#interactive-threshold-simulator" class="md-nav__link">
+  <a href="#expected-loss-minimisation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interactive Threshold Simulator
+        Expected Loss Minimisation
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Expected Loss Minimisation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interactive-expected-loss-simulator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive Expected Loss Simulator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -807,76 +824,209 @@
 <h1 id="mathematical-foundations-of-arf">Mathematical Foundations of ARF<a class="headerlink" href="#mathematical-foundations-of-arf" title="Permanent link">&para;</a></h1>
 <p>ARF relies on Bayesian statistical models to estimate risk, combining <strong>online conjugate updates</strong>, <strong>optional hierarchical shrinkage</strong>, and <strong>offline Hamiltonian Monte Carlo</strong> into a single fused risk score. The framework intentionally prioritizes <strong>uncertainty awareness</strong> over deterministic predictions.</p>
 <hr />
-<h2 id="interactive-threshold-simulator">Interactive Threshold Simulator<a class="headerlink" href="#interactive-threshold-simulator" title="Permanent link">&para;</a></h2>
-<p>Use the sliders below to see how the <strong>Deterministic Probability Thresholding</strong> (DPT) zones change. The risk gauge updates in real time.</p>
-<div id="dpt-simulator">
-  <label>Low Threshold (Approve): <span id="low-val">0.2</span></label>
-  <input type="range" id="low-slider" min="0" max="1" step="0.01" value="0.2">
-  <label>High Threshold (Deny): <span id="high-val">0.8</span></label>
-  <input type="range" id="high-slider" min="0" max="1" step="0.01" value="0.8">
-  <div id="dpt-plot" style="width:100%; height:400px;"></div>
+<h2 id="expected-loss-minimisation">Expected Loss Minimisation<a class="headerlink" href="#expected-loss-minimisation" title="Permanent link">&para;</a></h2>
+<p>The governance loop does <strong>not</strong> use fixed probability thresholds (e.g., 0.2, 0.8). Instead, it selects the optimal action (APPROVE, DENY, or ESCALATE) by <strong>minimising expected loss</strong>, defined as:</p>
+<div class="arithmatex">\[
+\begin{aligned}
+L_{\text{approve}} &amp;= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2,\\[4pt]
+L_{\text{deny}} &amp;= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}},\\[4pt]
+L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
+\end{aligned}
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(\theta\)</span> = Bayesian posterior failure probability (risk score) ∈ [0,1],</li>
+<li><span class="arithmatex">\(\sigma^2\)</span> = posterior variance (uncertainty in <span class="arithmatex">\(\theta\)</span>),</li>
+<li><span class="arithmatex">\(\psi\)</span> = composite epistemic uncertainty ∈ [0,1],</li>
+<li><span class="arithmatex">\(v_{\text{mean}}\)</span> = estimated opportunity value (e.g., potential revenue if approved),</li>
+<li><span class="arithmatex">\(c_{FP}\)</span> = cost of a false positive (approving a risky action),</li>
+<li><span class="arithmatex">\(c_{FN}\)</span> = cost of a false negative (denying a safe action),</li>
+<li><span class="arithmatex">\(c_{\text{impact}}\)</span> = weight for business impact,</li>
+<li><span class="arithmatex">\(c_{\text{pred}}\)</span> = weight for predictive risk,</li>
+<li><span class="arithmatex">\(c_{\text{var}}\)</span> = weight for posterior variance,</li>
+<li><span class="arithmatex">\(c_{\text{opp}}\)</span> = opportunity cost weight,</li>
+<li><span class="arithmatex">\(c_{\text{review}}\)</span> = fixed cost of human review,</li>
+<li><span class="arithmatex">\(c_{\text{unc}}\)</span> = weight for epistemic uncertainty.</li>
+</ul>
+<p><strong>Decision rule:</strong></p>
+<ol>
+<li>If policy violations exist → <code>DENY</code>.</li>
+<li>Else if <code>USE_EPISTEMIC_GATE</code> and <span class="arithmatex">\(\psi &gt; \psi_{\text{thresh}}\)</span> (default <span class="arithmatex">\(\psi_{\text{thresh}} = 0.5\)</span>) → <code>ESCALATE</code>.</li>
+<li>Else → action with the smallest <span class="arithmatex">\(L\)</span>.</li>
+</ol>
+<p>All cost constants are configurable in <code>core/config/constants.py</code>. The default values (as of ARF v4) are:</p>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(c_{FP}\)</span></td>
+<td>10.0</td>
+<td>False positive cost</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(c_{FN}\)</span></td>
+<td>8.0</td>
+<td>False negative cost</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(c_{\text{impact}}\)</span></td>
+<td>5.0</td>
+<td>Business impact weight</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(c_{\text{pred}}\)</span></td>
+<td>2.0</td>
+<td>Predictive risk weight</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(c_{\text{var}}\)</span></td>
+<td>5.0</td>
+<td>Variance penalty weight</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(c_{\text{opp}}\)</span></td>
+<td>3.0</td>
+<td>Opportunity cost weight</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(c_{\text{review}}\)</span></td>
+<td>2.0</td>
+<td>Human review cost</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(c_{\text{unc}}\)</span></td>
+<td>4.0</td>
+<td>Epistemic uncertainty weight</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\psi_{\text{thresh}}\)</span></td>
+<td>0.5</td>
+<td>Epistemic escalation threshold</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="interactive-expected-loss-simulator">Interactive Expected Loss Simulator<a class="headerlink" href="#interactive-expected-loss-simulator" title="Permanent link">&para;</a></h3>
+<p>Use the sliders below to adjust the key parameters and see how the expected losses change in real time. The decision (minimum expected loss action) is highlighted.</p>
+<div id="elm-simulator">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 15px;">
+    <div><label>Risk score (θ): <span id="risk-val">0.38</span></label><input type="range" id="risk-slider" min="0" max="1" step="0.01" value="0.38"></div>
+    <div><label>Posterior variance (σ²): <span id="var-val">0.05</span></label><input type="range" id="var-slider" min="0" max="0.25" step="0.005" value="0.05"></div>
+    <div><label>Epistemic uncertainty (ψ): <span id="psi-val">0.45</span></label><input type="range" id="psi-slider" min="0" max="1" step="0.01" value="0.45"></div>
+    <div><label>Revenue loss ($): <span id="rev-val">1000</span></label><input type="range" id="rev-slider" min="0" max="5000" step="100" value="1000"></div>
+    <div><label>Predictive risk: <span id="pred-val">0.25</span></label><input type="range" id="pred-slider" min="0" max="1" step="0.01" value="0.25"></div>
+    <div><label>Opportunity value ($): <span id="opp-val">2000</span></label><input type="range" id="opp-slider" min="0" max="5000" step="100" value="2000"></div>
+  </div>
+  <div style="margin-top: 20px;">
+    <button id="reset-defaults">Reset to Defaults</button>
+  </div>
+  <div id="elm-plot" style="width:100%; height:500px; margin-top:20px;"></div>
+  <div id="elm-decision" style="font-weight: bold; text-align: center; margin-top: 10px;"></div>
 </div>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
-  function updatePlot(low, high) {
-    var x = [];
-    var y = [];
-    for (var i = 0; i <= 100; i++) {
-      var risk = i / 100;
-      x.push(risk);
-      y.push(0);
-    }
-    var trace = {
-      x: x,
-      y: y,
-      marker: {
-        color: x.map(v => v < low ? 'green' : (v > high ? 'red' : 'orange')),
-        size: 10,
-        symbol: 'circle'
-      },
-      mode: 'markers',
-      type: 'scatter',
-      text: x.map(v => `Risk: ${v.toFixed(2)}`),
-      hoverinfo: 'text'
-    };
-    var layout = {
-      title: 'DPT Zones',
-      xaxis: { title: 'Risk Score', range: [0,1] },
-      yaxis: { title: '', visible: false },
-      shapes: [
-        { type: 'rect', x0: 0, x1: low, y0: -0.5, y1: 0.5, fillcolor: 'rgba(0,255,0,0.2)', line: { width: 0 } },
-        { type: 'rect', x0: low, x1: high, y0: -0.5, y1: 0.5, fillcolor: 'rgba(255,165,0,0.2)', line: { width: 0 } },
-        { type: 'rect', x0: high, x1: 1, y0: -0.5, y1: 0.5, fillcolor: 'rgba(255,0,0,0.2)', line: { width: 0 } }
-      ]
-    };
-    Plotly.newPlot('dpt-plot', [trace], layout);
+  // Constants (defaults)
+  const constants = {
+    cFP: 10.0,
+    cFN: 8.0,
+    cImpact: 5.0,
+    cPred: 2.0,
+    cVar: 5.0,
+    cOpp: 3.0,
+    cReview: 2.0,
+    cUnc: 4.0,
+    psiThresh: 0.5
+  };
+
+  // DOM elements
+  const riskSlider = document.getElementById('risk-slider');
+  const riskVal = document.getElementById('risk-val');
+  const varSlider = document.getElementById('var-slider');
+  const varVal = document.getElementById('var-val');
+  const psiSlider = document.getElementById('psi-slider');
+  const psiVal = document.getElementById('psi-val');
+  const revSlider = document.getElementById('rev-slider');
+  const revVal = document.getElementById('rev-val');
+  const predSlider = document.getElementById('pred-slider');
+  const predVal = document.getElementById('pred-val');
+  const oppSlider = document.getElementById('opp-slider');
+  const oppVal = document.getElementById('opp-val');
+  const resetBtn = document.getElementById('reset-defaults');
+
+  function computeLosses(theta, variance, psi, revenueLoss, predRisk, oppValue) {
+    const L_approve = constants.cFP * theta + constants.cImpact * revenueLoss / 1000 + constants.cPred * predRisk + constants.cVar * variance;
+    const L_deny = constants.cFN * (1 - theta) + constants.cOpp * oppValue / 1000;
+    const L_escalate = constants.cReview + constants.cUnc * psi;
+    return { L_approve, L_deny, L_escalate };
   }
-  document.getElementById('low-slider').addEventListener('input', function() {
-    var low = parseFloat(this.value);
-    var high = parseFloat(document.getElementById('high-slider').value);
-    if (low >= high) {
-      low = high - 0.01;
-      if (low < 0) low = 0;
-      this.value = low;
-    }
-    document.getElementById('low-val').innerText = low.toFixed(2);
-    document.getElementById('high-val').innerText = high.toFixed(2);
-    updatePlot(low, high);
-  });
-  document.getElementById('high-slider').addEventListener('input', function() {
-    var high = parseFloat(this.value);
-    var low = parseFloat(document.getElementById('low-slider').value);
-    if (high <= low) {
-      high = low + 0.01;
-      if (high > 1) high = 1;
-      this.value = high;
-    }
-    document.getElementById('low-val').innerText = low.toFixed(2);
-    document.getElementById('high-val').innerText = high.toFixed(2);
-    updatePlot(low, high);
-  });
-  updatePlot(0.2, 0.8);
+
+  function updatePlot() {
+    const theta = parseFloat(riskSlider.value);
+    const variance = parseFloat(varSlider.value);
+    const psi = parseFloat(psiSlider.value);
+    const revenueLoss = parseFloat(revSlider.value);
+    const predRisk = parseFloat(predSlider.value);
+    const oppValue = parseFloat(oppSlider.value);
+
+    riskVal.innerText = theta.toFixed(3);
+    varVal.innerText = variance.toFixed(3);
+    psiVal.innerText = psi.toFixed(3);
+    revVal.innerText = revenueLoss;
+    predVal.innerText = predRisk.toFixed(3);
+    oppVal.innerText = oppValue;
+
+    const losses = computeLosses(theta, variance, psi, revenueLoss, predRisk, oppValue);
+    const actions = ['APPROVE', 'DENY', 'ESCALATE'];
+    const values = [losses.L_approve, losses.L_deny, losses.L_escalate];
+    const minIdx = values.indexOf(Math.min(...values));
+    const decision = actions[minIdx];
+
+    const trace = {
+      x: actions,
+      y: values,
+      type: 'bar',
+      marker: { color: values.map((_, i) => i === minIdx ? 'green' : 'steelblue') },
+      text: values.map(v => v.toFixed(2)),
+      textposition: 'auto'
+    };
+    const layout = {
+      title: 'Expected Loss by Action',
+      xaxis: { title: 'Action' },
+      yaxis: { title: 'Expected Loss' },
+      shapes: []
+    };
+    Plotly.newPlot('elm-plot', [trace], layout);
+    document.getElementById('elm-decision').innerHTML = `✅ Recommended action: <span style="color:green">${decision}</span> (lowest expected loss = ${Math.min(...values).toFixed(2)})`;
+  }
+
+  function resetDefaults() {
+    riskSlider.value = '0.38';
+    varSlider.value = '0.05';
+    psiSlider.value = '0.45';
+    revSlider.value = '1000';
+    predSlider.value = '0.25';
+    oppSlider.value = '2000';
+    updatePlot();
+  }
+
+  // Attach event listeners
+  riskSlider.addEventListener('input', updatePlot);
+  varSlider.addEventListener('input', updatePlot);
+  psiSlider.addEventListener('input', updatePlot);
+  revSlider.addEventListener('input', updatePlot);
+  predSlider.addEventListener('input', updatePlot);
+  oppSlider.addEventListener('input', updatePlot);
+  resetBtn.addEventListener('click', resetDefaults);
+
+  // Initial plot
+  updatePlot();
 </script>
 
 <hr />
