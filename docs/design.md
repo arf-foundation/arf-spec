@@ -50,17 +50,28 @@ ARF separates runtime decision logic from governance enforcement, persistence, a
 
 The core runtime must remain session-scoped and deterministic. Optional layers may add history-aware behavior without changing the semantics of in-session scoring.
 
-### 3.2 Deterministic Policy Thresholds
+### 3.2 Decision‑Theoretic Action Selection
 
-Risk predictions are probabilistic, but enforcement must be deterministic.
+Risk predictions are probabilistic, but the final action (APPROVE, DENY, ESCALATE) is chosen by **minimising expected loss**, not by fixed probability thresholds. The expected loss for each action is computed as:
 
-| Risk Probability | Action |
-|---|---|
-| < 0.2 | Approve |
-| 0.2 – 0.8 | Escalate |
-| > 0.8 | Deny |
+\[
+\begin{aligned}
+L_{\text{approve}} &= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2,\\[4pt]
+L_{\text{deny}} &= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}},\\[4pt]
+L_{\text{escalate}} &= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
+\end{aligned}
+\]
 
-This thresholding behavior is a core execution boundary. It must not depend on hidden memory, external trust aggregation, or cross-session state.
+where:
+- \(\theta\) = Bayesian posterior failure probability,
+- \(\sigma^2\) = posterior variance (from the conjugate Beta model),
+- \(\psi\) = epistemic uncertainty (composite of hallucination, forecast, and sparsity),
+- \(v_{\text{mean}}\) = estimated opportunity value of the action,
+- \(c_{*}\) = cost constants defined in `core/config/constants.py`.
+
+The action with the smallest \(L\) is selected. Policy violations force **DENY**. If `USE_EPISTEMIC_GATE` is true and \(\psi > \psi_{\text{thresh}}\), the action is forced to **ESCALATE**.  
+
+This approach is strictly more expressive than fixed probability thresholds and provides a full audit trail.
 
 ### 3.3 Modularity
 
@@ -227,38 +238,9 @@ Any cross-session extension must be implemented outside the core signal semantic
 
 ---
 
-## 7. Deterministic Policy Thresholding
+## 7. Temporal Reliability Boundary
 
 ### 7.1 Purpose
-
-Deterministic Policy Thresholding (DPT) ensures that execution decisions are stable and explainable.
-
-### 7.2 Core Rule
-
-- Approve when the estimated safe probability is below the approval threshold
-- Escalate when the signal is ambiguous or partially confident
-- Deny when the risk exceeds the denial threshold
-
-### 7.3 Design Constraints
-
-The thresholding layer must:
-
-- be deterministic
-- be transparent
-- be auditable
-- remain independent of any temporal trust layer
-
-It must not:
-
-- adjust based on hidden longitudinal memory
-- vary based on prior sessions unless explicitly configured in a separate layer
-- embed enterprise-specific heuristics in the OSS path
-
----
-
-## 8. Temporal Reliability Boundary
-
-### 8.1 Purpose
 
 Temporal reliability is a separate concern from in-session reliability.
 
@@ -267,7 +249,7 @@ It answers a different question:
 - Core ARF: Is this safe now?
 - Temporal layer: Has this been reliable over time?
 
-### 8.2 Why It Is Separate
+### 7.2 Why It Is Separate
 
 Cross-session reliability introduces:
 
@@ -280,7 +262,7 @@ Cross-session reliability introduces:
 
 Those concerns are important, but they belong outside the core deterministic runtime.
 
-### 8.3 Allowed Temporal Inputs
+### 7.3 Allowed Temporal Inputs
 
 Temporal extensions may use:
 
@@ -290,7 +272,7 @@ Temporal extensions may use:
 - decay functions
 - cross-session aggregation
 
-### 8.4 Temporal Layer Constraints
+### 7.4 Temporal Layer Constraints
 
 Temporal layers must not:
 
@@ -302,7 +284,7 @@ Temporal layers must not:
 
 ---
 
-## 9. Observability and Auditability
+## 8. Observability and Auditability
 
 ARF is designed to be inspectable.
 
@@ -328,13 +310,13 @@ The goal is not just to know what happened, but to know why it happened and how 
 
 ---
 
-## 10. Extensibility Strategy
+## 9. Extensibility Strategy
 
-### 10.1 Core Extension Model
+### 9.1 Core Extension Model
 
 Extensions should attach through explicit interfaces. They should not depend on undocumented internal assumptions.
 
-### 10.2 Recommended Extension Types
+### 9.2 Recommended Extension Types
 
 - adapters
 - aggregators
@@ -343,7 +325,7 @@ Extensions should attach through explicit interfaces. They should not depend on 
 - analysis services
 - enterprise governance modules
 
-### 10.3 Extension Rules
+### 9.3 Extension Rules
 
 Extensions should:
 
@@ -355,7 +337,7 @@ Extensions should:
 
 ---
 
-## 11. Enterprise Boundary
+## 10. Enterprise Boundary
 
 Enterprise capabilities may include:
 
@@ -380,7 +362,7 @@ The enterprise layer may introduce stateful longitudinal trust tracking, but thi
 
 ---
 
-## 12. Design Recommendations
+## 11. Design Recommendations
 
 - Keep the runtime engine stateless
 - Store posterior parameters externally when persistence is needed
@@ -394,7 +376,7 @@ The enterprise layer may introduce stateful longitudinal trust tracking, but thi
 
 ---
 
-## 13. Status
+## 12. Status
 
 This document defines the architectural boundary of ARF.
 
