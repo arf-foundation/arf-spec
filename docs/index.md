@@ -28,7 +28,7 @@ graph LR
 ARF is organized as a **layered specification**, each building on the one before:
 
 - **Core Concepts** – reliability, observability, and traceability for AI agents.
-- **Mathematics** – Bayesian risk scoring, HMC, and deterministic probability thresholds.
+- **Mathematics** – Bayesian risk scoring, HMC, and expected loss minimisation.
 - **Psychology** – trust calibration, human‑in‑the‑loop design, and explainability.
 - **Governance** – policy evaluation, cost estimation, and the full governance loop.
 - **Enterprise** – execution ladder, audit trails, and deployment architectures.
@@ -41,7 +41,7 @@ ARF is organized as a **layered specification**, each building on the one before
 | Challenge | ARF Solution |
 |-----------|---------------|
 | **Risky AI actions** | Bayesian risk scoring with dynamic fusion of online and offline models |
-| **Brittle policy rules** | Deterministic Probability Thresholding (DPT) with approve/escalate/deny zones |
+| **Brittle policy rules** | Expected loss minimisation that balances risk, cost, and uncertainty to select the optimal action (approve, deny, or escalate). |
 | **Lack of auditability** | Full traceability in every decision, with optional enterprise audit trails |
 | **Complex decision context** | Governance loop integrates cost, policy, risk, epistemic uncertainty, and memory |
 | **Scaling from prototype to production** | Clear boundaries between OSS advisory and enterprise enforcement |
