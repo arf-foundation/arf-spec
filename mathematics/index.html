@@ -612,6 +612,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="CVaR‑Based Approve Loss (optional, enabled by USE_CVAR = True)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-use-cvar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Use CVaR?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-use-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Use Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -900,20 +928,42 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
 </ul>
 <hr />
 <h3 id="cvarbased-approve-loss-optional-enabled-by-use_cvar-true">CVaR‑Based Approve Loss (optional, enabled by <code>USE_CVAR = True</code>)<a class="headerlink" href="#cvarbased-approve-loss-optional-enabled-by-use_cvar-true" title="Permanent link">&para;</a></h3>
-<p>When <code>USE_CVAR</code> is enabled, the approve loss is computed as the average of the worst <span class="arithmatex">\(\alpha\)</span> fraction of per‑sample losses from the posterior distribution, plus the variance penalty:</p>
+<p>When <code>USE_CVAR</code> is enabled, the approve loss is computed as the <strong>average of the worst α‑fraction</strong> of per‑sample losses from the posterior distribution, plus the variance penalty. This makes the decision more conservative when the posterior has heavy tails or high uncertainty.</p>
+<p><strong>Procedure:</strong></p>
 <ol>
-<li>Draw <span class="arithmatex">\(N\)</span> samples from the posterior Beta distribution: <span class="arithmatex">\(p_i \sim \operatorname{Beta}(\alpha, \beta)\)</span> (posterior parameters of the conjugate model).</li>
-<li>Compute per‑sample approve loss (without variance term):
-   [
+<li>
+<p>Draw <span class="arithmatex">\(N\)</span> samples from the posterior Beta distribution:<br />
+   $$
+   p_i \sim \operatorname{Beta}(\alpha, \beta), \quad i = 1,\dots,N
+   $$
+   where <span class="arithmatex">\((\alpha, \beta)\)</span> are the posterior parameters of the conjugate model.</p>
+</li>
+<li>
+<p>Compute the per‑sample approve loss <strong>without</strong> the variance term:<br />
+   $$
    L_{\text{approve}}^{(i)} = c_{FP}\,p_i + c_{\text{impact}}\,\text{revenue_loss} + c_{\text{pred}}\,\text{pred_risk}.
-   ]</li>
-<li>Sort the losses and take the mean of the smallest <span class="arithmatex">\(k = \lceil \alpha N \rceil\)</span> values:
-   [
+   $$</p>
+</li>
+<li>
+<p>Sort the losses in ascending order: <span class="arithmatex">\(L_{\text{approve}}^{([1])} \le L_{\text{approve}}^{([2])} \le \dots \le L_{\text{approve}}^{([N])}\)</span>.</p>
+</li>
+<li>
+<p>Take the average of the smallest <span class="arithmatex">\(k = \lceil \alpha N \rceil\)</span> values:<br />
+   $$
    L_{\text{approve}}^{\text{CVaR}} = \frac{1}{k}\sum_{i=1}^{k} L_{\text{approve}}^{([i])} + c_{\text{var}}\,\sigma^2.
-   ]
-   Here <span class="arithmatex">\(\alpha = \text{CVAR\_ALPHA}\)</span> (default <span class="arithmatex">\(0.05\)</span>, i.e., 95% CVaR) and <span class="arithmatex">\(N = 1000\)</span> samples.</li>
+   $$</p>
+</li>
 </ol>
-<p>The deny and escalate losses remain unchanged, as they are linear in risk (or constant).</p>
+<p>Here <span class="arithmatex">\(\alpha = \text{CVAR\_ALPHA}\)</span> (default <span class="arithmatex">\(0.05\)</span>, i.e., 95% CVaR) and <span class="arithmatex">\(N = 1000\)</span> samples.</p>
+<p>The <strong>deny</strong> and <strong>escalate</strong> losses remain unchanged, as they are linear in risk (or constant).</p>
+<h4 id="why-use-cvar">Why Use CVaR?<a class="headerlink" href="#why-use-cvar" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Standard expected loss</strong> (mean) ignores the shape of the posterior distribution. Two distributions with the same mean but different variances or skewness produce the same <span class="arithmatex">\(L_{\text{approve}}^{\text{mean}}\)</span>, which may be inappropriate when tail risk matters.</li>
+<li><strong>CVaR</strong> focuses on the worst outcomes, making the decision robust against extreme (but rare) high‑risk scenarios. This is especially valuable in safety‑critical environments (e.g., healthcare, finance, autonomous systems).</li>
+</ul>
+<h4 id="example-use-case">Example Use Case<a class="headerlink" href="#example-use-case" title="Permanent link">&para;</a></h4>
+<p>Suppose a model predicts a risk score <span class="arithmatex">\(\theta = 0.3\)</span> with <strong>high variance</strong> (e.g., Beta(3,7) gives variance 0.021). The expected approve loss might be low, but there is a non‑negligible probability that the true risk is much higher (e.g., 0.6). Using CVaR (α = 0.05) would average the worst 5% of the posterior samples, capturing this tail risk and potentially <strong>escalating or denying</strong> an action that would otherwise be approved under the mean loss.</p>
+<p>This aligns with a <strong>risk‑averse</strong> business policy: avoid actions that could occasionally cause catastrophic failure, even if they are safe on average.</p>
 <hr />
 <h3 id="decision-rule">Decision Rule<a class="headerlink" href="#decision-rule" title="Permanent link">&para;</a></h3>
 <ol>
@@ -1014,7 +1064,7 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
-  // Constants (defaults) – same as before, but includes decay and CVaR flags only in text.
+  // Constants (defaults) – same as before
   const constants = {
     cFP: 10.0,
     cFN: 8.0,
@@ -1027,7 +1077,7 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
     psiThresh: 0.5
   };
 
-  // DOM elements – unchanged
+  // DOM elements
   const riskSlider = document.getElementById('risk-slider');
   const riskVal = document.getElementById('risk-val');
   const varSlider = document.getElementById('var-slider');
@@ -1108,6 +1158,7 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
 
   updatePlot();
 </script>
+
 <hr />
 <h2 id="betabinomial-model-online-conjugate-prior">Beta‑Binomial Model (Online Conjugate Prior)<a class="headerlink" href="#betabinomial-model-online-conjugate-prior" title="Permanent link">&para;</a></h2>
 <p>Each action category maintains a <strong>Beta posterior</strong> derived from a fixed prior.</p>
@@ -1195,21 +1246,21 @@ R_{\text{final}} = \min(R \cdot m, 1.0)
 <hr />
 <h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>
-<p>The formulas above match the implementation in:
+<li>The formulas above match the implementation in:
   <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">agentic_reliability_framework</span><span class="o">/</span><span class="n">core</span><span class="o">/</span><span class="n">governance</span><span class="o">/</span><span class="n">risk_engine</span><span class="o">.</span><span class="n">py</span>
-</code></pre></div></p>
+</code></pre></div></li>
+<li>
+<p>Hyperpriors are disabled by default and must be explicitly enabled with use_hyperpriors=True.</p>
 </li>
 <li>
-<p>Hyperpriors are disabled by default and must be explicitly enabled with use_hyperpriors=True</p>
+<p>The HMC model must be pre‑trained and loaded from a JSON file (hmc_model.json by default).</p>
 </li>
 <li>
-<p>The HMC model must be pre‑trained and loaded from a JSON file (hmc_model.json by default)</p>
+<p><strong>Time‑decaying risk</strong> is always active (with default γ=0.9_γ_\=0.9). It can be disabled by setting RISK_DECAY_FACTOR = 1.0 in constants.py.</p>
 </li>
 <li>
-<p>Time‑decaying risk is always active (with default <span class="arithmatex">\(\gamma = 0.9\)</span>). It can be disabled by setting <code>RISK_DECAY_FACTOR = 1.0</code> in <code>constants.py</code>.</p>
+<p><strong>CVaR</strong> is disabled by default (USE_CVAR = False). To enable robust approval decisions, set USE_CVAR = True and optionally adjust CVAR_ALPHA.</p>
 </li>
-<li>CVaR is disabled by default (<code>USE_CVAR = False</code>). To enable robust approval decisions, set <code>USE_CVAR = True</code> and optionally adjust <code>CVAR_ALPHA</code>.</li>
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
