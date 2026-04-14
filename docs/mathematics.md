@@ -151,19 +151,90 @@ $$
 L_{\text{approve}}^{\text{CVaR}} = \text{CVaR}_\alpha\!\left[ \text{COST\_FP} \cdot \tilde{p} + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} \right] + \text{COST\_VARIANCE} \cdot \text{Var}(p_c)
 $$
 
-where $\tilde{p}$ are posterior samples of the failure probability (drawn from $\text{Beta}(\alpha_c, \beta_c)$), and $\text{CVaR}_\alpha$ is the average of the worst $\alpha$ fraction of the per‑sample losses. This substitution replaces the simple expectation with a tail‑risk‑sensitive measure.
+where $\tilde{p}$ are posterior samples of the failure probability (drawn from $\text{Beta}(\alpha_c, \beta_c)$), and $\text{CVaR}_\alpha$ is the average of the worst $\alpha$ fraction of the per‑sample losses.
 
 ---
 
-## 7. References
+## 7. Lyapunov Stability for Healing Actions
+
+The `LyapunovStabilityController` provides a stability guarantee for the healing loop under discrete‑time nonlinear dynamics. It ensures that selected actions drive the system toward a desired equilibrium while reducing a Lyapunov candidate function.
+
+### 7.1 System Model
+
+Let $x_t \in \mathbb{R}^n$ be the system state at time $t$ (e.g., resource usage, latency, error rates), and $u_t \in \mathbb{R}^m$ the healing action (e.g., scaling, restart, rollback). The dynamics are:
+
+$$
+x_{t+1} = f(x_t, u_t)
+$$
+
+with $f$ known or approximated from telemetry. The risk score $r_t = \text{RiskScore}(x_t)$ is a function of the state.
+
+### 7.2 Lyapunov Candidate Function
+
+We define a quadratic Lyapunov candidate:
+
+$$
+V(x_t, r_t) = \alpha \cdot r_t^2 + \beta \cdot \|x_t - x_{\text{des}}\|^2
+$$
+
+where:
+
+- $\alpha, \beta > 0$ are weighting coefficients (default $\alpha = \beta = 1.0$)
+- $x_{\text{des}}$ is the desired equilibrium state (e.g., nominal operating point)
+- $\|\cdot\|$ is the Euclidean norm
+
+This function is positive definite: $V(x, r) = 0$ iff $r = 0$ and $x = x_{\text{des}}$, and $V > 0$ otherwise.
+
+### 7.3 Stability Constraint
+
+For asymptotic stability, we require the Lyapunov function to decrease along trajectories, with a decay proportional to the state norm:
+
+$$
+V(x_{t+1}, r_{t+1}) - V(x_t, r_t) \le -\gamma \cdot \|x_t\|^2
+$$
+
+where $\gamma > 0$ (default $\gamma = 0.1$) controls the convergence rate. This is a discrete‑time version of the Lyapunov decrease condition.
+
+### 7.4 Action Selection with Stability Guarantee
+
+Given current state $x_t$ and risk $r_t$, the controller solves:
+
+$$
+\begin{aligned}
+\min_{u_t} &\quad \|u_t\|^2 \quad \text{(minimal intervention)} \\
+\text{s.t.} &\quad V(f(x_t, u_t), r(f(x_t, u_t))) - V(x_t, r_t) \le -\gamma \|x_t\|^2 \\
+&\quad u_{\min} \le u_t \le u_{\max}
+\end{aligned}
+$$
+
+If a feasible $u_t$ exists, it is executed. Otherwise, a conservative fallback (e.g., `ESCALATE`) is triggered.
+
+### 7.5 Stability Result
+
+For any sequence of actions satisfying the constraint, the closed‑loop system satisfies:
+
+$$
+\lim_{t \to \infty} r_t = 0 \quad \text{and} \quad \lim_{t \to \infty} \|x_t - x_{\text{des}}\| = 0
+$$
+
+provided the dynamics $f$ are Lipschitz and the risk function $r(\cdot)$ is continuous. This gives a **local, asymptotic stability guarantee** under the model assumptions.
+
+### 7.6 Integration with Governance Loop
+
+The stability controller is invoked **after** expected loss minimisation when a healing action (e.g., `APPROVE` with an action parameter) is selected. If no stabilizing action exists, the loop forces `ESCALATE`, adding a safety layer beyond the probabilistic risk assessment.
+
+---
+
+## 8. References
 
 - Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). *Bayesian Data Analysis* (3rd ed.). CRC Press.
 - McElreath, R. (2020). *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*. CRC Press.
 - Hoffman, M. D., & Gelman, A. (2014). The No‑U‑Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo. *Journal of Machine Learning Research*, 15(1), 1593–1623.
+- Khalil, H. K. (2002). *Nonlinear Systems* (3rd ed.). Prentice Hall. (For Lyapunov stability theory)
 
 ---
 
-## 8. See Also
+## 9. See Also
 
 - [`core_concepts.md`](core_concepts.md) – canonical definition of `RiskScore` and execution ladder
 - [`governance.md`](governance.md) – governance loop flow and configuration constants
