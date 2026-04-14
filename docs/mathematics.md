@@ -35,11 +35,14 @@ where:
 - \(\sigma^2\) = posterior variance (from conjugate Beta model),
 - \(\psi\) = composite epistemic uncertainty,
 - \(v_{\text{mean}}\) = estimated opportunity value,
-- all \(c\) constants are defined below.
+- all <abbr title="Cost constants defined in the table below">\(c\) constants</abbr> are defined below.
 
 ### CVaR‑Based Approve Loss (optional, enabled by `USE_CVAR = True`)
 
 When `USE_CVAR` is enabled, the approve loss is computed as the average of the worst α‑fraction of per‑sample losses from the posterior distribution, plus the variance penalty. This makes the decision more conservative when the posterior has heavy tails or high uncertainty.
+
+<details>
+<summary>📘 Click to expand the CVaR calculation procedure</summary>
 
 **Procedure:**
 
@@ -66,6 +69,8 @@ When `USE_CVAR` is enabled, the approve loss is computed as the average of the w
 
 Here \(\alpha = \text{CVAR\_ALPHA}\) (default 0.05, i.e., 95% CVaR) and \(N = 1000\) samples.
 
+</details>
+
 The deny and escalate losses remain unchanged, as they are linear in risk (or constant).
 
 #### Why Use CVaR?
@@ -79,6 +84,21 @@ Suppose a model predicts a risk score \(\theta = 0.3\) with high variance (e.g.,
 
 This aligns with a risk‑averse business policy: avoid actions that could occasionally cause catastrophic failure, even if they are safe on average.
 
+### Decision Flow
+
+The following diagram illustrates the governance loop’s decision logic:
+
+```mermaid
+graph TD
+    A[Start] --> B{Policy violations?}
+    B -->|Yes| C[DENY]
+    B -->|No| D{Epistemic uncertainty > threshold?}
+    D -->|Yes| E[ESCALATE]
+    D -->|No| F[Compute expected losses for APPROVE, DENY, ESCALATE]
+    F --> G[Select action with minimum expected loss]
+    G --> H[APPROVE / DENY / ESCALATE]
+```
+
 ### Decision Rule
 
 - If policy violations exist → **DENY**.
@@ -87,20 +107,11 @@ This aligns with a risk‑averse business policy: avoid actions that could occas
 
 All cost constants are configurable in `core/config/constants.py`. The default values (as of ARF v4) are:
 
-| Constant | Value | Description |
-|----------|-------|-------------|
-| \(c_{\text{FP}}\) | 10.0 | False positive cost |
-| \(c_{\text{FN}}\) | 8.0 | False negative cost |
-| \(c_{\text{impact}}\) | 5.0 | Business impact weight |
-| \(c_{\text{pred}}\) | 2.0 | Predictive risk weight |
-| \(c_{\text{var}}\) | 5.0 | Variance penalty weight |
-| \(c_{\text{opp}}\) | 3.0 | Opportunity cost weight |
-| \(c_{\text{review}}\) | 2.0 | Human review cost |
-| \(c_{\text{unc}}\) | 4.0 | Epistemic uncertainty weight |
-| \(\psi_{\text{thresh}}\) | 0.5 | Epistemic escalation threshold |
-| \(\gamma\) (RISK_DECAY_FACTOR) | 0.9 | Smoothing factor for time‑decaying risk |
-| `USE_CVAR` | False | Enable CVaR (tail risk) for approve loss |
-| `CVAR_ALPHA` | 0.05 | Tail probability for CVaR (0.05 = 95%) |
+| <abbr title="False positive cost">\(c_{\text{FP}}\)</abbr> | <abbr title="False negative cost">\(c_{\text{FN}}\)</abbr> | <abbr title="Business impact weight">\(c_{\text{impact}}\)</abbr> | <abbr title="Predictive risk weight">\(c_{\text{pred}}\)</abbr> | <abbr title="Variance penalty weight">\(c_{\text{var}}\)</abbr> | <abbr title="Opportunity cost weight">\(c_{\text{opp}}\)</abbr> | <abbr title="Human review cost">\(c_{\text{review}}\)</abbr> | <abbr title="Epistemic uncertainty weight">\(c_{\text{unc}}\)</abbr> | Value | Description |
+|------|------|------|------|------|------|------|------|-------|-------------|
+| 10.0 | 8.0 | 5.0 | 2.0 | 5.0 | 3.0 | 2.0 | 4.0 | – | – |
+| \(\psi_{\text{thresh}}\) | \(\gamma\) (RISK_DECAY_FACTOR) | `USE_CVAR` | `CVAR_ALPHA` | – | – | – | – | 0.5 | Epistemic escalation threshold |
+| 0.9 | Smoothing factor | False | Enable CVaR | 0.05 | Tail probability (95%) | – | – | – | – |
 
 ### Interactive Expected Loss Simulator
 
@@ -164,6 +175,9 @@ R = w_{\text{conj}} \cdot p_{\text{conj}} + w_{\text{hyper}} \cdot p_{\text{hype
 
 Weights depend on the amount of observed data (\(n\)) and are computed as follows:
 
+<details>
+<summary>📊 Weight calculation formulas (click to expand)</summary>
+
 | Available components | Weight formulas |
 |----------------------|-----------------|
 | Only conjugate | \(w_{\text{conj}} = 1.0\) |
@@ -172,6 +186,8 @@ Weights depend on the amount of observed data (\(n\)) and are computed as follow
 | All three | \(w_{\text{hmc}} = \min(0.6, \frac{n}{n_0}),\quad w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}) \cdot (1 - w_{\text{hmc}}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}\) |
 
 where \(n_0 = 1000\) and \(w_{\text{hyper}}^{\text{base}} = 0.3\).
+
+</details>
 
 ## Context Multiplier
 
