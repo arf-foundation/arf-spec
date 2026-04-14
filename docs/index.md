@@ -22,17 +22,17 @@ graph LR
     D -.-> F[Temporal Reliability]
     style F stroke-dasharray: 5 5
 ```
+Core Concepts – reliability, observability, and traceability for AI agents.
 
-## The Framework at a Glance
+Mathematics – Bayesian risk scoring, HMC, and expected loss minimisation.
 
-ARF is organized as a **layered specification**, each building on the one before:
+Psychology – trust calibration, human‑in‑the‑loop design, and explainability.
 
-- **Core Concepts** – reliability, observability, and traceability for AI agents.
-- **Mathematics** – Bayesian risk scoring, HMC, and expected loss minimisation.
-- **Psychology** – trust calibration, human‑in‑the‑loop design, and explainability.
-- **Governance** – policy evaluation, cost estimation, and the full governance loop.
-- **Enterprise** – execution ladder, audit trails, and deployment architectures.
-- **Temporal Reliability** – optional extension for time‑series anomaly detection and forecasting.
+Governance – policy evaluation, cost estimation, and the full governance loop.
+
+Enterprise – execution ladder, audit trails, and deployment architectures.
+
+Temporal Reliability – optional extension for time‑series anomaly detection and forecasting.
 
 ---
 
@@ -44,7 +44,7 @@ ARF is organized as a **layered specification**, each building on the one before
 | **Brittle policy rules** | Expected loss minimisation that balances risk, cost, and uncertainty to select the optimal action (approve, deny, or escalate). |
 | **Lack of auditability** | Full traceability in every decision, with optional enterprise audit trails |
 | **Complex decision context** | Governance loop integrates cost, policy, risk, epistemic uncertainty, and memory |
-| **Scaling from prototype to production** | Clear boundaries between OSS advisory and enterprise enforcement |
+| **Scaling from prototype to production** | Clear boundaries between core engine (proprietary) and enterprise enforcement |
 
 ---
 
@@ -71,3 +71,16 @@ It must remain:
 - suitable for implementation in enterprise or extension layers
 
 This keeps the core deterministic, session‑scoped, and easy to audit.
+
+---
+
+## Public vs. Proprietary
+
+| Component | Status |
+|-----------|--------|
+| This specification (`arf-spec`) | ✅ Public (Apache 2.0) |
+| Core engine (advisory logic) | 🔒 Proprietary – pilot access only |
+| Enterprise enforcement layer | 🔒 Proprietary – outcome‑based pricing |
+| Public demo UI (`arf-frontend`) | ✅ Public (Apache 2.0) |
+
+The core engine is **not open source**. It is access‑controlled and available under outcome‑based pricing to qualified pilots and enterprise customers.
