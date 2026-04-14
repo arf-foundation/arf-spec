@@ -1027,15 +1027,15 @@ The <code>risk_factors</code> field contains additive contributions from each Ba
 <hr />
 <h2 id="3-governance-loop-flow-diagram">3. Governance Loop Flow Diagram<a class="headerlink" href="#3-governance-loop-flow-diagram" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>graph TD
-    A[InfrastructureIntent] --&gt; B{Cost Estimation}
-    B --&gt; C{Policy Evaluation}
-    C --&gt;|Violations| D[Deny]
-    C --&gt;|No violations| E{Risk Calculation}
-    E --&gt; F{Predictive Foresight}
-    F --&gt; G{Epistemic Uncertainty}
-    G --&gt; H{Expected Loss Minimization}
-    H --&gt; I[APPROVE / DENY / ESCALATE]
-    D --&gt; J[HealingIntent]
+    A["InfrastructureIntent"] --&gt; B["Cost Estimation"]
+    B --&gt; C["Policy Evaluation"]
+    C --&gt;|"Violations"| D["Deny"]
+    C --&gt;|"No violations"| E["Risk Calculation"]
+    E --&gt; F["Predictive Foresight"]
+    F --&gt; G["Epistemic Uncertainty"]
+    G --&gt; H["Expected Loss Minimization"]
+    H --&gt; I["APPROVE / DENY / ESCALATE"]
+    D --&gt; J["HealingIntent"]
     I --&gt; J</code></pre>
 <h2 id="4-configuration-constants">4. Configuration Constants<a class="headerlink" href="#4-configuration-constants" title="Permanent link">&para;</a></h2>
 <p>The following constants are defined in the proprietary core engine’s configuration module.<br />
