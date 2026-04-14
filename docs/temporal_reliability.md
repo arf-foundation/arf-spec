@@ -5,6 +5,12 @@ Repository: `arf-spec`
 Scope: Specification boundary only  
 Implementation status: None in core ARF
 
+```markdown
+!!! warning "Specification Status"
+    This roadmap describes **planned** capabilities. ✅ Implemented items are marked.  
+    Enterprise‑only features require a commercial license.
+```
+
 ## 1. Purpose
 
 This document defines the contract for longitudinal reliability tracking in ARF without changing the behavior of the core in-session scoring path.
