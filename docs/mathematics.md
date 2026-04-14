@@ -12,11 +12,6 @@ The engine is access‑controlled and available under outcome‑based pricing.
 
 ![ARF Mathematics Overview](assets/arf_mathematics_overview.png)
 
-<div align="center">
-  <img src="assets/arf_mathematics_overview.png" alt="ARF Mathematics Overview" width="90%">
-  <br>
-  <em>Figure: End‑to‑end mathematical pipeline – from Bayesian priors to signed healing intents.</em>
-</div>
 ---
 
 ## 1. Conjugate Beta‑Binomial Model (Online Learning)
