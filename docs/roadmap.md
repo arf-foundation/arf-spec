@@ -4,6 +4,11 @@
 The engine is access‑controlled and available under outcome‑based pricing.  
 This roadmap does **not** imply open source availability.
 
+```markdown
+!!! warning "Specification Status"
+    This roadmap describes **planned** capabilities. ✅ Implemented items are marked.  
+    Enterprise‑only features require a commercial license.
+```
 ---
 
 ## 1. Executive Summary
