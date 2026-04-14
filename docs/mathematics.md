@@ -1,399 +1,135 @@
-# Mathematical Foundations of ARF
+# Mathematical Foundations
 
-ARF relies on Bayesian statistical models to estimate risk, combining online conjugate updates, optional hierarchical shrinkage, and offline Hamiltonian Monte Carlo into a single fused risk score. The framework intentionally prioritizes uncertainty awareness over deterministic predictions.
+This document describes the Bayesian mathematics underlying the ARF Core Engine’s risk scoring.  
+The canonical definition of the **risk score** used throughout this specification is the posterior mean of the conjugate Beta distribution, optionally blended with HMC and hyperprior components as described below.
 
-<div class="card" style="background: white; border-radius: 20px; padding: 1.5rem; margin: 2rem 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-  <h3 style="margin-top: 0;">📊 Interactive Bayesian Risk Simulator</h3>
-  <p style="font-size: 0.9rem; color: #4a627a;">Explore how prior beliefs, observed outcomes, and offline HMC predictions combine into a fused risk score.</p>
+> **Canonical reference:** See [`core_concepts.md`](core_concepts.md#3-risk-score) for the definition of `RiskScore`.
 
-  <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
-    <!-- Left: Controls -->
-    <div style="flex: 1; min-width: 220px;">
-      <label style="display: block; font-weight: 600;">Prior (α, β):</label>
-      <select id="priorSelect" style="width: 100%; padding: 0.4rem; margin-bottom: 1rem;">
-        <option value="default">Default (α=1.0, β=10.0)</option>
-        <option value="database">Database (α=1.5, β=8.0)</option>
-        <option value="network">Network (α=1.2, β=10.0)</option>
-        <option value="compute">Compute (α=1.0, β=12.0)</option>
-        <option value="security">Security (α=2.0, β=10.0)</option>
-      </select>
+**Implementation status:** The mathematics defined here are implemented in the proprietary core engine.  
+The engine is access‑controlled and available under outcome‑based pricing.
 
-      <label style="display: block; font-weight: 600;">Failures observed (f):</label>
-      <input type="range" id="failuresSlider" min="0" max="100" value="20" step="1" style="width: 100%;">
-      <span id="failuresVal" style="display: inline-block; margin-left: 8px;">20</span>
+---
 
-      <label style="display: block; font-weight: 600; margin-top: 0.5rem;">Successes observed (s):</label>
-      <input type="range" id="successesSlider" min="0" max="100" value="80" step="1" style="width: 100%;">
-      <span id="successesVal" style="display: inline-block; margin-left: 8px;">80</span>
+## 1. Conjugate Beta‑Binomial Model (Online Learning)
 
-      <label style="display: block; font-weight: 600; margin-top: 0.5rem;">HMC prediction (simulated):</label>
-      <input type="range" id="hmcSlider" min="0" max="1" step="0.01" value="0.35" style="width: 100%;">
-      <span id="hmcVal" style="display: inline-block; margin-left: 8px;">0.35</span>
-    </div>
+For each action category $c \in \mathcal{C}$, we maintain a Beta posterior:
 
-    <!-- Right: Plot and results -->
-    <div style="flex: 2; min-width: 280px;">
-      <div id="betaPlot" style="height: 280px; width: 100%;"></div>
-      <div style="margin-top: 0.5rem; font-size: 0.9rem;">
-        <strong>Posterior mean risk:</strong> <span id="posteriorMean">0.189</span><br>
-        <strong>95% credible interval:</strong> <span id="credibleInterval">[0.122, 0.267]</span><br>
-        <strong>Hybrid risk (w/ HMC weight 0.3):</strong> <span id="hybridRisk">0.237</span><br>
-        <strong>Decision threshold:</strong> 
-        <span style="display: inline-block; padding: 2px 8px; border-radius: 20px; background: #e2e8f0; font-size: 0.8rem;">
-          <span style="color: #2b6e3b;">Approve</span> &lt; 0.2 &nbsp;|&nbsp;
-          <span style="color: #b45f06;">Escalate</span> 0.2–0.8 &nbsp;|&nbsp;
-          <span style="color: #a11f1f;">Deny</span> &gt; 0.8
-        </span>
-      </div>
-    </div>
-  </div>
-  <p style="font-size: 0.75rem; color: #6c757d; margin-top: 1rem; text-align: center;">
-    ⚙️ Posterior = Beta(α + f, β + s). Hybrid risk = (1‑w)·posterior_mean + w·HMC_prediction, with w = min(1, (f+s)/1000). The plot shows the posterior density.
-  </p>
-</div>
-
-<script>
-  // Prior presets
-  const priorMap = {
-    default: [1.0, 10.0],
-    database: [1.5, 8.0],
-    network: [1.2, 10.0],
-    compute: [1.0, 12.0],
-    security: [2.0, 10.0]
-  };
-
-  // DOM elements
-  const priorSelect = document.getElementById('priorSelect');
-  const failuresSlider = document.getElementById('failuresSlider');
-  const successesSlider = document.getElementById('successesSlider');
-  const hmcSlider = document.getElementById('hmcSlider');
-  const failuresVal = document.getElementById('failuresVal');
-  const successesVal = document.getElementById('successesVal');
-  const hmcVal = document.getElementById('hmcVal');
-  const posteriorMeanSpan = document.getElementById('posteriorMean');
-  const credibleIntervalSpan = document.getElementById('credibleInterval');
-  const hybridRiskSpan = document.getElementById('hybridRisk');
-
-  // Helper: Beta PDF (unscaled) for plotting
-  function betaPDF(x, a, b) {
-    if (x <= 0 || x >= 1) return 0;
-    // Log of Beta function using log gamma
-    function logGamma(z) {
-      const g = 7;
-      const p = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
-                  771.32342877765313, -176.61502916214059, 12.507343278686905,
-                  -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
-      if (z < 0.5) return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * z)) - logGamma(1 - z);
-      z -= 1;
-      let xVal = p[0];
-      for (let i = 1; i < g+2; i++) xVal += p[i] / (z + i);
-      const t = z + g + 0.5;
-      return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(xVal);
-    }
-    const logPDF = (a-1)*Math.log(x) + (b-1)*Math.log(1-x) - (logGamma(a)+logGamma(b)-logGamma(a+b));
-    return Math.exp(logPDF);
-  }
-
-  // Compute posterior parameters and update everything
-  function update() {
-    const priorKey = priorSelect.value;
-    let [alpha0, beta0] = priorMap[priorKey];
-    const f = parseFloat(failuresSlider.value);
-    const s = parseFloat(successesSlider.value);
-    const hmcPred = parseFloat(hmcSlider.value);
-    failuresVal.innerText = f;
-    successesVal.innerText = s;
-    hmcVal.innerText = hmcPred.toFixed(3);
-
-    const alpha = alpha0 + f;
-    const beta = beta0 + s;
-    const posteriorMean = alpha / (alpha + beta);
-    // Quantiles using approximation (normal approximation or binary search)
-    // Simple binary search for 0.025 and 0.975 quantiles
-    function betaQuantile(p, a, b, tol=1e-6) {
-      let lo = 0, hi = 1;
-      while (hi - lo > tol) {
-        const mid = (lo + hi) / 2;
-        // Use Simpson integration for CDF
-        const n = 200;
-        const dx = mid / n;
-        let cdf = 0;
-        for (let i = 0; i <= n; i++) {
-          const x = i * dx;
-          const w = (i === 0 || i === n) ? 1 : (i % 2 === 0 ? 2 : 4);
-          cdf += w * betaPDF(x, a, b);
-        }
-        cdf = cdf * dx / 3;
-        if (cdf < p) lo = mid;
-        else hi = mid;
-      }
-      return (lo + hi) / 2;
-    }
-    const lo = betaQuantile(0.025, alpha, beta);
-    const hi = betaQuantile(0.975, alpha, beta);
-    posteriorMeanSpan.innerText = posteriorMean.toFixed(4);
-    credibleIntervalSpan.innerText = `[${lo.toFixed(4)}, ${hi.toFixed(4)}]`;
-
-    // Hybrid risk: weight = min(1, (f+s)/1000)
-    const n = f + s;
-    const hmcWeight = Math.min(1.0, n / 1000);
-    const hybrid = posteriorMean * (1 - hmcWeight) + hmcPred * hmcWeight;
-    hybridRiskSpan.innerText = hybrid.toFixed(4);
-
-    // Plot Beta distribution
-    const xVals = [];
-    const yVals = [];
-    for (let x = 0.001; x <= 0.999; x += 0.002) {
-      xVals.push(x);
-      yVals.push(betaPDF(x, alpha, beta));
-    }
-    const trace = {
-      x: xVals,
-      y: yVals,
-      type: 'scatter',
-      mode: 'lines',
-      fill: 'tozeroy',
-      line: { color: '#3b82f6', width: 2 },
-      name: 'Posterior density'
-    };
-    const layout = {
-      title: 'Posterior distribution of risk p',
-      xaxis: { title: 'p (risk probability)', range: [0,1] },
-      yaxis: { title: 'Density' },
-      margin: { t: 30, b: 30, l: 40, r: 20 },
-      showlegend: false,
-      hovermode: 'closest'
-    };
-    Plotly.newPlot('betaPlot', [trace], layout, { responsive: true });
-  }
-
-  // Event listeners
-  priorSelect.addEventListener('change', update);
-  failuresSlider.addEventListener('input', update);
-  successesSlider.addEventListener('input', update);
-  hmcSlider.addEventListener('input', update);
-
-  // Initial plot
-  update();
-</script>
-
-## Expected Loss Minimisation
-
-The governance loop does not use fixed probability thresholds (e.g., 0.2, 0.8). Instead, it selects the optimal action (APPROVE, DENY, or ESCALATE) by minimising expected loss, with two key enhancements:
-
-- **Time‑decaying risk** – the risk score is exponentially smoothed across consecutive evaluations for the same component, making the system sensitive to recent incidents.
-- **Conditional Value at Risk (CVaR)** – for the approve loss, the expected value can be replaced by the average of the worst‑case tail of the posterior distribution, providing robustness against extreme uncertainty.
-
-### Time‑Decaying Risk
-
-For each component, a smoothed risk score \(\tilde{\theta}_t\) is maintained:
-
-\[
-\tilde{\theta}_t = \gamma \cdot \tilde{\theta}_{t-1} + (1-\gamma) \cdot \theta_t, \quad \gamma = 0.9 \text{ (default)},
-\]
-
-with initial value \(\tilde{\theta}_0 = 0.5\). Here \(\theta_t\) is the Bayesian posterior failure probability (risk score) at time \(t\). This smoothed value replaces \(\theta\) in all loss calculations (except the variance term, which already quantifies uncertainty).
-
-### Standard Expected Loss (default)
-
-\[
-\begin{aligned}
-L_{\text{approve}}^{\text{mean}} &= c_{\text{FP}} \, \tilde{\theta} + c_{\text{impact}} \, \text{revenue\_loss} + c_{\text{pred}} \, \text{pred\_risk} + c_{\text{var}} \, \sigma^2, \\[4pt]
-L_{\text{deny}} &= c_{\text{FN}} (1 - \tilde{\theta}) + c_{\text{opp}} \, v_{\text{mean}}, \\[4pt]
-L_{\text{escalate}} &= c_{\text{review}} + c_{\text{unc}} \, \psi,
-\end{aligned}
-\]
-
-where:
-
-- \(\tilde{\theta}\) = decayed risk score,
-- \(\sigma^2\) = posterior variance (from conjugate Beta model),
-- \(\psi\) = composite epistemic uncertainty,
-- \(v_{\text{mean}}\) = estimated opportunity value,
-- all <abbr title="Cost constants defined in the table below">\(c\) constants</abbr> are defined below.
-
-### CVaR‑Based Approve Loss (optional, enabled by `USE_CVAR = True`)
-
-When `USE_CVAR` is enabled, the approve loss is computed as the average of the worst α‑fraction of per‑sample losses from the posterior distribution, plus the variance penalty. This makes the decision more conservative when the posterior has heavy tails or high uncertainty.
-
-<details>
-<summary>📘 Click to expand the CVaR calculation procedure</summary>
-
-**Procedure:**
-
-1. Draw \(N\) samples from the posterior Beta distribution:
-   \[
-   p_i \sim \text{Beta}(\alpha, \beta), \quad i = 1,\dots,N
-   \]
-   where \((\alpha, \beta)\) are the posterior parameters of the conjugate model.
-
-2. Compute the per‑sample approve loss without the variance term:
-   \[
-   L_{\text{approve}}^{(i)} = c_{\text{FP}} \, p_i + c_{\text{impact}} \, \text{revenue\_loss} + c_{\text{pred}} \, \text{pred\_risk}.
-   \]
-
-3. Sort the losses in ascending order:
-   \[
-   L_{\text{approve}}^{([1])} \le L_{\text{approve}}^{([2])} \le \dots \le L_{\text{approve}}^{([N])}.
-   \]
-
-4. Take the average of the smallest \(k = \lceil \alpha N \rceil\) values:
-   \[
-   L_{\text{approve}}^{\text{CVaR}} = \frac{1}{k} \sum_{i=1}^{k} L_{\text{approve}}^{([i])} + c_{\text{var}} \, \sigma^2.
-   \]
-
-Here \(\alpha = \text{CVAR\_ALPHA}\) (default 0.05, i.e., 95% CVaR) and \(N = 1000\) samples.
-
-</details>
-
-The deny and escalate losses remain unchanged, as they are linear in risk (or constant).
-
-#### Why Use CVaR?
-
-- Standard expected loss (mean) ignores the shape of the posterior distribution. Two distributions with the same mean but different variances or skewness produce the same \(L_{\text{approve}}^{\text{mean}}\), which may be inappropriate when tail risk matters.
-- CVaR focuses on the worst outcomes, making the decision robust against extreme (but rare) high‑risk scenarios. This is especially valuable in safety‑critical environments (e.g., healthcare, finance, autonomous systems).
-
-#### Example Use Case
-
-Suppose a model predicts a risk score \(\theta = 0.3\) with high variance (e.g., Beta(3,7) gives variance 0.021). The expected approve loss might be low, but there is a non‑negligible probability that the true risk is much higher (e.g., 0.6). Using CVaR (\(\alpha = 0.05\)) would average the worst 5% of the posterior samples, capturing this tail risk and potentially escalating or denying an action that would otherwise be approved under the mean loss.
-
-This aligns with a risk‑averse business policy: avoid actions that could occasionally cause catastrophic failure, even if they are safe on average.
-
-### Decision Flow
-
-The following diagram illustrates the governance loop’s decision logic:
-
-```mermaid
-graph TD
-    A[Start] --> B{Policy violations?}
-    B -->|Yes| C[DENY]
-    B -->|No| D{Epistemic uncertainty > threshold?}
-    D -->|Yes| E[ESCALATE]
-    D -->|No| F[Compute expected losses for APPROVE, DENY, ESCALATE]
-    F --> G[Select action with minimum expected loss]
-    G --> H[APPROVE / DENY / ESCALATE]
+```math
+p_c \sim \text{Beta}(\alpha_c, \beta_c)
 ```
 
-### Decision Rule
+where $(\alpha_c, \beta_c)$ start from expert‑elicited priors. Upon observing a binary outcome $y \in {0,1}$ ($y=1$ = failure), we update:
 
-- If policy violations exist → **DENY**.
-- Else if `USE_EPISTEMIC_GATE` and \(\psi > \psi_{\text{thresh}}\) (default \(\psi_{\text{thresh}} = 0.5\)) → **ESCALATE**.
-- Else → action with the smallest expected loss (using the chosen approve loss variant).
+```math
+(\alpha_c, \beta_c) \leftarrow (\alpha_c + y,\; \beta_c + (1-y))
+```
 
-All cost constants are configurable in `core/config/constants.py`. The default values (as of ARF v4) are:
+allows us to construct credible intervals (e.g., 90% HDI) and express uncertainty.
 
-| <abbr title="False positive cost">\(c_{\text{FP}}\)</abbr> | <abbr title="False negative cost">\(c_{\text{FN}}\)</abbr> | <abbr title="Business impact weight">\(c_{\text{impact}}\)</abbr> | <abbr title="Predictive risk weight">\(c_{\text{pred}}\)</abbr> | <abbr title="Variance penalty weight">\(c_{\text{var}}\)</abbr> | <abbr title="Opportunity cost weight">\(c_{\text{opp}}\)</abbr> | <abbr title="Human review cost">\(c_{\text{review}}\)</abbr> | <abbr title="Epistemic uncertainty weight">\(c_{\text{unc}}\)</abbr> | Value | Description |
-|------|------|------|------|------|------|------|------|-------|-------------|
-| 10.0 | 8.0 | 5.0 | 2.0 | 5.0 | 3.0 | 2.0 | 4.0 | – | – |
-| \(\psi_{\text{thresh}}\) | \(\gamma\) (RISK_DECAY_FACTOR) | `USE_CVAR` | `CVAR_ALPHA` | – | – | – | – | 0.5 | Epistemic escalation threshold |
-| 0.9 | Smoothing factor | False | Enable CVaR | 0.05 | Tail probability (95%) | – | – | – | – |
+**Choice of Priors:** To encode domain expertise, we use informative priors that are **pessimistic** for high‑impact categories (e.g., database modifications: $\alpha=1.5, \beta=8.0$ gives prior mean $\approx 0.16$). This counteracts optimism bias and ensures safe early decisions.
 
-### Interactive Expected Loss Simulator
+---
 
-Use the sliders below to adjust the key parameters and see how the expected losses change in real time. The decision (minimum expected loss action) is highlighted. (The simulator currently shows the standard mean loss; CVaR behaviour is not yet visualised but can be enabled in the code.)
+## 2. Hamiltonian Monte Carlo for Offline Pattern Discovery
 
-## Beta‑Binomial Model (Online Conjugate Prior)
+Complex interactions (time‑of‑day, user role, environment) are captured by a logistic regression with HMC sampling:
 
-Each action category maintains a Beta posterior derived from a fixed prior.
+```math
+\operatorname{logit}(p) = \beta_0 + \beta_{\text{role}} x_{\text{role}} + \beta_{\text{env}} x_{\text{env}} + \beta_{\sin}\sin\!\left(\frac{2\pi t}{24}\right) + \beta_{\cos}\cos\!\left(\frac{2\pi t}{24}\right) + \sum_{k}\beta_k x_k
+```
 
-Let \((\alpha_0, \beta_0)\) be the fixed prior parameters for a category (e.g., \(\alpha_0 = 1.5, \beta_0 = 8.0\) for `database`). After observing \(f\) failures and \(s\) successes, the posterior is:
+We place weakly informative priors on coefficients, e.g., $\beta_j \sim \operatorname{Normal}(0, 1)$. The posterior is sampled using the No‑U‑Turn Sampler (NUTS) implemented in PyMC. The resulting posterior over coefficients gives us not only point estimates but also full uncertainty about predictions, which we propagate into the final risk.
 
-\[
-p \sim \text{Beta}(\alpha_0 + f,\; \beta_0 + s)
-\]
+**Why HMC?** HMC efficiently explores high‑dimensional parameter spaces, avoids random‑walk behavior, and yields effective sample sizes orders of magnitude higher than Metropolis‑Hastings. This is critical for learning from sparse historical data.
 
-**Posterior mean (expected risk):**
+---
 
-\[
-\mathbb{E}[p] = \frac{\alpha_0 + f}{\alpha_0 + f + \beta_0 + s}
-\]
+## 3. Hierarchical Hyperpriors (Shrinkage)
 
-**Posterior variance:**
+To share statistical strength across categories, we introduce a hierarchical Beta model:
 
-\[
-\text{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
-\]
+```math
+p_c \sim \operatorname{Beta}(\alpha_0, \beta_0) \quad\text{for all }c
+```
 
-This model is always active and updates in real time as outcomes are recorded.
+with global hyperparameters $\alpha_0, \beta_0 \sim \operatorname{Gamma}(2,1)$. This model is fit via variational inference (SVI) in Pyro, yielding posterior summaries for each category that are shrunk toward the global mean. The hyperprior contribution is weighted by data availability:
 
-## Hierarchical Beta Model (Optional Hyperpriors)
+```math
+w_{\text{hyper}} = \min\!\left( \frac{n}{n_{\text{hyper}}},\, w_{\text{max}} \right)
+```
 
-When enabled (`use_hyperpriors=True`), the framework adds a second layer of Bayesian inference: a beta prior on the beta parameters. This allows statistical strength to be shared across categories, improving estimates for categories with little data.
+where $n$ is the total number of outcomes.
 
-**Hierarchical model:**
+4\. Hybrid Risk Fusion
+----------------------
 
-\[
-p_c \sim \text{Beta}(\alpha_0, \beta_0), \quad \alpha_0 \sim \text{Gamma}(2,1),\; \beta_0 \sim \text{Gamma}(2,1)
-\]
+The final risk $R$ for a given intent is a weighted combination:
 
-The hyperparameters \(\alpha_0, \beta_0\) are learned from all categories simultaneously using variational inference (Pyro). The resulting posterior mean for a category is a shrunk estimate that borrows information from other categories.
+```math
+R = w_{\text{conj}} \cdot \frac{\alpha_c}{\alpha_c+\beta_c} + w_{\text{hmc}} \cdot p_{\text{hmc}} + w_{\text{hyper}} \cdot p_{\text{hyper}}
+```
 
-> **Note:** This model is optional and incurs additional computational overhead. It is intended for scenarios where categories have varying amounts of data and you want to avoid overfitting.
+Weights are dynamic:
 
-## Hamiltonian Monte Carlo (Offline Logistic Regression)
+```math
+w_{\text{hmc}} = \min\!\left(1,\, \frac{n}{n_0}\right)
+```
 
-For complex patterns (time of day, user role, environment), a logistic regression is trained offline using the No‑U‑Turn Sampler:
+```math
+w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\text{hyper}}}\right)
+```
 
-\[
-\operatorname{logit}(p) = \beta_0 + \sum_i \beta_i x_i
-\]
+```math
+w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
+```
 
-where \(x_i\) include cyclical time encodings (\(\sin(2\pi t/24), \cos(2\pi t/24)\)), environment indicators, and one‑hot encoded categories.
+with $n_0 = 1000$ and $n_{\text{hyper}} = 100$ as defaults. The final risk is then multiplied by a context factor $\kappa(\text{env}, \text{cost}, \text{violations})$ to account for external factors.
 
-## Risk Fusion (Dynamic Weighted Average)
+5\. Uncertainty Quantification
+------------------------------
 
-The final risk score is a weighted combination of the three components:
+Every risk prediction includes a **90% highest density interval** (HDI) computed via:
 
-\[
-R = w_{\text{conj}} \cdot p_{\text{conj}} + w_{\text{hyper}} \cdot p_{\text{hyper}} + w_{\text{hmc}} \cdot p_{\text{hmc}}
-\]
+*   For conjugate part: quantiles of Beta distribution.
+    
+*   For HMC part: posterior predictive samples.
+    
+*   For hyperprior part: quantiles from variational posterior.
+    
 
-Weights depend on the amount of observed data (\(n\)) and are computed as follows:
+These intervals are displayed in the frontend and used to trigger human‑in‑the‑loop escalation when uncertainty is high (e.g., interval width $>0.3$).
 
-<details>
-<summary>📊 Weight calculation formulas (click to expand)</summary>
+6\. Expected Loss Minimisation (Summary)
+----------------------------------------
 
-| Available components | Weight formulas |
-|----------------------|-----------------|
-| Only conjugate | \(w_{\text{conj}} = 1.0\) |
-| Conjugate + HMC | \(w_{\text{hmc}} = \min(1.0, \frac{n}{n_0}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}}\) |
-| Conjugate + hyperprior | \(w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}),\quad w_{\text{conj}} = 1 - w_{\text{hyper}}\) |
-| All three | \(w_{\text{hmc}} = \min(0.6, \frac{n}{n_0}),\quad w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}) \cdot (1 - w_{\text{hmc}}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}\) |
+The risk score feeds into the governance loop’s expected loss calculation:
 
-where \(n_0 = 1000\) and \(w_{\text{hyper}}^{\text{base}} = 0.3\).
+```math
+\begin{aligned}
+L_{\text{approve}} &= \text{COST\_FP} \cdot R + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\
+L_{\text{deny}} &= \text{COST\_FN} \cdot (1 - R) + \text{COST\_OPP} \cdot v_{\text{mean}} \\
+L_{\text{escalate}} &= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi_{\text{mean}}
+\end{aligned}
+```
 
-</details>
+For a detailed explanation of the governance loop and constants, see [governance.md](https://governance.md/).
 
-## Context Multiplier
+7\. References
+--------------
 
-Before finalising the risk, a context multiplier \(m\) may be applied to account for environmental risk factors (e.g., production vs. development):
+*   Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). _Bayesian Data Analysis_ (3rd ed.). CRC Press.
+    
+*   McElreath, R. (2020). _Statistical Rethinking: A Bayesian Course with Examples in R and Stan_. CRC Press.
+    
+*   Hoffman, M. D., & Gelman, A. (2014). The No‑U‑Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo. _Journal of Machine Learning Research_, 15(1), 1593–1623.
+    
 
-\[
-R_{\text{final}} = \min(R \cdot m,\; 1.0)
-\]
+8\. See Also
+------------
 
-In the reference implementation, \(m = 1.5\) for production environments; otherwise \(m = 1.0\).
+*   [core\_concepts.md](https://core_concepts.md/) – canonical definition of RiskScore and execution ladder
+    
+*   [governance.md](https://governance.md/) – governance loop flow and expected loss minimisation
+    
+*   [design.md](https://design.md/) – architectural decisions and trade‑offs
 
-## Posterior Variance for Decision‑Theoretic Loss
-
-The governance loop uses the posterior variance of the conjugate component as a measure of statistical uncertainty in the expected loss calculations:
-
-\[
-\sigma^2 = \text{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
-\]
-
-This variance is combined with other uncertainty terms (epistemic, predictive) to compute the expected loss of each possible action.
-
-## Implementation Notes
-
-- The formulas above match the implementation in: `agentic_reliability_framework/core/governance/risk_engine.py` (reference implementation of the specification).
-- Hyperpriors are disabled by default and must be explicitly enabled with `use_hyperpriors=True`.
-- The HMC model must be pre‑trained and loaded from a JSON file (`hmc_model.json` by default).
-- Time‑decaying risk is always active (with default \(\gamma = 0.9\)). It can be disabled by setting `RISK_DECAY_FACTOR = 1.0` in `constants.py`.
-- CVaR is disabled by default (`USE_CVAR = False`). To enable robust approval decisions, set `USE_CVAR = True` and optionally adjust `CVAR_ALPHA`.
-
-## References
-
-- Gelman, A. et al. (2013). *Bayesian Data Analysis*. Chapman & Hall.
-- Betancourt, M. (2017). *A Conceptual Introduction to Hamiltonian Monte Carlo*. arXiv:1701.02434
-- McElreath, R. (2020). *Statistical Rethinking*. CRC Press.
