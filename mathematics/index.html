@@ -894,28 +894,25 @@
 
 
 <h1 id="mathematical-foundations-of-arf">Mathematical Foundations of ARF<a class="headerlink" href="#mathematical-foundations-of-arf" title="Permanent link">&para;</a></h1>
-<p>ARF relies on Bayesian statistical models to estimate risk, combining <strong>online conjugate updates</strong>, <strong>optional hierarchical shrinkage</strong>, and <strong>offline Hamiltonian Monte Carlo</strong> into a single fused risk score. The framework intentionally prioritizes <strong>uncertainty awareness</strong> over deterministic predictions.</p>
-<hr />
+<p>ARF relies on Bayesian statistical models to estimate risk, combining online conjugate updates, optional hierarchical shrinkage, and offline Hamiltonian Monte Carlo into a single fused risk score. The framework intentionally prioritizes uncertainty awareness over deterministic predictions.</p>
 <h2 id="expected-loss-minimisation">Expected Loss Minimisation<a class="headerlink" href="#expected-loss-minimisation" title="Permanent link">&para;</a></h2>
-<p>The governance loop does <strong>not</strong> use fixed probability thresholds (e.g., 0.2, 0.8). Instead, it selects the optimal action (APPROVE, DENY, or ESCALATE) by <strong>minimising expected loss</strong>, with two key enhancements:</p>
-<ol>
+<p>The governance loop does not use fixed probability thresholds (e.g., 0.2, 0.8). Instead, it selects the optimal action (APPROVE, DENY, or ESCALATE) by minimising expected loss, with two key enhancements:</p>
+<ul>
 <li><strong>Time‑decaying risk</strong> – the risk score is exponentially smoothed across consecutive evaluations for the same component, making the system sensitive to recent incidents.</li>
 <li><strong>Conditional Value at Risk (CVaR)</strong> – for the approve loss, the expected value can be replaced by the average of the worst‑case tail of the posterior distribution, providing robustness against extreme uncertainty.</li>
-</ol>
-<hr />
+</ul>
 <h3 id="timedecaying-risk">Time‑Decaying Risk<a class="headerlink" href="#timedecaying-risk" title="Permanent link">&para;</a></h3>
 <p>For each component, a smoothed risk score <span class="arithmatex">\(\tilde{\theta}_t\)</span> is maintained:</p>
 <div class="arithmatex">\[
-\tilde{\theta}_t = \gamma \cdot \tilde{\theta}_{t-1} + (1 - \gamma) \cdot \theta_t,\qquad \gamma = 0.9\ \text{(default)},
+\tilde{\theta}_t = \gamma \cdot \tilde{\theta}_{t-1} + (1-\gamma) \cdot \theta_t, \quad \gamma = 0.9 \text{ (default)},
 \]</div>
 <p>with initial value <span class="arithmatex">\(\tilde{\theta}_0 = 0.5\)</span>. Here <span class="arithmatex">\(\theta_t\)</span> is the Bayesian posterior failure probability (risk score) at time <span class="arithmatex">\(t\)</span>. This smoothed value replaces <span class="arithmatex">\(\theta\)</span> in all loss calculations (except the variance term, which already quantifies uncertainty).</p>
-<hr />
 <h3 id="standard-expected-loss-default">Standard Expected Loss (default)<a class="headerlink" href="#standard-expected-loss-default" title="Permanent link">&para;</a></h3>
 <div class="arithmatex">\[
 \begin{aligned}
-L_{\text{approve}}^{\text{mean}} &amp;= c_{FP}\,\tilde{\theta} \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2,\\[4pt]
-L_{\text{deny}} &amp;= c_{FN}\,(1-\tilde{\theta}) \;+\; c_{\text{opp}}\,v_{\text{mean}},\\[4pt]
-L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
+L_{\text{approve}}^{\text{mean}} &amp;= c_{\text{FP}} \, \tilde{\theta} + c_{\text{impact}} \, \text{revenue\_loss} + c_{\text{pred}} \, \text{pred\_risk} + c_{\text{var}} \, \sigma^2, \\[4pt]
+L_{\text{deny}} &amp;= c_{\text{FN}} (1 - \tilde{\theta}) + c_{\text{opp}} \, v_{\text{mean}}, \\[4pt]
+L_{\text{escalate}} &amp;= c_{\text{review}} + c_{\text{unc}} \, \psi,
 \end{aligned}
 \]</div>
 <p>where:</p>
@@ -926,51 +923,52 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
 <li><span class="arithmatex">\(v_{\text{mean}}\)</span> = estimated opportunity value,</li>
 <li>all <span class="arithmatex">\(c\)</span> constants are defined below.</li>
 </ul>
-<hr />
 <h3 id="cvarbased-approve-loss-optional-enabled-by-use_cvar-true">CVaR‑Based Approve Loss (optional, enabled by <code>USE_CVAR = True</code>)<a class="headerlink" href="#cvarbased-approve-loss-optional-enabled-by-use_cvar-true" title="Permanent link">&para;</a></h3>
-<p>When <code>USE_CVAR</code> is enabled, the approve loss is computed as the <strong>average of the worst α‑fraction</strong> of per‑sample losses from the posterior distribution, plus the variance penalty. This makes the decision more conservative when the posterior has heavy tails or high uncertainty.</p>
+<p>When <code>USE_CVAR</code> is enabled, the approve loss is computed as the average of the worst α‑fraction of per‑sample losses from the posterior distribution, plus the variance penalty. This makes the decision more conservative when the posterior has heavy tails or high uncertainty.</p>
 <p><strong>Procedure:</strong></p>
 <ol>
 <li>
-<p>Draw <span class="arithmatex">\(N\)</span> samples from the posterior Beta distribution:<br />
-   $$
-   p_i \sim \operatorname{Beta}(\alpha, \beta), \quad i = 1,\dots,N
-   $$
+<p>Draw <span class="arithmatex">\(N\)</span> samples from the posterior Beta distribution:
+   [
+   p_i \sim \text{Beta}(\alpha, \beta), \quad i = 1,\dots,N
+   ]
    where <span class="arithmatex">\((\alpha, \beta)\)</span> are the posterior parameters of the conjugate model.</p>
 </li>
 <li>
-<p>Compute the per‑sample approve loss <strong>without</strong> the variance term:<br />
-   $$
-   L_{\text{approve}}^{(i)} = c_{FP}\,p_i + c_{\text{impact}}\,\text{revenue_loss} + c_{\text{pred}}\,\text{pred_risk}.
-   $$</p>
+<p>Compute the per‑sample approve loss without the variance term:
+   [
+   L_{\text{approve}}^{(i)} = c_{\text{FP}} \, p_i + c_{\text{impact}} \, \text{revenue_loss} + c_{\text{pred}} \, \text{pred_risk}.
+   ]</p>
 </li>
 <li>
-<p>Sort the losses in ascending order: <span class="arithmatex">\(L_{\text{approve}}^{([1])} \le L_{\text{approve}}^{([2])} \le \dots \le L_{\text{approve}}^{([N])}\)</span>.</p>
+<p>Sort the losses in ascending order:
+   [
+   L_{\text{approve}}^{([1])} \le L_{\text{approve}}^{([2])} \le \dots \le L_{\text{approve}}^{([N])}.
+   ]</p>
 </li>
 <li>
-<p>Take the average of the smallest <span class="arithmatex">\(k = \lceil \alpha N \rceil\)</span> values:<br />
-   $$
-   L_{\text{approve}}^{\text{CVaR}} = \frac{1}{k}\sum_{i=1}^{k} L_{\text{approve}}^{([i])} + c_{\text{var}}\,\sigma^2.
-   $$</p>
+<p>Take the average of the smallest <span class="arithmatex">\(k = \lceil \alpha N \rceil\)</span> values:
+   [
+   L_{\text{approve}}^{\text{CVaR}} = \frac{1}{k} \sum_{i=1}^{k} L_{\text{approve}}^{([i])} + c_{\text{var}} \, \sigma^2.
+   ]</p>
 </li>
 </ol>
-<p>Here <span class="arithmatex">\(\alpha = \text{CVAR\_ALPHA}\)</span> (default <span class="arithmatex">\(0.05\)</span>, i.e., 95% CVaR) and <span class="arithmatex">\(N = 1000\)</span> samples.</p>
-<p>The <strong>deny</strong> and <strong>escalate</strong> losses remain unchanged, as they are linear in risk (or constant).</p>
+<p>Here <span class="arithmatex">\(\alpha = \text{CVAR\_ALPHA}\)</span> (default 0.05, i.e., 95% CVaR) and <span class="arithmatex">\(N = 1000\)</span> samples.</p>
+<p>The deny and escalate losses remain unchanged, as they are linear in risk (or constant).</p>
 <h4 id="why-use-cvar">Why Use CVaR?<a class="headerlink" href="#why-use-cvar" title="Permanent link">&para;</a></h4>
 <ul>
-<li><strong>Standard expected loss</strong> (mean) ignores the shape of the posterior distribution. Two distributions with the same mean but different variances or skewness produce the same <span class="arithmatex">\(L_{\text{approve}}^{\text{mean}}\)</span>, which may be inappropriate when tail risk matters.</li>
-<li><strong>CVaR</strong> focuses on the worst outcomes, making the decision robust against extreme (but rare) high‑risk scenarios. This is especially valuable in safety‑critical environments (e.g., healthcare, finance, autonomous systems).</li>
+<li>Standard expected loss (mean) ignores the shape of the posterior distribution. Two distributions with the same mean but different variances or skewness produce the same <span class="arithmatex">\(L_{\text{approve}}^{\text{mean}}\)</span>, which may be inappropriate when tail risk matters.</li>
+<li>CVaR focuses on the worst outcomes, making the decision robust against extreme (but rare) high‑risk scenarios. This is especially valuable in safety‑critical environments (e.g., healthcare, finance, autonomous systems).</li>
 </ul>
 <h4 id="example-use-case">Example Use Case<a class="headerlink" href="#example-use-case" title="Permanent link">&para;</a></h4>
-<p>Suppose a model predicts a risk score <span class="arithmatex">\(\theta = 0.3\)</span> with <strong>high variance</strong> (e.g., Beta(3,7) gives variance 0.021). The expected approve loss might be low, but there is a non‑negligible probability that the true risk is much higher (e.g., 0.6). Using CVaR (α = 0.05) would average the worst 5% of the posterior samples, capturing this tail risk and potentially <strong>escalating or denying</strong> an action that would otherwise be approved under the mean loss.</p>
-<p>This aligns with a <strong>risk‑averse</strong> business policy: avoid actions that could occasionally cause catastrophic failure, even if they are safe on average.</p>
-<hr />
+<p>Suppose a model predicts a risk score <span class="arithmatex">\(\theta = 0.3\)</span> with high variance (e.g., Beta(3,7) gives variance 0.021). The expected approve loss might be low, but there is a non‑negligible probability that the true risk is much higher (e.g., 0.6). Using CVaR (<span class="arithmatex">\(\alpha = 0.05\)</span>) would average the worst 5% of the posterior samples, capturing this tail risk and potentially escalating or denying an action that would otherwise be approved under the mean loss.</p>
+<p>This aligns with a risk‑averse business policy: avoid actions that could occasionally cause catastrophic failure, even if they are safe on average.</p>
 <h3 id="decision-rule">Decision Rule<a class="headerlink" href="#decision-rule" title="Permanent link">&para;</a></h3>
-<ol>
-<li>If policy violations exist → <code>DENY</code>.</li>
-<li>Else if <code>USE_EPISTEMIC_GATE</code> and <span class="arithmatex">\(\psi &gt; \psi_{\text{thresh}}\)</span> (default <span class="arithmatex">\(\psi_{\text{thresh}} = 0.5\)</span>) → <code>ESCALATE</code>.</li>
+<ul>
+<li>If policy violations exist → <strong>DENY</strong>.</li>
+<li>Else if <code>USE_EPISTEMIC_GATE</code> and <span class="arithmatex">\(\psi &gt; \psi_{\text{thresh}}\)</span> (default <span class="arithmatex">\(\psi_{\text{thresh}} = 0.5\)</span>) → <strong>ESCALATE</strong>.</li>
 <li>Else → action with the smallest expected loss (using the chosen approve loss variant).</li>
-</ol>
+</ul>
 <p>All cost constants are configurable in <code>core/config/constants.py</code>. The default values (as of ARF v4) are:</p>
 <table>
 <thead>
@@ -982,12 +980,12 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
 </thead>
 <tbody>
 <tr>
-<td><span class="arithmatex">\(c_{FP}\)</span></td>
+<td><span class="arithmatex">\(c_{\text{FP}}\)</span></td>
 <td>10.0</td>
 <td>False positive cost</td>
 </tr>
 <tr>
-<td><span class="arithmatex">\(c_{FN}\)</span></td>
+<td><span class="arithmatex">\(c_{\text{FN}}\)</span></td>
 <td>8.0</td>
 <td>False negative cost</td>
 </tr>
@@ -1043,159 +1041,39 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
 </tr>
 </tbody>
 </table>
-<hr />
 <h3 id="interactive-expected-loss-simulator">Interactive Expected Loss Simulator<a class="headerlink" href="#interactive-expected-loss-simulator" title="Permanent link">&para;</a></h3>
-<p>Use the sliders below to adjust the key parameters and see how the expected losses change in real time. The decision (minimum expected loss action) is highlighted. <em>(The simulator currently shows the standard mean loss; CVaR behaviour is not yet visualised but can be enabled in the code.)</em></p>
-<div id="elm-simulator">
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 15px;">
-    <div><label>Risk score (θ): <span id="risk-val">0.38</span></label><input type="range" id="risk-slider" min="0" max="1" step="0.01" value="0.38"></div>
-    <div><label>Posterior variance (σ²): <span id="var-val">0.05</span></label><input type="range" id="var-slider" min="0" max="0.25" step="0.005" value="0.05"></div>
-    <div><label>Epistemic uncertainty (ψ): <span id="psi-val">0.45</span></label><input type="range" id="psi-slider" min="0" max="1" step="0.01" value="0.45"></div>
-    <div><label>Revenue loss ($): <span id="rev-val">1000</span></label><input type="range" id="rev-slider" min="0" max="5000" step="100" value="1000"></div>
-    <div><label>Predictive risk: <span id="pred-val">0.25</span></label><input type="range" id="pred-slider" min="0" max="1" step="0.01" value="0.25"></div>
-    <div><label>Opportunity value ($): <span id="opp-val">2000</span></label><input type="range" id="opp-slider" min="0" max="5000" step="100" value="2000"></div>
-  </div>
-  <div style="margin-top: 20px;">
-    <button id="reset-defaults">Reset to Defaults</button>
-  </div>
-  <div id="elm-plot" style="width:100%; height:500px; margin-top:20px;"></div>
-  <div id="elm-decision" style="font-weight: bold; text-align: center; margin-top: 10px;"></div>
-</div>
-
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script>
-  // Constants (defaults) – same as before
-  const constants = {
-    cFP: 10.0,
-    cFN: 8.0,
-    cImpact: 5.0,
-    cPred: 2.0,
-    cVar: 5.0,
-    cOpp: 3.0,
-    cReview: 2.0,
-    cUnc: 4.0,
-    psiThresh: 0.5
-  };
-
-  // DOM elements
-  const riskSlider = document.getElementById('risk-slider');
-  const riskVal = document.getElementById('risk-val');
-  const varSlider = document.getElementById('var-slider');
-  const varVal = document.getElementById('var-val');
-  const psiSlider = document.getElementById('psi-slider');
-  const psiVal = document.getElementById('psi-val');
-  const revSlider = document.getElementById('rev-slider');
-  const revVal = document.getElementById('rev-val');
-  const predSlider = document.getElementById('pred-slider');
-  const predVal = document.getElementById('pred-val');
-  const oppSlider = document.getElementById('opp-slider');
-  const oppVal = document.getElementById('opp-val');
-  const resetBtn = document.getElementById('reset-defaults');
-
-  function computeLosses(theta, variance, psi, revenueLoss, predRisk, oppValue) {
-    const L_approve = constants.cFP * theta + constants.cImpact * revenueLoss / 1000 + constants.cPred * predRisk + constants.cVar * variance;
-    const L_deny = constants.cFN * (1 - theta) + constants.cOpp * oppValue / 1000;
-    const L_escalate = constants.cReview + constants.cUnc * psi;
-    return { L_approve, L_deny, L_escalate };
-  }
-
-  function updatePlot() {
-    const theta = parseFloat(riskSlider.value);
-    const variance = parseFloat(varSlider.value);
-    const psi = parseFloat(psiSlider.value);
-    const revenueLoss = parseFloat(revSlider.value);
-    const predRisk = parseFloat(predSlider.value);
-    const oppValue = parseFloat(oppSlider.value);
-
-    riskVal.innerText = theta.toFixed(3);
-    varVal.innerText = variance.toFixed(3);
-    psiVal.innerText = psi.toFixed(3);
-    revVal.innerText = revenueLoss;
-    predVal.innerText = predRisk.toFixed(3);
-    oppVal.innerText = oppValue;
-
-    const losses = computeLosses(theta, variance, psi, revenueLoss, predRisk, oppValue);
-    const actions = ['APPROVE', 'DENY', 'ESCALATE'];
-    const values = [losses.L_approve, losses.L_deny, losses.L_escalate];
-    const minIdx = values.indexOf(Math.min(...values));
-    const decision = actions[minIdx];
-
-    const trace = {
-      x: actions,
-      y: values,
-      type: 'bar',
-      marker: { color: values.map((_, i) => i === minIdx ? 'green' : 'steelblue') },
-      text: values.map(v => v.toFixed(2)),
-      textposition: 'auto'
-    };
-    const layout = {
-      title: 'Expected Loss by Action',
-      xaxis: { title: 'Action' },
-      yaxis: { title: 'Expected Loss' },
-      shapes: []
-    };
-    Plotly.newPlot('elm-plot', [trace], layout);
-    document.getElementById('elm-decision').innerHTML = `✅ Recommended action: <span style="color:green">${decision}</span> (lowest expected loss = ${Math.min(...values).toFixed(2)})`;
-  }
-
-  function resetDefaults() {
-    riskSlider.value = '0.38';
-    varSlider.value = '0.05';
-    psiSlider.value = '0.45';
-    revSlider.value = '1000';
-    predSlider.value = '0.25';
-    oppSlider.value = '2000';
-    updatePlot();
-  }
-
-  riskSlider.addEventListener('input', updatePlot);
-  varSlider.addEventListener('input', updatePlot);
-  psiSlider.addEventListener('input', updatePlot);
-  revSlider.addEventListener('input', updatePlot);
-  predSlider.addEventListener('input', updatePlot);
-  oppSlider.addEventListener('input', updatePlot);
-  resetBtn.addEventListener('click', resetDefaults);
-
-  updatePlot();
-</script>
-
-<hr />
+<p>Use the sliders below to adjust the key parameters and see how the expected losses change in real time. The decision (minimum expected loss action) is highlighted. (The simulator currently shows the standard mean loss; CVaR behaviour is not yet visualised but can be enabled in the code.)</p>
 <h2 id="betabinomial-model-online-conjugate-prior">Beta‑Binomial Model (Online Conjugate Prior)<a class="headerlink" href="#betabinomial-model-online-conjugate-prior" title="Permanent link">&para;</a></h2>
-<p>Each action category maintains a <strong>Beta posterior</strong> derived from a fixed prior.</p>
-<p>Let <span class="arithmatex">\((\alpha_0, \beta_0)\)</span> be the fixed prior parameters for a category (e.g., <span class="arithmatex">\(\alpha_0=1.5,\beta_0=8.0\)</span> for <code>database</code>). After observing <span class="arithmatex">\(f\)</span> failures and <span class="arithmatex">\(s\)</span> successes, the posterior is:</p>
+<p>Each action category maintains a Beta posterior derived from a fixed prior.</p>
+<p>Let <span class="arithmatex">\((\alpha_0, \beta_0)\)</span> be the fixed prior parameters for a category (e.g., <span class="arithmatex">\(\alpha_0 = 1.5, \beta_0 = 8.0\)</span> for <code>database</code>). After observing <span class="arithmatex">\(f\)</span> failures and <span class="arithmatex">\(s\)</span> successes, the posterior is:</p>
 <div class="arithmatex">\[
-p \sim \operatorname{Beta}(\alpha_0 + f,\; \beta_0 + s)
+p \sim \text{Beta}(\alpha_0 + f,\; \beta_0 + s)
 \]</div>
-<p><strong>Posterior mean</strong> (expected risk):</p>
+<p><strong>Posterior mean (expected risk):</strong></p>
 <div class="arithmatex">\[
 \mathbb{E}[p] = \frac{\alpha_0 + f}{\alpha_0 + f + \beta_0 + s}
 \]</div>
-<p><strong>Posterior variance</strong>:</p>
+<p><strong>Posterior variance:</strong></p>
 <div class="arithmatex">\[
-\operatorname{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
+\text{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
 \]</div>
 <p>This model is always active and updates in real time as outcomes are recorded.</p>
-<hr />
 <h2 id="hierarchical-beta-model-optional-hyperpriors">Hierarchical Beta Model (Optional Hyperpriors)<a class="headerlink" href="#hierarchical-beta-model-optional-hyperpriors" title="Permanent link">&para;</a></h2>
-<p>When enabled (<code>use_hyperpriors=True</code>), the framework adds a second layer of Bayesian inference: a <strong>beta prior on the beta parameters</strong>. This allows statistical strength to be shared across categories, improving estimates for categories with little data.</p>
-<p>Hierarchical model:</p>
+<p>When enabled (<code>use_hyperpriors=True</code>), the framework adds a second layer of Bayesian inference: a beta prior on the beta parameters. This allows statistical strength to be shared across categories, improving estimates for categories with little data.</p>
+<p><strong>Hierarchical model:</strong></p>
 <div class="arithmatex">\[
-p_c \sim \operatorname{Beta}(\alpha_0, \beta_0), \qquad
-\alpha_0 \sim \operatorname{Gamma}(2,1), \qquad
-\beta_0 \sim \operatorname{Gamma}(2,1)
+p_c \sim \text{Beta}(\alpha_0, \beta_0), \quad \alpha_0 \sim \text{Gamma}(2,1),\; \beta_0 \sim \text{Gamma}(2,1)
 \]</div>
-<p>The hyperparameters <span class="arithmatex">\(\alpha_0, \beta_0\)</span> are learned from all categories simultaneously using variational inference (Pyro). The resulting posterior mean for a category is a <strong>shrunk estimate</strong> that borrows information from other categories.</p>
+<p>The hyperparameters <span class="arithmatex">\(\alpha_0, \beta_0\)</span> are learned from all categories simultaneously using variational inference (Pyro). The resulting posterior mean for a category is a shrunk estimate that borrows information from other categories.</p>
 <blockquote>
-<p><strong>Note:</strong> This model is <em>optional</em> and incurs additional computational overhead. It is intended for scenarios where categories have varying amounts of data and you want to avoid overfitting.</p>
+<p><strong>Note:</strong> This model is optional and incurs additional computational overhead. It is intended for scenarios where categories have varying amounts of data and you want to avoid overfitting.</p>
 </blockquote>
-<hr />
 <h2 id="hamiltonian-monte-carlo-offline-logistic-regression">Hamiltonian Monte Carlo (Offline Logistic Regression)<a class="headerlink" href="#hamiltonian-monte-carlo-offline-logistic-regression" title="Permanent link">&para;</a></h2>
 <p>For complex patterns (time of day, user role, environment), a logistic regression is trained offline using the No‑U‑Turn Sampler:</p>
 <div class="arithmatex">\[
-\operatorname{logit}(p) = \beta_0 + \sum_{i} \beta_i x_i
+\operatorname{logit}(p) = \beta_0 + \sum_i \beta_i x_i
 \]</div>
-<p>where <span class="arithmatex">\(x_i\)</span> include cyclical time encodings (<span class="arithmatex">\(\sin(2\pi t/24)\)</span>, <span class="arithmatex">\(\cos(2\pi t/24)\)</span>), environment indicators, and one‑hot encoded categories.</p>
-<hr />
+<p>where <span class="arithmatex">\(x_i\)</span> include cyclical time encodings (<span class="arithmatex">\(\sin(2\pi t/24), \cos(2\pi t/24)\)</span>), environment indicators, and one‑hot encoded categories.</p>
 <h2 id="risk-fusion-dynamic-weighted-average">Risk Fusion (Dynamic Weighted Average)<a class="headerlink" href="#risk-fusion-dynamic-weighted-average" title="Permanent link">&para;</a></h2>
 <p>The final risk score is a weighted combination of the three components:</p>
 <div class="arithmatex">\[
@@ -1216,63 +1094,44 @@ R = w_{\text{conj}} \cdot p_{\text{conj}} + w_{\text{hyper}} \cdot p_{\text{hype
 </tr>
 <tr>
 <td>Conjugate + HMC</td>
-<td><span class="arithmatex">\(w_{\text{hmc}} = \min\left(1.0, \frac{n}{n_0}\right)\)</span>, <span class="arithmatex">\(w_{\text{conj}} = 1 - w_{\text{hmc}}\)</span></td>
+<td><span class="arithmatex">\(w_{\text{hmc}} = \min(1.0, \frac{n}{n_0}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}}\)</span></td>
 </tr>
 <tr>
 <td>Conjugate + hyperprior</td>
-<td><span class="arithmatex">\(w_{\text{hyper}} = \min\left(w_{\text{hyper\_base}}, \frac{n}{100}\right)\)</span>, <span class="arithmatex">\(w_{\text{conj}} = 1 - w_{\text{hyper}}\)</span></td>
+<td><span class="arithmatex">\(w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}),\quad w_{\text{conj}} = 1 - w_{\text{hyper}}\)</span></td>
 </tr>
 <tr>
 <td>All three</td>
-<td><span class="arithmatex">\(w_{\text{hmc}} = \min\left(0.6, \frac{n}{n_0}\right)\)</span><br><span class="arithmatex">\(w_{\text{hyper}} = \min\left(w_{\text{hyper\_base}}, \frac{n}{100}\right) \cdot (1 - w_{\text{hmc}})\)</span><br><span class="arithmatex">\(w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}\)</span></td>
+<td><span class="arithmatex">\(w_{\text{hmc}} = \min(0.6, \frac{n}{n_0}),\quad w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}) \cdot (1 - w_{\text{hmc}}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}\)</span></td>
 </tr>
 </tbody>
 </table>
-<p>where <span class="arithmatex">\(n_0 = 1000\)</span> is the threshold for HMC confidence and <span class="arithmatex">\(w_{\text{hyper\_base}} = 0.3\)</span> is the base hyperprior weight.</p>
-<hr />
+<p>where <span class="arithmatex">\(n_0 = 1000\)</span> and <span class="arithmatex">\(w_{\text{hyper}}^{\text{base}} = 0.3\)</span>.</p>
 <h2 id="context-multiplier">Context Multiplier<a class="headerlink" href="#context-multiplier" title="Permanent link">&para;</a></h2>
-<p>Before finalising the risk, a <strong>context multiplier</strong> <span class="arithmatex">\(m\)</span> may be applied to account for environmental risk factors (e.g., production vs. development):</p>
+<p>Before finalising the risk, a context multiplier <span class="arithmatex">\(m\)</span> may be applied to account for environmental risk factors (e.g., production vs. development):</p>
 <div class="arithmatex">\[
-R_{\text{final}} = \min(R \cdot m, 1.0)
+R_{\text{final}} = \min(R \cdot m,\; 1.0)
 \]</div>
-<p>In the OSS code, <span class="arithmatex">\(m = 1.5\)</span> for production environments; otherwise <span class="arithmatex">\(m = 1.0\)</span>.</p>
-<hr />
+<p>In the reference implementation, <span class="arithmatex">\(m = 1.5\)</span> for production environments; otherwise <span class="arithmatex">\(m = 1.0\)</span>.</p>
 <h2 id="posterior-variance-for-decisiontheoretic-loss">Posterior Variance for Decision‑Theoretic Loss<a class="headerlink" href="#posterior-variance-for-decisiontheoretic-loss" title="Permanent link">&para;</a></h2>
-<p>The governance loop uses the <strong>posterior variance</strong> of the conjugate component as a measure of statistical uncertainty in the expected loss calculations:</p>
+<p>The governance loop uses the posterior variance of the conjugate component as a measure of statistical uncertainty in the expected loss calculations:</p>
 <div class="arithmatex">\[
-\sigma^2 = \operatorname{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
+\sigma^2 = \text{Var}(p) = \frac{(\alpha_0 + f)(\beta_0 + s)}{(\alpha_0 + f + \beta_0 + s)^2 (\alpha_0 + f + \beta_0 + s + 1)}
 \]</div>
 <p>This variance is combined with other uncertainty terms (epistemic, predictive) to compute the expected loss of each possible action.</p>
-<hr />
 <h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The formulas above match the implementation in:
-  <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">agentic_reliability_framework</span><span class="o">/</span><span class="n">core</span><span class="o">/</span><span class="n">governance</span><span class="o">/</span><span class="n">risk_engine</span><span class="o">.</span><span class="n">py</span>
-</code></pre></div></li>
-<li>
-<p>Hyperpriors are disabled by default and must be explicitly enabled with use_hyperpriors=True.</p>
-</li>
-<li>
-<p>The HMC model must be pre‑trained and loaded from a JSON file (hmc_model.json by default).</p>
-</li>
-<li>
-<p><strong>Time‑decaying risk</strong> is always active (with default γ=0.9_γ_\=0.9). It can be disabled by setting RISK_DECAY_FACTOR = 1.0 in constants.py.</p>
-</li>
-<li>
-<p><strong>CVaR</strong> is disabled by default (USE_CVAR = False). To enable robust approval decisions, set USE_CVAR = True and optionally adjust CVAR_ALPHA.</p>
-</li>
+<li>The formulas above match the implementation in: <code>agentic_reliability_framework/core/governance/risk_engine.py</code> (reference implementation of the specification).</li>
+<li>Hyperpriors are disabled by default and must be explicitly enabled with <code>use_hyperpriors=True</code>.</li>
+<li>The HMC model must be pre‑trained and loaded from a JSON file (<code>hmc_model.json</code> by default).</li>
+<li>Time‑decaying risk is always active (with default <span class="arithmatex">\(\gamma = 0.9\)</span>). It can be disabled by setting <code>RISK_DECAY_FACTOR = 1.0</code> in <code>constants.py</code>.</li>
+<li>CVaR is disabled by default (<code>USE_CVAR = False</code>). To enable robust approval decisions, set <code>USE_CVAR = True</code> and optionally adjust <code>CVAR_ALPHA</code>.</li>
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li>
-<p>Gelman, A. et al. (2013). <em>Bayesian Data Analysis</em>. Chapman &amp; Hall.</p>
-</li>
-<li>
-<p>Betancourt, M. (2017). <em>A Conceptual Introduction to Hamiltonian Monte Carlo</em>. <a href="https://arxiv.org/abs/1701.02434">arXiv:1701.02434</a></p>
-</li>
-<li>
-<p>McElreath, R. (2020). <em>Statistical Rethinking</em>. CRC Press.</p>
-</li>
+<li>Gelman, A. et al. (2013). <em>Bayesian Data Analysis</em>. Chapman &amp; Hall.</li>
+<li>Betancourt, M. (2017). <em>A Conceptual Introduction to Hamiltonian Monte Carlo</em>. arXiv:1701.02434</li>
+<li>McElreath, R. (2020). <em>Statistical Rethinking</em>. CRC Press.</li>
 </ul>
 
 
