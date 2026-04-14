@@ -73,7 +73,6 @@ Risk predictions are probabilistic, but the final action (`APPROVE`, `DENY`, `ES
 
 The expected loss for each action is:
 
-```markdown
 $$
 \begin{aligned}
 L_{\text{approve}} &= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2 \\[4pt]
@@ -81,29 +80,20 @@ L_{\text{deny}} &= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}} \\[4
 L_{\text{escalate}} &= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi
 \end{aligned}
 $$
-```
 
 Where:
 
-*   θ_θ_ = Bayesian posterior failure probability (risk\_score)
-    
-*   σ2_σ_2 = posterior variance (from the conjugate Beta model)
-    
-*   ψ_ψ_ = epistemic uncertainty (composite of hallucination, forecast, and sparsity)
-    
-*   vmean_v_mean​ = estimated opportunity value of the action
-    
-*   c∗_c_∗​ = cost constants (see [governance.md](https://governance.md/#4-configuration-constants))
-    
+- \(\theta\) = Bayesian posterior failure probability (`risk_score`)
+- \(\sigma^2\) = posterior variance (from the conjugate Beta model)
+- \(\psi\) = epistemic uncertainty (composite of hallucination, forecast, and sparsity)
+- \(v_{\text{mean}}\) = estimated opportunity value of the action
+- \(c_{*}\) = cost constants (see [`governance.md`](governance.md#4-configuration-constants))
 
 **Decision rules:**
 
-*   Policy violations → force DENY
-    
-*   If USE\_EPISTEMIC\_GATE is true and ψ>ψthresh_ψ_\>_ψ_thresh​ → force ESCALATE
-    
-*   Else → action with smallest L_L_
-    
+- Policy violations → force `DENY`
+- If `USE_EPISTEMIC_GATE` is true and \(\psi > \psi_{\text{thresh}}\) → force `ESCALATE`
+- Else → action with smallest \(L\)
 
 This approach is strictly more expressive than fixed thresholds and provides a full audit trail.
 
@@ -113,40 +103,31 @@ Each ARF capability should be independently testable and replaceable. Modules co
 
 **Benefits:**
 
-*   Isolated unit testing
-    
-*   Incremental development
-    
-*   Safe replacement of components
-    
-*   Easier external contribution
-    
-*   Cleaner enterprise extension paths
-    
+- Isolated unit testing
+- Incremental development
+- Safe replacement of components
+- Easier external contribution
+- Cleaner enterprise extension paths
 
 ### 3.4 Determinism at the Boundary
 
-The same inputs must always produce the same decision under the same policy configuration. Where probabilistic methods are used, they serve as **advisory or scoring inputs**, not as sources of non‑deterministic enforcement.
+The same inputs must always produce the same decision under the same policy configuration. Where probabilistic methods are used, they serve as **advisory or scoring inputs**, not as sources of non‑deterministic enforcement.
 
 ### 3.5 Extensibility
 
 ARF supports:
 
-*   Research modules
-    
-*   Enterprise modules
-    
-*   Optional adapters
-    
-*   External scoring layers
-    
-*   Additional observability tools
-    
+- Research modules
+- Enterprise modules
+- Optional adapters
+- External scoring layers
+- Additional observability tools
 
-Extensibility must **not** degrade the predictability of the core engine.
+Extensibility must **not** degrade the predictability of the core engine.
 
-4\. System Architecture
------------------------
+---
+
+## 4. System Architecture
 
 ### 4.1 Core Architecture (Logical)
 
@@ -168,17 +149,12 @@ graph TD
 graph TD
     A[User / Agent] --> B[Frontend]
     B --> C[API Control Plane]
-    C --> D[Core Risk Engine (session‑scoped)]
+    C --> D[Core Risk Engine (session-scoped)]
     D --> E[Policy Engine / DPT]
     E --> F[Audit / Storage]
-    
     D -.-> G[Temporal Reliability Adapter]
-    G --> H[Cross‑session Aggregator]
+    G --> H[Cross-session Aggregator]
     H --> I[Enterprise Analytics / Governance]
-    
-    style G stroke-dasharray: 5 5
-    style H stroke-dasharray: 5 5
-    style I stroke-dasharray: 5 5
 ```
 
 ### 4.3 Architectural Consequences
@@ -197,6 +173,7 @@ graph TD
 
 ### 5.1 Core Package (Proprietary)
 
+```text
 agentic_reliability_framework/
 ├── runtime/
 │   └── engine.py
@@ -209,9 +186,11 @@ agentic_reliability_framework/
 │   └── persistence.py
 └── tests/
     └── test_advisory.py
+```
 
 ### 5.2 Optional Enterprise or Extension Structure
 
+```text
 enterprise/
 ├── temporal/
 │   ├── adapter.py
@@ -224,6 +203,8 @@ enterprise/
 │   └── longitudinal_controls.py
 └── tests/
     └── test_temporal_reliability.py
+```
+
 ## 5.3 Package Boundary Rules
 
 The temporal layer must not be imported by the core runtime engine unless explicitly activated in an external integration layer.
@@ -400,12 +381,10 @@ graph TD
     D --> E[Outcome Success/Failure]
     E --> F[Update Beta Priors]
     F --> B
-    
     B --> G[Epistemic Uncertainty ψ]
     G --> H{Escalation Gate?}
     H -->|ψ > threshold| D
     H -->|ψ low| C
-    
     D --> I[Human Review (if escalate)]
     I --> E
 ```
