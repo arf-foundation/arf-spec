@@ -150,7 +150,7 @@ graph TD
     A["User / Agent"] --> B["Frontend"]
     B --> C["API Control Plane"]
     C --> D["Core Risk Engine (session-scoped)"]
-    D --> E["Policy Engine / DPT"]
+    D --> E["Policy Engine"]
     E --> F["Audit / Storage"]
     D -.-> G["Temporal Reliability Adapter"]
     G --> H["Cross-session Aggregator"]
