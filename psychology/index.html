@@ -597,10 +597,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#explainability" class="md-nav__link">
+  <a href="#1-explainability" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Explainability
+        1. Explainability
       
     </span>
   </a>
@@ -608,10 +608,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#trust-calibration" class="md-nav__link">
+  <a href="#2-trust-calibration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Trust Calibration
+        2. Trust Calibration
       
     </span>
   </a>
@@ -619,10 +619,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cognitive-load-reduction" class="md-nav__link">
+  <a href="#3-cognitive-load-reduction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cognitive Load Reduction
+        3. Cognitive Load Reduction
       
     </span>
   </a>
@@ -630,10 +630,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#human-in-the-loop" class="md-nav__link">
+  <a href="#4-humanintheloop" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Human-in-the-Loop
+        4. Human‑in‑the‑Loop
       
     </span>
   </a>
@@ -641,10 +641,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recommendations" class="md-nav__link">
+  <a href="#5-bias-mitigation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recommendations
+        5. Bias Mitigation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-prospect-theory-anchoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Prospect Theory &amp; Anchoring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-implementation-notes-proprietary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Implementation Notes (Proprietary)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. References
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. See Also
       
     </span>
   </a>
@@ -761,49 +805,128 @@
 
 
 <h1 id="psychological-foundations">Psychological Foundations<a class="headerlink" href="#psychological-foundations" title="Permanent link">&para;</a></h1>
-<p>Technical correctness alone does not produce trust.</p>
-<p>ARF incorporates cognitive science principles.</p>
+<p><strong>Status:</strong> Public specification – describes the psychological principles implemented in the proprietary ARF Core Engine.<br />
+The engine is access‑controlled and available under outcome‑based pricing.</p>
+<p>Technical correctness alone does not produce trust.<br />
+ARF incorporates cognitive science principles to ensure that users understand, trust, and effectively oversee autonomous AI agents.</p>
+<blockquote>
+<p><strong>Canonical reference:</strong> See <a href="../core_concepts/"><code>core_concepts.md</code></a> for definitions of <code>HealingIntent</code> (explanations) and escalation gates (human‑in‑the‑loop).</p>
+</blockquote>
 <hr />
-<h2 id="explainability">Explainability<a class="headerlink" href="#explainability" title="Permanent link">&para;</a></h2>
-<p>Each decision must answer:</p>
-<ul>
-<li>What happened?</li>
-<li>Why did it happen?</li>
-<li>What would change the decision?</li>
-</ul>
-<p>Example explanation:</p>
-<p>"Risk increased because latency exceeded normal thresholds and historical incidents show 35% failure probability."</p>
-<hr />
-<h2 id="trust-calibration">Trust Calibration<a class="headerlink" href="#trust-calibration" title="Permanent link">&para;</a></h2>
-<p>Humans trust systems more when uncertainty is visible.</p>
-<p>ARF shows:</p>
-<ul>
-<li>credible intervals</li>
-<li>probability ranges</li>
-<li>confidence levels</li>
-</ul>
-<hr />
-<h2 id="cognitive-load-reduction">Cognitive Load Reduction<a class="headerlink" href="#cognitive-load-reduction" title="Permanent link">&para;</a></h2>
-<p>Dashboards prioritize:</p>
+<h2 id="1-explainability">1. Explainability<a class="headerlink" href="#1-explainability" title="Permanent link">&para;</a></h2>
+<p>Every decision must answer three questions:</p>
 <ol>
-<li>Critical alerts</li>
-<li>System status</li>
-<li>Historical trends</li>
+<li><strong>What happened?</strong> – The action taken (approve, deny, escalate)</li>
+<li><strong>Why did it happen?</strong> – The risk score, policy violations, and expected loss components</li>
+<li><strong>What would change the decision?</strong> – Counterfactual insights (e.g., “if latency were lower, risk would be 0.3”)</li>
 </ol>
+<p><strong>Example explanation generated by the core engine:</strong></p>
+<blockquote>
+<p>“Risk increased because latency exceeded normal thresholds (350ms vs baseline 120ms) and historical incidents show 35% failure probability for this database category. Policy violations: none. Expected loss: approve=18.2, deny=12.7, escalate=11.5. Selected: ESCALATE due to epistemic uncertainty (0.45 &gt; threshold 0.3).”</p>
+</blockquote>
+<p>All explanations are returned in the <code>justification</code> field of <code>HealingIntent</code>.</p>
 <hr />
-<h2 id="human-in-the-loop">Human-in-the-Loop<a class="headerlink" href="#human-in-the-loop" title="Permanent link">&para;</a></h2>
-<p>Escalations occur when:</p>
+<h2 id="2-trust-calibration">2. Trust Calibration<a class="headerlink" href="#2-trust-calibration" title="Permanent link">&para;</a></h2>
+<p>Humans trust systems more when uncertainty is visible.<br />
+ARF displays:</p>
 <ul>
-<li>uncertainty interval &gt; threshold</li>
-<li>risk in escalation band</li>
-<li>model confidence low</li>
+<li><strong>Credible intervals</strong> – 90% HDI around risk scores (see <code>mathematics.md</code>)</li>
+<li><strong>Probability ranges</strong> – verbal labels aligned with numerical thresholds (e.g., “low risk”, “medium risk”, “high risk”)</li>
+<li><strong>Confidence levels</strong> – derived from epistemic uncertainty (<code>confidence = 1 - ψ</code>)</li>
+</ul>
+<p><strong>Visualisation in frontend:</strong><br />
+- Risk score as a point estimate with error bars (HDI)<br />
+- Confidence as a progress bar or percentage<br />
+- Colour coding: green (low risk), yellow (medium), red (high), grey (uncertain)</p>
+<hr />
+<h2 id="3-cognitive-load-reduction">3. Cognitive Load Reduction<a class="headerlink" href="#3-cognitive-load-reduction" title="Permanent link">&para;</a></h2>
+<p>Dashboards prioritise information to reduce cognitive load:</p>
+<ol>
+<li><strong>Critical alerts</strong> – active policy violations, forced escalations, high uncertainty</li>
+<li><strong>System status</strong> – current risk score, confidence, recommendation</li>
+<li><strong>Historical trends</strong> – recent decisions, outcome success rates (optional, if temporal layer enabled)</li>
+</ol>
+<p>Interactive drill‑down allows users to inspect detailed risk factors, epistemic breakdown, and decision traces without overwhelming the main view.</p>
+<hr />
+<h2 id="4-humanintheloop">4. Human‑in‑the‑Loop<a class="headerlink" href="#4-humanintheloop" title="Permanent link">&para;</a></h2>
+<p>Escalations occur automatically when:</p>
+<ul>
+<li>Uncertainty interval width &gt; threshold (e.g., HDI width &gt; 0.3)</li>
+<li>Risk score falls into an escalation band (configurable via expected loss constants)</li>
+<li>Model confidence is low (<code>confidence &lt; 0.5</code>)</li>
+</ul>
+<p><strong>Escalation workflow:</strong></p>
+<ol>
+<li>Core engine returns <code>ESCALATE</code> in <code>HealingIntent.action</code></li>
+<li>Enterprise enforcement layer routes the request to a human reviewer (via Slack, Teams, or web UI)</li>
+<li>Reviewer examines risk factors, epistemic breakdown, and similar past incidents (if memory enabled)</li>
+<li>Reviewer approves, denies, or requests modifications</li>
+<li>The decision and reviewer justification are stored in the audit trail</li>
+</ol>
+<p>Human overrides are fed back into the risk engine as outcomes (<code>update_outcome</code>) to improve future predictions.</p>
+<hr />
+<h2 id="5-bias-mitigation">5. Bias Mitigation<a class="headerlink" href="#5-bias-mitigation" title="Permanent link">&para;</a></h2>
+<p>ARF incorporates bias mitigation strategies:</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pessimistic priors</strong></td>
+<td>High‑impact categories (database, security) have priors biased toward higher risk (see <code>mathematics.md</code>)</td>
+</tr>
+<tr>
+<td><strong>Periodic bias audits</strong></td>
+<td>Log decisions with metadata (requester role, environment, resource type) – enterprise layer can run disparity analyses</td>
+</tr>
+<tr>
+<td><strong>Fairness constraints</strong></td>
+<td>Configurable policies can enforce equal treatment across user groups (e.g., same risk threshold for all roles)</td>
+</tr>
+<tr>
+<td><strong>Override tracking</strong></td>
+<td>All human overrides are logged, enabling detection of systematic bias in human decisions</td>
+</tr>
+</tbody>
+</table>
+<p>Bias audit reports can be generated from audit logs (enterprise feature).</p>
+<hr />
+<h2 id="6-prospect-theory-anchoring">6. Prospect Theory &amp; Anchoring<a class="headerlink" href="#6-prospect-theory-anchoring" title="Permanent link">&para;</a></h2>
+<p>To align with human decision‑making psychology, the frontend applies:</p>
+<ul>
+<li><strong>Prospect theory</strong> – failures are weighted more heavily than successes in risk displays (e.g., “85% success rate” vs “15% failure rate” – failure rate is highlighted)</li>
+<li><strong>Anchoring</strong> – risk scores are presented relative to a baseline (e.g., “30% higher than average for this category”)</li>
+<li><strong>Cognitive dissonance</strong> – users who override a recommendation are asked to provide a justification, reinforcing trust and accountability</li>
+</ul>
+<p>These are <strong>presentation‑layer</strong> choices, not core engine logic.</p>
+<hr />
+<h2 id="7-implementation-notes-proprietary">7. Implementation Notes (Proprietary)<a class="headerlink" href="#7-implementation-notes-proprietary" title="Permanent link">&para;</a></h2>
+<p>The psychological principles described here are implemented in:</p>
+<ul>
+<li><strong>Core engine</strong> – generates structured explanations (<code>justification</code>), risk scores with uncertainty, and epistemic confidence</li>
+<li><strong>Enterprise enforcement layer</strong> – manages human‑in‑the‑loop escalation workflows and audit trails</li>
+<li><strong>Frontend (<code>arf-frontend</code>)</strong> – visualises risk, uncertainty, and explanations according to cognitive load principles</li>
+</ul>
+<p>The core engine does <strong>not</strong> contain UI logic; all psychological presentation is in the frontend or enterprise integration layers.</p>
+<hr />
+<h2 id="8-references">8. References<a class="headerlink" href="#8-references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Kahneman, D. (2011). <em>Thinking, Fast and Slow</em>. Farrar, Straus and Giroux.</li>
+<li>Lee, J. D., &amp; See, K. A. (2004). Trust in Automation: Designing for Appropriate Reliance. <em>Human Factors</em>, 46(1), 50–80.</li>
+<li>Miller, T. (2019). Explanation in Artificial Intelligence: Insights from the Social Sciences. <em>Artificial Intelligence</em>, 267, 1–38.</li>
+<li>Norman, D. A. (1983). <em>Design Rules Based on Cognitive Psychology</em>. In <em>Proceedings of the SIGCHI Conference on Human Factors in Computing Systems</em>.</li>
 </ul>
 <hr />
-<h2 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h2>
+<h2 id="9-see-also">9. See Also<a class="headerlink" href="#9-see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Avoid overprecision</li>
-<li>Use plain language explanations</li>
-<li>Log human overrides</li>
+<li><a href="../core_concepts/"><code>core_concepts.md</code></a> – <code>HealingIntent.justification</code> and escalation gates</li>
+<li><a href="../governance/"><code>governance.md</code></a> – governance loop flow and epistemic uncertainty</li>
+<li><a href="../mathematics/"><code>mathematics.md</code></a> – risk score and HDI calculations</li>
+<li><a href="../design/"><code>design.md</code></a> – architectural decisions for observability and auditability</li>
 </ul>
 
 
