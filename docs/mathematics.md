@@ -18,10 +18,16 @@ $$
 p_c \sim \text{Beta}(\alpha_c, \beta_c)
 $$
 
-where $(\alpha_c, \beta_c)$ start from expert‑elicited priors. Upon observing a binary outcome $y \in {0,1}$ ($y=1$ = failure), we update:
+where $(\alpha_c, \beta_c)$ start from expert‑elicited priors. Upon observing a binary outcome $y \in \{0,1\}$ ($y=1$ = failure), we update:
 
 $$
 (\alpha_c, \beta_c) \leftarrow (\alpha_c + y,\; \beta_c + (1-y))
+$$
+
+The predictive mean $\mathbb{E}[p_c] = \frac{\alpha_c}{\alpha_c + \beta_c}$ provides the baseline risk. The posterior variance:
+
+$$
+\text{Var}(p_c) = \frac{\alpha_c \beta_c}{(\alpha_c+\beta_c)^2(\alpha_c+\beta_c+1)}
 $$
 
 allows us to construct credible intervals (e.g., 90% HDI) and express uncertainty.
@@ -60,8 +66,9 @@ $$
 
 where $n$ is the total number of outcomes.
 
-4\. Hybrid Risk Fusion
-----------------------
+---
+
+## 4. Hybrid Risk Fusion
 
 The final risk $R$ for a given intent is a weighted combination:
 
@@ -85,22 +92,21 @@ $$
 
 with $n_0 = 1000$ and $n_{\text{hyper}} = 100$ as defaults. The final risk is then multiplied by a context factor $\kappa(\text{env}, \text{cost}, \text{violations})$ to account for external factors.
 
-5\. Uncertainty Quantification
-------------------------------
+---
 
-Every risk prediction includes a **90% highest density interval** (HDI) computed via:
+## 5. Uncertainty Quantification
 
-*   For conjugate part: quantiles of Beta distribution.
-    
-*   For HMC part: posterior predictive samples.
-    
-*   For hyperprior part: quantiles from variational posterior.
-    
+Every risk prediction includes a **90% highest density interval** (HDI) computed via:
+
+- For conjugate part: quantiles of Beta distribution.
+- For HMC part: posterior predictive samples.
+- For hyperprior part: quantiles from variational posterior.
 
 These intervals are displayed in the frontend and used to trigger human‑in‑the‑loop escalation when uncertainty is high (e.g., interval width $>0.3$).
 
-6\. Expected Loss Minimisation (Summary)
-----------------------------------------
+---
+
+## 6. Expected Loss Minimisation (Summary)
 
 The risk score feeds into the governance loop’s expected loss calculation:
 
@@ -112,24 +118,20 @@ L_{\text{escalate}} &= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi
 \end{aligned}
 $$
 
-For a detailed explanation of the governance loop and constants, see [governance.md](https://governance.md/).
+For a detailed explanation of the governance loop and constants, see [`governance.md`](governance.md).
 
-7\. References
---------------
+---
 
-*   Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). _Bayesian Data Analysis_ (3rd ed.). CRC Press.
-    
-*   McElreath, R. (2020). _Statistical Rethinking: A Bayesian Course with Examples in R and Stan_. CRC Press.
-    
-*   Hoffman, M. D., & Gelman, A. (2014). The No‑U‑Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo. _Journal of Machine Learning Research_, 15(1), 1593–1623.
-    
+## 7. References
 
-8\. See Also
-------------
+- Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). *Bayesian Data Analysis* (3rd ed.). CRC Press.
+- McElreath, R. (2020). *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*. CRC Press.
+- Hoffman, M. D., & Gelman, A. (2014). The No‑U‑Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo. *Journal of Machine Learning Research*, 15(1), 1593–1623.
 
-*   [core\_concepts.md](https://core_concepts.md/) – canonical definition of RiskScore and execution ladder
-    
-*   [governance.md](https://governance.md/) – governance loop flow and expected loss minimisation
-    
-*   [design.md](https://design.md/) – architectural decisions and trade‑offs
+---
 
+## 8. See Also
+
+- [`core_concepts.md`](core_concepts.md) – canonical definition of `RiskScore` and execution ladder
+- [`governance.md`](governance.md) – governance loop flow and expected loss minimisation
+- [`design.md`](design.md) – architectural decisions and trade‑offs
