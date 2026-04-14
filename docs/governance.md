@@ -103,15 +103,15 @@ The `risk_factors` field contains additive contributions from each Bayesian comp
 
 ```mermaid
 graph TD
-    A[InfrastructureIntent] --> B{Cost Estimation}
-    B --> C{Policy Evaluation}
-    C -->|Violations| D[Deny]
-    C -->|No violations| E{Risk Calculation}
-    E --> F{Predictive Foresight}
-    F --> G{Epistemic Uncertainty}
-    G --> H{Expected Loss Minimization}
-    H --> I[APPROVE / DENY / ESCALATE]
-    D --> J[HealingIntent]
+    A["InfrastructureIntent"] --> B["Cost Estimation"]
+    B --> C["Policy Evaluation"]
+    C -->|"Violations"| D["Deny"]
+    C -->|"No violations"| E["Risk Calculation"]
+    E --> F["Predictive Foresight"]
+    F --> G["Epistemic Uncertainty"]
+    G --> H["Expected Loss Minimization"]
+    H --> I["APPROVE / DENY / ESCALATE"]
+    D --> J["HealingIntent"]
     I --> J
 ```
 
