@@ -760,10 +760,71 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-references" class="md-nav__link">
+  <a href="#8-cryptographic-integrity-of-healingintents-light-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. References
+        8. Cryptographic Integrity of HealingIntents (Light Reference)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Cryptographic Integrity of HealingIntents (Light Reference)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-signing-flow-python-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Signing Flow (Python Core)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-verification-flow-rust-enterprise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Verification Flow (Rust Enterprise)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-security-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Security Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Implementation Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. References
       
     </span>
   </a>
@@ -771,10 +832,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-see-also" class="md-nav__link">
+  <a href="#10-see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. See Also
+        10. See Also
       
     </span>
   </a>
@@ -1068,7 +1129,37 @@ V(x_{t+1}, r_{t+1}) - V(x_t, r_t) \le -\gamma \cdot \|x_t\|^2
 <h3 id="76-integration-with-governance-loop">7.6 Integration with Governance Loop<a class="headerlink" href="#76-integration-with-governance-loop" title="Permanent link">&para;</a></h3>
 <p>The stability controller is invoked <strong>after</strong> expected loss minimisation when a healing action (e.g., <code>APPROVE</code> with an action parameter) is selected. If no stabilizing action exists, the loop forces <code>ESCALATE</code>, adding a safety layer beyond the probabilistic risk assessment.</p>
 <hr />
-<h2 id="8-references">8. References<a class="headerlink" href="#8-references" title="Permanent link">&para;</a></h2>
+<h2 id="8-cryptographic-integrity-of-healingintents-light-reference">8. Cryptographic Integrity of HealingIntents (Light Reference)<a class="headerlink" href="#8-cryptographic-integrity-of-healingintents-light-reference" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>Status:</strong> Work in progress – basic signing and verification implemented; advanced key management and rotation planned.</p>
+</blockquote>
+<p>To ensure tamper‑proof transport of <code>HealingIntent</code> from the Python core engine to the Rust‑based enterprise execution layer, ARF uses <strong>Ed25519 signatures</strong> (via <code>ed25519_dalek</code>). The same mechanism can be extended to audit logs and license validation.</p>
+<h3 id="81-signing-flow-python-core">8.1 Signing Flow (Python Core)<a class="headerlink" href="#81-signing-flow-python-core" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A <code>HealingIntent</code> is serialised into canonical JSON <strong>excluding</strong> the <code>signature</code> and <code>public_key_fingerprint</code> fields.</li>
+<li>The JSON string is signed using an Ed25519 private key (or RSA, but Ed25519 is preferred for the enterprise boundary).</li>
+<li>The signature (base64) and public key fingerprint (hex of the 32‑byte public key) are attached to the intent.</li>
+</ul>
+<h3 id="82-verification-flow-rust-enterprise">8.2 Verification Flow (Rust Enterprise)<a class="headerlink" href="#82-verification-flow-rust-enterprise" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The Rust execution engine receives the <code>IntentPayload</code> (equivalent to <code>HealingIntent</code>).</li>
+<li>It recomputes the canonical JSON (again excluding signature/fingerprint).</li>
+<li>Using the public key fingerprint, it retrieves or decodes the public key.</li>
+<li>The signature is verified with <code>verify_strict()</code>. Failure rejects the intent.</li>
+</ul>
+<h3 id="83-security-properties">8.3 Security Properties<a class="headerlink" href="#83-security-properties" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Integrity:</strong> Any modification of the intent fields invalidates the signature.</li>
+<li><strong>Authenticity:</strong> Only the holder of the private key can produce valid signatures.</li>
+<li><strong>Non‑repudiation:</strong> Signatures are cryptographically verifiable by third parties.</li>
+</ul>
+<h3 id="84-implementation-notes">8.4 Implementation Notes<a class="headerlink" href="#84-implementation-notes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Core engine (<code>healing_intent.py</code>) uses <code>cryptography.hazmat</code> (RSA also available; Ed25519 used in enterprise boundary).</li>
+<li>Enterprise engine (<code>arf_execution/src/crypto.rs</code>) uses <code>ed25519_dalek</code>.</li>
+<li>Future work: key rotation, HSM integration, signed audit trails, and license validation.</li>
+</ul>
+<h2 id="9-references">9. References<a class="headerlink" href="#9-references" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., &amp; Rubin, D. B. (2013). <em>Bayesian Data Analysis</em> (3rd ed.). CRC Press.</li>
 <li>McElreath, R. (2020). <em>Statistical Rethinking: A Bayesian Course with Examples in R and Stan</em>. CRC Press.</li>
@@ -1076,7 +1167,7 @@ V(x_{t+1}, r_{t+1}) - V(x_t, r_t) \le -\gamma \cdot \|x_t\|^2
 <li>Khalil, H. K. (2002). <em>Nonlinear Systems</em> (3rd ed.). Prentice Hall. (For Lyapunov stability theory)</li>
 </ul>
 <hr />
-<h2 id="9-see-also">9. See Also<a class="headerlink" href="#9-see-also" title="Permanent link">&para;</a></h2>
+<h2 id="10-see-also">10. See Also<a class="headerlink" href="#10-see-also" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../core_concepts/"><code>core_concepts.md</code></a> – canonical definition of <code>RiskScore</code> and execution ladder</li>
 <li><a href="../governance/"><code>governance.md</code></a> – governance loop flow and configuration constants</li>
