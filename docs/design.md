@@ -1,36 +1,52 @@
-# ARF Design Specification
+# Design & Architectural Decisions
+
+**Status:** Public specification of the proprietary ARF Core Engine.  
+The engine is access‑controlled and available under outcome‑based pricing.  
+Deployment architecture (databases, load balancers, scaling) is **not** specified here – only logical architecture and behavioural contracts.
+
+---
 
 ## 1. Overview
 
-The Agentic Reliability Framework (ARF) is a modular governance and reliability engine for AI agents operating in production environments. It is designed to provide a deterministic decision boundary around agent execution while preserving the flexibility required for experimentation, research, and enterprise deployment.
+The Agentic Reliability Framework (ARF) is a modular governance and reliability engine for AI agents operating in production environments. It provides a **deterministic decision boundary** around agent execution while preserving flexibility for experimentation, research, and enterprise deployment.
 
-ARF is intentionally structured so that core scoring remains session-scoped, stateless, and auditable. Optional layers may add persistence, longitudinal analysis, or enterprise controls, but those extensions must not change the meaning of the core runtime decision.
+ARF is intentionally structured so that:
 
-The design goals are:
+- Core scoring remains **session‑scoped**, **stateless**, and **auditable**.
+- Optional layers may add persistence, longitudinal analysis, or enterprise controls **without changing the meaning** of the core runtime decision.
 
-- provide deterministic governance at execution time
-- separate advisory reasoning from enforcement
-- support Bayesian uncertainty modeling
-- enable observability and auditability
-- preserve a clean boundary between core logic and optional extensions
-- allow enterprise-grade capabilities without compromising OSS simplicity
+**Design goals:**
+
+- ✅ Provide deterministic governance at execution time  
+- ✅ Separate advisory reasoning from enforcement  
+- ✅ Support Bayesian uncertainty modelling  
+- ✅ Enable observability and auditability  
+- ✅ Preserve a clean boundary between core logic and optional extensions  
+- ✅ Allow enterprise‑grade capabilities without compromising core simplicity  
 
 ---
 
 ## 2. Design Philosophy
 
-ARF is built around the principle that reliability is not a single model output. Reliability is a system property that emerges from clear boundaries, structured policy evaluation, strong observability, and careful separation of concerns.
+ARF is built around the principle that **reliability is not a single model output**. Reliability is a system property that emerges from:
 
-The framework therefore avoids collapsing multiple responsibilities into a single component. Instead, it separates:
+- Clear boundaries  
+- Structured policy evaluation  
+- Strong observability  
+- Careful separation of concerns  
 
-- risk estimation
-- policy evaluation
-- execution gating
-- advisory explanation
-- persistence and audit logging
-- optional temporal analysis
+The framework avoids collapsing multiple responsibilities into a single component. Instead, it separates:
 
-This separation makes the system easier to test, easier to reason about, and easier to adapt to different deployment environments.
+| Concern | Component |
+|---------|-----------|
+| Risk estimation | `RiskEngine` (Bayesian) |
+| Policy evaluation | `PolicyEvaluator` |
+| Execution gating | Governance loop + expected loss |
+| Advisory explanation | `HealingIntent.justification` |
+| Persistence & audit | Enterprise layer (optional) |
+| Temporal analysis | External adapter (see `temporal_reliability.md`) |
+
+This separation makes the system easier to test, reason about, and adapt to different deployment environments.
 
 ---
 
@@ -41,200 +57,202 @@ This separation makes the system easier to test, easier to reason about, and eas
 ARF separates runtime decision logic from governance enforcement, persistence, and longitudinal analysis.
 
 | Layer | Responsibility |
-|------|----------------|
-| Runtime Engine | Bayesian risk computation |
-| Governance Engine | Policy evaluation and execution gating |
-| Persistence | Audit trails, logs, and outcome storage |
-| Advisory Layer | Human-readable remediation suggestions |
-| Temporal Layer | Optional cross-session reliability aggregation |
+|-------|----------------|
+| **Runtime Engine** | Bayesian risk computation |
+| **Governance Engine** | Policy evaluation and execution gating |
+| **Persistence** | Audit trails, logs, outcome storage |
+| **Advisory Layer** | Human‑readable remediation suggestions |
+| **Temporal Layer** | Optional cross‑session reliability aggregation |
 
-The core runtime must remain session-scoped and deterministic. Optional layers may add history-aware behavior without changing the semantics of in-session scoring.
+> ⚠️ The core runtime **must** remain session‑scoped and deterministic.  
+> Optional layers may add history‑aware behaviour without changing the semantics of in‑session scoring.
 
 ### 3.2 Decision‑Theoretic Action Selection
 
-Risk predictions are probabilistic, but the final action (APPROVE, DENY, ESCALATE) is chosen by **minimising expected loss**, not by fixed probability thresholds. The expected loss for each action is computed as:
+Risk predictions are probabilistic, but the final action (`APPROVE`, `DENY`, `ESCALATE`) is chosen by **minimising expected loss**, not by fixed probability thresholds.
 
-\[
+The expected loss for each action is:
+
+```math
 \begin{aligned}
-L_{\text{approve}} &= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2,\\[4pt]
-L_{\text{deny}} &= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}},\\[4pt]
-L_{\text{escalate}} &= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi,
+L_{\text{approve}} &= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2 \\[4pt]
+L_{\text{deny}} &= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}} \\[4pt]
+L_{\text{escalate}} &= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi
 \end{aligned}
-\]
+```
 
-where:
-- \(\theta\) = Bayesian posterior failure probability,
-- \(\sigma^2\) = posterior variance (from the conjugate Beta model),
-- \(\psi\) = epistemic uncertainty (composite of hallucination, forecast, and sparsity),
-- \(v_{\text{mean}}\) = estimated opportunity value of the action,
-- \(c_{*}\) = cost constants defined in `core/config/constants.py`.
+Where:
 
-The action with the smallest \(L\) is selected. Policy violations force **DENY**. If `USE_EPISTEMIC_GATE` is true and \(\psi > \psi_{\text{thresh}}\), the action is forced to **ESCALATE**.  
+*   θ_θ_ = Bayesian posterior failure probability (risk\_score)
+    
+*   σ2_σ_2 = posterior variance (from the conjugate Beta model)
+    
+*   ψ_ψ_ = epistemic uncertainty (composite of hallucination, forecast, and sparsity)
+    
+*   vmean_v_mean​ = estimated opportunity value of the action
+    
+*   c∗_c_∗​ = cost constants (see [governance.md](https://governance.md/#4-configuration-constants))
+    
 
-This approach is strictly more expressive than fixed probability thresholds and provides a full audit trail.
+**Decision rules:**
+
+*   Policy violations → force DENY
+    
+*   If USE\_EPISTEMIC\_GATE is true and ψ>ψthresh_ψ_\>_ψ_thresh​ → force ESCALATE
+    
+*   Else → action with smallest L_L_
+    
+
+This approach is strictly more expressive than fixed thresholds and provides a full audit trail.
 
 ### 3.3 Modularity
 
-Each ARF capability should be independently testable and replaceable. Modules should communicate through explicit interfaces rather than implicit side effects.
+Each ARF capability should be independently testable and replaceable. Modules communicate through explicit interfaces rather than implicit side effects.
 
-This enables:
+**Benefits:**
 
-- isolated unit testing
-- incremental development
-- safe replacement of components
-- easier external contribution
-- cleaner enterprise extension paths
+*   Isolated unit testing
+    
+*   Incremental development
+    
+*   Safe replacement of components
+    
+*   Easier external contribution
+    
+*   Cleaner enterprise extension paths
+    
 
 ### 3.4 Determinism at the Boundary
 
-The same inputs must always produce the same decision under the same policy configuration. Where probabilistic methods are used, they serve as advisory or scoring inputs, not as sources of nondeterministic enforcement.
+The same inputs must always produce the same decision under the same policy configuration. Where probabilistic methods are used, they serve as **advisory or scoring inputs**, not as sources of non‑deterministic enforcement.
 
 ### 3.5 Extensibility
 
-ARF should support:
+ARF supports:
 
-- research modules
-- enterprise modules
-- optional adapters
-- external scoring layers
-- additional observability tools
+*   Research modules
+    
+*   Enterprise modules
+    
+*   Optional adapters
+    
+*   External scoring layers
+    
+*   Additional observability tools
+    
 
-Extensibility must not degrade the predictability of the core engine.
+Extensibility must **not** degrade the predictability of the core engine.
 
----
+4\. System Architecture
+-----------------------
 
-## 4. System Architecture
+### 4.1 Core Architecture (Logical)
 
-### 4.1 Core Architecture
-
-```text
-User / Agent
-    ↓
-Frontend (Next.js Dashboard)
-    ↓
-API Control Plane (FastAPI)
-    ↓
-Risk Engine
-    ├── Conjugate Model
-    ├── HMC Model
-    └── Hyperprior Model
-    ↓
-Policy Engine
-    ↓
-Audit / Storage
+```mermaid
+graph TD
+    A[User / Agent] --> B[Frontend (Next.js Dashboard)]
+    B --> C[API Control Plane (FastAPI)]
+    C --> D[Risk Engine]
+    D --> D1[Conjugate Model]
+    D --> D2[HMC Model]
+    D --> D3[Hyperprior Model]
+    D --> E[Policy Engine]
+    E --> F[Audit / Storage]
 ```
 
-### 4.2 Extended Architecture
+### 4.2 Extended Architecture (with Optional Temporal Layer)
 
-Optional temporal behavior is not part of the core flow. When used, it should be attached externally through a separate adapter or service.
-
-```text
-User / Agent
-    ↓
-Frontend (Next.js Dashboard)
-    ↓
-API Control Plane (FastAPI)
-    ↓
-Core Risk Engine (session-scoped)
-    ↓
-Policy Engine / DPT
-    ↓
-Audit / Storage
-
-Optional:
-Core Signals → Temporal Reliability Adapter → Cross-session Aggregator → Enterprise Analytics / Governance
+```mermaid
+graph TD
+    A[User / Agent] --> B[Frontend]
+    B --> C[API Control Plane]
+    C --> D[Core Risk Engine (session‑scoped)]
+    D --> E[Policy Engine / DPT]
+    E --> F[Audit / Storage]
+    
+    D -.-> G[Temporal Reliability Adapter]
+    G --> H[Cross‑session Aggregator]
+    H --> I[Enterprise Analytics / Governance]
+    
+    style G stroke-dasharray: 5 5
+    style H stroke-dasharray: 5 5
+    style I stroke-dasharray: 5 5
 ```
 
 ### 4.3 Architectural Consequences
 
-This structure implies:
+*   The core engine is optimised for **immediate, session‑level reliability scoring**.
+    
+*   Temporal or longitudinal analysis is **not assumed by default**.
+    
+*   Enterprise users may add higher‑order stateful capabilities **without altering the runtime contract**.
+    
+*   Contributors can extend ARF without modifying core execution semantics.
+    
 
-- the OSS core is optimized for immediate, session-level reliability scoring
-- temporal or longitudinal analysis is not assumed by default
-- enterprise users may add higher-order stateful capabilities without altering the runtime contract
-- contributors can extend ARF without needing to modify the core execution semantics
+5\. Package Structure
+---------------------
 
----
+### 5.1 Core Package (Proprietary)
 
-## 5. Package Structure
-
-### 5.1 Core Package
-
-```text
 agentic_reliability_framework/
-
-runtime/
-  engine.py
-
-governance/
-  policy_engine.py
-
-advisory/
-  advisory.py
-
-persistence/
-  persistence.py
-
-tests/
-  test_advisory.py
-```
+├── runtime/
+│   └── engine.py
+├── governance/
+│   ├── policy_engine.py
+│   └── governance_loop.py
+├── advisory/
+│   └── advisory.py
+├── persistence/
+│   └── persistence.py
+└── tests/
+    └── test_advisory.py
 
 ### 5.2 Optional Enterprise or Extension Structure
 
-```text
 enterprise/
-
-temporal/
-  adapter.py
-  aggregator.py
-  decay.py
-  storage.py
-
-audit/
-  audit_trail.py
-
-governance/
-  longitudinal_controls.py
-
-tests/
-  test_temporal_reliability.py
-```
-
-### 5.3 Package Boundary Rules
+├── temporal/
+│   ├── adapter.py
+│   ├── aggregator.py
+│   ├── decay.py
+│   └── storage.py
+├── audit/
+│   └── audit_trail.py
+├── governance/
+│   └── longitudinal_controls.py
+└── tests/
+    └── test_temporal_reliability.py
+## 5.3 Package Boundary Rules
 
 The temporal layer must not be imported by the core runtime engine unless explicitly activated in an external integration layer.
 
 Core runtime modules should not depend on:
 
-- session history databases
-- identity systems
-- cross-session aggregation services
-- hidden stateful indicators
+- Session history databases
+- Identity systems
+- Cross‑session aggregation services
+- Hidden stateful indicators
 
 ---
 
 ## 6. Runtime Model
 
-### 6.1 Session-Scoped Execution
+### 6.1 Session‑Scoped Execution
 
-The core runtime operates on a single event or session at a time. It evaluates the immediate context and produces a decision or advisory artifact based on the current inputs.
-
-This is the default operating mode for ARF.
+The core runtime operates on a **single event or session at a time**. It evaluates the immediate context and produces a decision or advisory artifact based on current inputs. This is the default operating mode.
 
 ### 6.2 Advisory vs Enforcement
 
 ARF distinguishes between:
 
-- advisory reasoning: what should happen
-- enforcement logic: what is allowed to happen
+- **Advisory reasoning** – what *should* happen  
+- **Enforcement logic** – what *is allowed* to happen  
 
 This distinction prevents uncertainty estimates from directly becoming execution side effects.
 
-### 6.3 ReliabilitySignal Boundary
+### 6.3 `ReliabilitySignal` Boundary
 
-A `ReliabilitySignal` should represent a single-session reliability assessment. It should remain pure with respect to session-level inputs and not be mutated by longitudinal history.
-
-Any cross-session extension must be implemented outside the core signal semantics.
+A `ReliabilitySignal` represents a **single‑session reliability assessment**. It remains pure with respect to session‑level inputs and is not mutated by longitudinal history. Any cross‑session extension must be implemented outside the core signal semantics.
 
 ---
 
@@ -242,71 +260,73 @@ Any cross-session extension must be implemented outside the core signal semantic
 
 ### 7.1 Purpose
 
-Temporal reliability is a separate concern from in-session reliability.
+Temporal reliability answers a **different question** from core ARF:
 
-It answers a different question:
-
-- Core ARF: Is this safe now?
-- Temporal layer: Has this been reliable over time?
+| Layer | Question |
+|-------|----------|
+| Core ARF | *Is this safe now?* |
+| Temporal layer | *Has this been reliable over time?* |
 
 ### 7.2 Why It Is Separate
 
-Cross-session reliability introduces:
+Cross‑session reliability introduces:
 
-- storage requirements
-- identity linkage
-- time window semantics
-- decay functions
-- aggregation policies
-- data retention implications
+- Storage requirements  
+- Identity linkage  
+- Time window semantics  
+- Decay functions  
+- Aggregation policies  
+- Data retention implications  
 
-Those concerns are important, but they belong outside the core deterministic runtime.
+These concerns belong **outside** the core deterministic runtime.
 
 ### 7.3 Allowed Temporal Inputs
 
-Temporal extensions may use:
+Temporal extensions **may** use:
 
 - `session_id`
 - `observed_at`
-- time windows
-- decay functions
-- cross-session aggregation
+- Time windows
+- Decay functions
+- Cross‑session aggregation
 
 ### 7.4 Temporal Layer Constraints
 
-Temporal layers must not:
+Temporal layers **must not**:
 
-- alter in-session scoring behavior
-- alter DPT thresholds
-- mutate the meaning of `ReliabilitySignal`
-- force persistence into the core runtime path
-- create hidden coupling to enterprise identity or analytics systems
+- Alter in‑session scoring behaviour  
+- Alter DPT thresholds  
+- Mutate the meaning of `ReliabilitySignal`  
+- Force persistence into the core runtime path  
+- Create hidden coupling to enterprise identity or analytics systems  
+
+See [`temporal_reliability.md`](temporal_reliability.md) for the full contract.
 
 ---
 
 ## 8. Observability and Auditability
 
-ARF is designed to be inspectable.
+ARF is designed to be **inspectable**. Every decision path supports:
 
-Every decision path should support:
+- ✅ Audit logging  
+- ✅ Structured explanations  
+- ✅ Trace IDs  
+- ✅ Policy version tracking  
+- ✅ Override recording  
+- ✅ Replayability for analysis  
 
-- audit logging
-- structured explanations
-- trace IDs
-- policy version tracking
-- override recording
-- replayability for analysis
+**Observability metrics** (exposed via Prometheus):
 
-Observability should cover:
+| Metric | Description |
+|--------|-------------|
+| `scoring_latency_seconds` | Time to compute risk score |
+| `policy_evaluation_duration` | Time to evaluate policies |
+| `escalation_total` | Count of `ESCALATE` decisions |
+| `denial_total` | Count of `DENY` decisions |
+| `confidence_distribution` | Histogram of `confidence` values |
+| `longitudinal_trend` (optional) | External trend if temporal layer enabled |
 
-- scoring latency
-- policy evaluation outcome
-- escalation frequency
-- denial frequency
-- confidence distribution
-- optional longitudinal trends if enabled externally
-
-The goal is not just to know what happened, but to know why it happened and how the system reached that result.
+> 🎯 Goal: Not just to know *what* happened, but to know *why* it happened and how the system reached that result.
 
 ---
 
@@ -314,75 +334,131 @@ The goal is not just to know what happened, but to know why it happened and how 
 
 ### 9.1 Core Extension Model
 
-Extensions should attach through explicit interfaces. They should not depend on undocumented internal assumptions.
+Extensions attach through **explicit interfaces** and must not depend on undocumented internal assumptions.
 
 ### 9.2 Recommended Extension Types
 
-- adapters
-- aggregators
-- policy modules
-- storage backends
-- analysis services
-- enterprise governance modules
+- Adapters  
+- Aggregators  
+- Policy modules  
+- Storage backends  
+- Analysis services  
+- Enterprise governance modules  
 
 ### 9.3 Extension Rules
 
-Extensions should:
+Extensions **should**:
 
-- preserve core behavior
-- be optional
-- have explicit configuration
-- be independently testable
-- fail safely
+- ✅ Preserve core behaviour  
+- ✅ Be optional  
+- ✅ Have explicit configuration  
+- ✅ Be independently testable  
+- ✅ Fail safely (no hidden side effects)  
 
 ---
 
 ## 10. Enterprise Boundary
 
-Enterprise capabilities may include:
+Enterprise capabilities **may** include:
 
-- multi-tenancy
-- RBAC
-- audit compliance
-- distributed infrastructure
-- policy versioning
-- temporal aggregation
-- custom retention policies
-- reporting and analytics
+| Capability | Description |
+|------------|-------------|
+| Multi‑tenancy | Organisations, projects, roles |
+| RBAC | Role‑based access control |
+| Audit compliance | SOC2, GDPR, HIPAA |
+| Distributed infrastructure | Kubernetes, global replicas |
+| Policy versioning | Immutable policy history |
+| Temporal aggregation | Cross‑session reliability scores |
+| Custom retention | Data lifecycle policies |
+| Reporting & analytics | Dashboards, alerts |
 
-Enterprise systems should separate:
+Enterprise systems **should separate**:
 
-- core risk computation
-- policy enforcement
-- audit logging
-- temporal aggregation
-- analytics and reporting
+- Core risk computation  
+- Policy enforcement  
+- Audit logging  
+- Temporal aggregation  
+- Analytics and reporting  
 
-The enterprise layer may introduce stateful longitudinal trust tracking, but this should always be isolated from the OSS core.
-
----
-
-## 11. Design Recommendations
-
-- Keep the runtime engine stateless
-- Store posterior parameters externally when persistence is needed
-- Use versioned policies
-- Implement structured logging
-- Treat temporal reliability as an adapter or service, not a core primitive
-- Preserve deterministic scoring boundaries in the OSS runtime
-- Add longitudinal analysis only through explicit extension points
-- Avoid hidden state in execution paths
-- Ensure every extension has a clear ownership boundary
+The enterprise layer may introduce **stateful longitudinal trust tracking**, but this must always be isolated from the core engine.
 
 ---
 
-## 12. Status
+## 11. System Dynamics Model
 
-This document defines the architectural boundary of ARF.
+To understand feedback loops and emergent behaviour, we model ARF as a **causal loop diagram**.
 
-The core execution model remains session-scoped and deterministic.
+### 11.1 Core Feedback Loops
 
-Temporal reliability is intentionally externalized for optional enterprise or extension-layer implementation.
+```mermaid
+graph TD
+    A[Agent Action Request] --> B[Risk Score θ]
+    B --> C[Expected Loss L]
+    C --> D[Decision: Approve/Deny/Escalate]
+    D --> E[Outcome Success/Failure]
+    E --> F[Update Beta Priors]
+    F --> B
+    
+    B --> G[Epistemic Uncertainty ψ]
+    G --> H{Escalation Gate?}
+    H -->|ψ > threshold| D
+    H -->|ψ low| C
+    
+    D --> I[Human Review (if escalate)]
+    I --> E
+```
 
-This preserves the current product direction while leaving room for more advanced longitudinal governance capabilities in the future.
+**Reinforcing loops:**
 
+- **Learning loop:** More outcomes → better priors → lower risk variance → more confident approvals (reinforcing, but bounded by data).
+- **Trust erosion loop:** Failures → higher risk scores → more denials/escalations → less autonomy (balancing).
+
+**Balancing loops:**
+
+- **Uncertainty gate:** High ψ forces escalation, which adds human review → reduces risk of catastrophic failure.
+- **Policy override:** Policy violations bypass risk entirely, forcing deny (hard constraint).
+
+### 11.2 Stock‑and‑Flow (High‑Level)
+
+| Stock | Inflows | Outflows |
+|-------|---------|----------|
+| `Posterior parameters (α,β)` | Outcome observations | Bayesian updates |
+| `HMC model coefficients` | Periodic retraining | Prediction requests |
+| `Audit log entries` | Each decision | Retention policy (enterprise) |
+| `Trust capital` (enterprise) | Successful autonomous actions | Failures, escalations |
+
+This dynamics model informs capacity planning and risk thresholds. Enterprises may simulate these loops to tune cost constants.
+
+---
+
+## 12. Design Recommendations
+
+- ✅ Keep the runtime engine **stateless**  
+- ✅ Store posterior parameters externally when persistence is needed  
+- ✅ Use **versioned policies**  
+- ✅ Implement **structured logging**  
+- ✅ Treat temporal reliability as an **adapter or service**, not a core primitive  
+- ✅ Preserve **deterministic scoring boundaries** in the core engine  
+- ✅ Add longitudinal analysis only through **explicit extension points**  
+- ✅ Avoid hidden state in execution paths  
+- ✅ Ensure every extension has a **clear ownership boundary**  
+
+---
+
+## 13. Status
+
+This document defines the **architectural boundary** of the ARF Core Engine.
+
+- The core execution model remains **session‑scoped and deterministic**.
+- Temporal reliability is intentionally **externalised** for optional enterprise or extension‑layer implementation.
+- This preserves the current product direction while leaving room for more advanced longitudinal governance capabilities in the future.
+
+---
+
+## 14. See Also
+
+- [`core_concepts.md`](core_concepts.md) – canonical definitions of intents, risk score, and execution ladder  
+- [`mathematics.md`](mathematics.md) – Bayesian risk scoring formulas  
+- [`governance.md`](governance.md) – governance loop flow and configuration constants  
+- [`temporal_reliability.md`](temporal_reliability.md) – optional external layer contract  
+- [`enterprise.md`](enterprise.md) – enterprise enforcement and audit trails  
