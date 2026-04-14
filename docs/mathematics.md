@@ -225,7 +225,38 @@ The stability controller is invoked **after** expected loss minimisation when a 
 
 ---
 
-## 8. References
+## 8. Cryptographic Integrity of HealingIntents (Light Reference)
+
+> **Status:** Work in progress – basic signing and verification implemented; advanced key management and rotation planned.
+
+To ensure tamper‑proof transport of `HealingIntent` from the Python core engine to the Rust‑based enterprise execution layer, ARF uses **Ed25519 signatures** (via `ed25519_dalek`). The same mechanism can be extended to audit logs and license validation.
+
+### 8.1 Signing Flow (Python Core)
+
+- A `HealingIntent` is serialised into canonical JSON **excluding** the `signature` and `public_key_fingerprint` fields.
+- The JSON string is signed using an Ed25519 private key (or RSA, but Ed25519 is preferred for the enterprise boundary).
+- The signature (base64) and public key fingerprint (hex of the 32‑byte public key) are attached to the intent.
+
+### 8.2 Verification Flow (Rust Enterprise)
+
+- The Rust execution engine receives the `IntentPayload` (equivalent to `HealingIntent`).
+- It recomputes the canonical JSON (again excluding signature/fingerprint).
+- Using the public key fingerprint, it retrieves or decodes the public key.
+- The signature is verified with `verify_strict()`. Failure rejects the intent.
+
+### 8.3 Security Properties
+
+- **Integrity:** Any modification of the intent fields invalidates the signature.
+- **Authenticity:** Only the holder of the private key can produce valid signatures.
+- **Non‑repudiation:** Signatures are cryptographically verifiable by third parties.
+
+### 8.4 Implementation Notes
+
+- Core engine (`healing_intent.py`) uses `cryptography.hazmat` (RSA also available; Ed25519 used in enterprise boundary).
+- Enterprise engine (`arf_execution/src/crypto.rs`) uses `ed25519_dalek`.
+- Future work: key rotation, HSM integration, signed audit trails, and license validation.
+
+## 9. References
 
 - Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). *Bayesian Data Analysis* (3rd ed.). CRC Press.
 - McElreath, R. (2020). *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*. CRC Press.
@@ -234,7 +265,7 @@ The stability controller is invoked **after** expected loss minimisation when a 
 
 ---
 
-## 9. See Also
+## 10. See Also
 
 - [`core_concepts.md`](core_concepts.md) – canonical definition of `RiskScore` and execution ladder
 - [`governance.md`](governance.md) – governance loop flow and configuration constants
