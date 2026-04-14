@@ -176,16 +176,16 @@ graph TD
 ```text
 agentic_reliability_framework/
 ├── runtime/
-│   └── engine.py
+│   └── engine
 ├── governance/
-│   ├── policy_engine.py
-│   └── governance_loop.py
+│   ├── policy_engine
+│   └── governance_loop
 ├── advisory/
-│   └── advisory.py
+│   └── advisory
 ├── persistence/
-│   └── persistence.py
+│   └── persistence
 └── tests/
-    └── test_advisory.py
+    └── test_advisory
 ```
 
 ### 5.2 Optional Enterprise or Extension Structure
@@ -193,16 +193,16 @@ agentic_reliability_framework/
 ```text
 enterprise/
 ├── temporal/
-│   ├── adapter.py
-│   ├── aggregator.py
-│   ├── decay.py
-│   └── storage.py
+│   ├── adapter
+│   ├── aggregator
+│   ├── decay
+│   └── storage
 ├── audit/
-│   └── audit_trail.py
+│   └── audit_trail
 ├── governance/
-│   └── longitudinal_controls.py
+│   └── longitudinal_controls
 └── tests/
-    └── test_temporal_reliability.py
+    └── test_temporal_reliability
 ```
 
 ## 5.3 Package Boundary Rules
