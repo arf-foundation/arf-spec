@@ -13,14 +13,7 @@
 
 ARF is organized as a **layered specification**, each building on the one before:
 
-```mermaid
-graph LR
-    A[Core Concepts] --> B[Mathematics]
-    B --> C[Psychology]
-    C --> D[Governance]
-    D --> E[Enterprise]
-    D -.-> F[Temporal Reliability]
-```
+![ARF Layered Specification](assets/arf_mathematics_overview.png)
 
 - **Core Concepts** – reliability, observability, and traceability for AI agents.
 - **Mathematics** – Bayesian risk scoring, HMC, and expected loss minimisation.
@@ -60,6 +53,7 @@ graph LR
 Temporal reliability is intentionally defined as a separate specification layer.
 
 It must remain:
+
 - optional
 - external to in‑session scoring
 - outside the core ARF execution path
