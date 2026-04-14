@@ -1,0 +1,46 @@
+/* Mobile-friendly improvements for ARF specification */
+
+/* Allow tables to scroll horizontally on small screens */
+.md-typeset table:not(.highlighttable) {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Reduce font size of long inline math on narrow screens */
+.md-typeset .MathJax {
+    font-size: 0.9em;
+}
+
+/* Ensure Mermaid diagrams scale and don't overflow */
+.mermaid {
+    max-width: 100%;
+    overflow-x: auto;
+    text-align: center;
+}
+
+/* Improve code block readability on mobile */
+.md-typeset pre > code {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Make admonition icons smaller on mobile */
+@media (max-width: 600px) {
+    .md-typeset .admonition {
+        font-size: 0.9rem;
+    }
+    .md-typeset .admonition .admonition-title {
+        font-size: 0.95rem;
+    }
+    /* Reduce heading sizes */
+    .md-typeset h1 {
+        font-size: 1.8rem;
+    }
+    .md-typeset h2 {
+        font-size: 1.5rem;
+    }
+    .md-typeset h3 {
+        font-size: 1.3rem;
+    }
+}
