@@ -8,6 +8,65 @@ The canonical definition of the **risk score** used throughout this specificatio
 **Implementation status:** The mathematics defined here are implemented in the proprietary core engine.  
 The engine is access‑controlled and available under outcome‑based pricing.
 
+## Mathematical Foundations at a Glance
+
+```mermaid
+graph TD
+    subgraph "Bayesian Core"
+        A[Historical Outcomes] --> B[Conjugate Beta Prior<br>α,β per category]
+        B --> C[Posterior Mean & Variance<br>E[p], Var(p)]
+        D[Telemetry: hour, role, env] --> E[HMC Logistic Regression<br>NUTS sampling]
+        F[All categories] --> G[Hyperprior Beta<br>Global shrinkage]
+    end
+
+    subgraph "Risk Fusion"
+        C --> H{Weighted Fusion}
+        E --> H
+        G --> H
+        H --> I[Hybrid Risk R<br>w_conj·E[p] + w_hmc·p_hmc + w_hyper·p_hyper]
+        I --> J[Context Multiplier κ<br>env, cost, violations]
+        J --> K[Final Risk Score R_final]
+    end
+
+    subgraph "Uncertainty & Decay"
+        K --> L[Risk Decay Over Time<br>R̃_t = γ·R̃_{t-1} + (1-γ)·R_t]
+        C --> M[90% HDI<br>from Beta quantiles]
+        E --> M
+        G --> M
+    end
+
+    subgraph "Decision Layer"
+        L --> N[Expected Loss Minimisation]
+        N --> O{L_approve, L_deny, L_escalate}
+        O --> P[Select action with min loss]
+        M --> Q[Epistemic Uncertainty ψ]
+        Q --> R{Escalate if ψ > threshold}
+        P --> S[Healing Action]
+    end
+
+    subgraph "Stability Guarantee"
+        S --> T[Lyapunov Stability Controller]
+        T --> U[Quadratic Lyapunov V(x,r)<br>V_next - V_curr ≤ -γ||x||²]
+        U --> V[Feasible?]
+        V -->|Yes| W[Execute action]
+        V -->|No| X[Fallback: ESCALATE]
+    end
+
+    subgraph "Integrity"
+        W --> Y[Sign HealingIntent<br>Ed25519 private key]
+        Y --> Z[Enterprise verifies signature<br>with public key fingerprint]
+    end
+
+    style A fill:#e1f5fe
+    style D fill:#e1f5fe
+    style F fill:#e1f5fe
+    style K fill:#c8e6c9
+    style L fill:#fff9c4
+    style N fill:#ffe0b2
+    style T fill:#f3e5f5
+    style Y fill:#ffcdd2
+```
+
 ---
 
 ## 1. Conjugate Beta‑Binomial Model (Online Learning)
