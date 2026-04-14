@@ -13,7 +13,8 @@
 
 ARF is organized as a **layered specification**, each building on the one before:
 
-```graph LR
+```mermaid
+graph LR
     A[Core Concepts] --> B[Mathematics]
     B --> C[Psychology]
     C --> D[Governance]
@@ -21,7 +22,7 @@ ARF is organized as a **layered specification**, each building on the one before
     D -.-> F[Temporal Reliability]
     linkStyle 4 stroke-dasharray: 5 5
 ```
-    
+
 - **Core Concepts** – reliability, observability, and traceability for AI agents.
 - **Mathematics** – Bayesian risk scoring, HMC, and expected loss minimisation.
 - **Psychology** – trust calibration, human‑in‑the‑loop design, and explainability.
