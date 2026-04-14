@@ -625,13 +625,52 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-expected-loss-minimisation-summary" class="md-nav__link">
+  <a href="#6-expected-loss-minimisation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Expected Loss Minimisation (Summary)
+        6. Expected Loss Minimisation
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="6. Expected Loss Minimisation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-risk-decay-across-evaluations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Risk Decay Across Evaluations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-expected-loss-formulas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Expected Loss Formulas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-optional-cvar-for-tail-risk-enterprise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Optional CVaR for Tail Risk (Enterprise)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -842,17 +881,20 @@ w_{\text{hyper}} = \min\!\left( \frac{n}{n_{\text{hyper}}},\, w_{\text{max}} \ri
 <div class="arithmatex">\[
 R = w_{\text{conj}} \cdot \frac{\alpha_c}{\alpha_c+\beta_c} + w_{\text{hmc}} \cdot p_{\text{hmc}} + w_{\text{hyper}} \cdot p_{\text{hyper}}
 \]</div>
-<p>Weights are dynamic:</p>
+<p>Weights are dynamic, with caps and interactions as implemented in the core engine:</p>
 <div class="arithmatex">\[
-w_{\text{hmc}} = \min\!\left(1,\, \frac{n}{n_0}\right)
+w_{\text{hmc}} = \min\!\left(0.6,\, \frac{n}{n_0}\right)
 \]</div>
 <div class="arithmatex">\[
-w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\text{hyper}}}\right)
+w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}} \cdot (1 - w_{\text{hmc}}),\; \frac{n}{n_{\text{hyper}}},\; 0.3 \right)
 \]</div>
 <div class="arithmatex">\[
 w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
 \]</div>
 <p>with <span class="arithmatex">\(n_0 = 1000\)</span> and <span class="arithmatex">\(n_{\text{hyper}} = 100\)</span> as defaults. The final risk is then multiplied by a context factor <span class="arithmatex">\(\kappa(\text{env}, \text{cost}, \text{violations})\)</span> to account for external factors.</p>
+<blockquote>
+<p><strong>Note:</strong> The HMC weight is capped at 0.6, and the hyperprior weight is further capped at 0.3 and reduced proportionally when HMC weight is high, ensuring the three weights always sum to 1.</p>
+</blockquote>
 <hr />
 <h2 id="5-uncertainty-quantification">5. Uncertainty Quantification<a class="headerlink" href="#5-uncertainty-quantification" title="Permanent link">&para;</a></h2>
 <p>Every risk prediction includes a <strong>90% highest density interval</strong> (HDI) computed via:</p>
@@ -863,16 +905,38 @@ w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
 </ul>
 <p>These intervals are displayed in the frontend and used to trigger human‑in‑the‑loop escalation when uncertainty is high (e.g., interval width <span class="arithmatex">\(&gt;0.3\)</span>).</p>
 <hr />
-<h2 id="6-expected-loss-minimisation-summary">6. Expected Loss Minimisation (Summary)<a class="headerlink" href="#6-expected-loss-minimisation-summary" title="Permanent link">&para;</a></h2>
-<p>The risk score feeds into the governance loop’s expected loss calculation:</p>
+<h2 id="6-expected-loss-minimisation">6. Expected Loss Minimisation<a class="headerlink" href="#6-expected-loss-minimisation" title="Permanent link">&para;</a></h2>
+<p>The risk score feeds into the governance loop’s expected loss calculation.</p>
+<h3 id="61-risk-decay-across-evaluations">6.1 Risk Decay Across Evaluations<a class="headerlink" href="#61-risk-decay-across-evaluations" title="Permanent link">&para;</a></h3>
+<p>To provide temporal stability and avoid single‑session outliers from dominating decisions, the core engine applies exponential smoothing to the raw risk score:</p>
+<div class="arithmatex">\[
+\tilde{R}_t = \gamma \cdot \tilde{R}_{t-1} + (1-\gamma) \cdot R_t
+\]</div>
+<p>where <span class="arithmatex">\(\gamma = 0.9\)</span> (configurable via <code>RISK_DECAY_FACTOR</code>), <span class="arithmatex">\(R_t\)</span> is the hybrid risk score from Section 4, and <span class="arithmatex">\(\tilde{R}_t\)</span> is the decayed risk used in the loss formulas below. For the first evaluation, <span class="arithmatex">\(\tilde{R}_0 = R_0\)</span>.</p>
+<h3 id="62-expected-loss-formulas">6.2 Expected Loss Formulas<a class="headerlink" href="#62-expected-loss-formulas" title="Permanent link">&para;</a></h3>
+<p>The expected loss for each possible action is:</p>
 <div class="arithmatex">\[
 \begin{aligned}
-L_{\text{approve}} &amp;= \text{COST\_FP} \cdot R + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\
-L_{\text{deny}} &amp;= \text{COST\_FN} \cdot (1 - R) + \text{COST\_OPP} \cdot v_{\text{mean}} \\
+L_{\text{approve}} &amp;= \text{COST\_FP} \cdot \tilde{R} + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\[4pt]
+L_{\text{deny}} &amp;= \text{COST\_FN} \cdot (1 - \tilde{R}) + \text{COST\_OPP} \cdot v_{\text{mean}} \\[4pt]
 L_{\text{escalate}} &amp;= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi_{\text{mean}}
 \end{aligned}
 \]</div>
-<p>For a detailed explanation of the governance loop and constants, see <a href="../governance/"><code>governance.md</code></a>.</p>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(\tilde{R}\)</span> = decayed risk (Section 6.1)</li>
+<li><span class="arithmatex">\(\text{Var}(p_c)\)</span> = posterior variance from the conjugate model</li>
+<li><span class="arithmatex">\(\psi_{\text{mean}}\)</span> = epistemic uncertainty composite</li>
+<li><span class="arithmatex">\(b_{\text{mean}}\)</span> = estimated revenue loss from business impact</li>
+<li><span class="arithmatex">\(v_{\text{mean}}\)</span> = estimated opportunity value of the action</li>
+<li><span class="arithmatex">\(\text{COST\_*}\)</span> are constants defined in <code>constants.py</code> (see <a href="../governance/#4-configuration-constants"><code>governance.md</code></a>)</li>
+</ul>
+<h3 id="63-optional-cvar-for-tail-risk-enterprise">6.3 Optional CVaR for Tail Risk (Enterprise)<a class="headerlink" href="#63-optional-cvar-for-tail-risk-enterprise" title="Permanent link">&para;</a></h3>
+<p>The core engine uses standard expectation for <span class="arithmatex">\(L_{\text{approve}}\)</span>. The enterprise layer <strong>may</strong> enable Conditional Value at Risk (CVaR) to penalise tail risks. When enabled (<code>USE_CVAR = True</code>, <span class="arithmatex">\(\alpha = 0.05\)</span>), the approve loss becomes:</p>
+<div class="arithmatex">\[
+L_{\text{approve}}^{\text{CVaR}} = \text{CVaR}_\alpha\!\left[ \text{COST\_FP} \cdot \tilde{p} + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} \right] + \text{COST\_VARIANCE} \cdot \text{Var}(p_c)
+\]</div>
+<p>where <span class="arithmatex">\(\tilde{p}\)</span> are posterior samples of the failure probability (drawn from <span class="arithmatex">\(\text{Beta}(\alpha_c, \beta_c)\)</span>), and <span class="arithmatex">\(\text{CVaR}_\alpha\)</span> is the average of the worst <span class="arithmatex">\(\alpha\)</span> fraction of the per‑sample losses. This substitution replaces the simple expectation with a tail‑risk‑sensitive measure.</p>
 <hr />
 <h2 id="7-references">7. References<a class="headerlink" href="#7-references" title="Permanent link">&para;</a></h2>
 <ul>
@@ -884,7 +948,7 @@ L_{\text{escalate}} &amp;= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot 
 <h2 id="8-see-also">8. See Also<a class="headerlink" href="#8-see-also" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../core_concepts/"><code>core_concepts.md</code></a> – canonical definition of <code>RiskScore</code> and execution ladder</li>
-<li><a href="../governance/"><code>governance.md</code></a> – governance loop flow and expected loss minimisation</li>
+<li><a href="../governance/"><code>governance.md</code></a> – governance loop flow and configuration constants</li>
 <li><a href="../design/"><code>design.md</code></a> – architectural decisions and trade‑offs</li>
 </ul>
 
