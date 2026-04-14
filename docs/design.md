@@ -73,12 +73,14 @@ Risk predictions are probabilistic, but the final action (`APPROVE`, `DENY`, `ES
 
 The expected loss for each action is:
 
-```math
+```markdown
+$$
 \begin{aligned}
 L_{\text{approve}} &= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2 \\[4pt]
 L_{\text{deny}} &= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}} \\[4pt]
 L_{\text{escalate}} &= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi
 \end{aligned}
+$$
 ```
 
 Where:
