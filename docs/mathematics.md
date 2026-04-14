@@ -76,14 +76,14 @@ $$
 R = w_{\text{conj}} \cdot \frac{\alpha_c}{\alpha_c+\beta_c} + w_{\text{hmc}} \cdot p_{\text{hmc}} + w_{\text{hyper}} \cdot p_{\text{hyper}}
 $$
 
-Weights are dynamic:
+Weights are dynamic, with caps and interactions as implemented in the core engine:
 
 $$
-w_{\text{hmc}} = \min\!\left(1,\, \frac{n}{n_0}\right)
+w_{\text{hmc}} = \min\!\left(0.6,\, \frac{n}{n_0}\right)
 $$
 
 $$
-w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\text{hyper}}}\right)
+w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}} \cdot (1 - w_{\text{hmc}}),\; \frac{n}{n_{\text{hyper}}},\; 0.3 \right)
 $$
 
 $$
@@ -91,6 +91,8 @@ w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
 $$
 
 with $n_0 = 1000$ and $n_{\text{hyper}} = 100$ as defaults. The final risk is then multiplied by a context factor $\kappa(\text{env}, \text{cost}, \text{violations})$ to account for external factors.
+
+> **Note:** The HMC weight is capped at 0.6, and the hyperprior weight is further capped at 0.3 and reduced proportionally when HMC weight is high, ensuring the three weights always sum to 1.
 
 ---
 
@@ -106,19 +108,50 @@ These intervals are displayed in the frontend and used to trigger human‑in‑t
 
 ---
 
-## 6. Expected Loss Minimisation (Summary)
+## 6. Expected Loss Minimisation
 
-The risk score feeds into the governance loop’s expected loss calculation:
+The risk score feeds into the governance loop’s expected loss calculation.
+
+### 6.1 Risk Decay Across Evaluations
+
+To provide temporal stability and avoid single‑session outliers from dominating decisions, the core engine applies exponential smoothing to the raw risk score:
+
+$$
+\tilde{R}_t = \gamma \cdot \tilde{R}_{t-1} + (1-\gamma) \cdot R_t
+$$
+
+where $\gamma = 0.9$ (configurable via `RISK_DECAY_FACTOR`), $R_t$ is the hybrid risk score from Section 4, and $\tilde{R}_t$ is the decayed risk used in the loss formulas below. For the first evaluation, $\tilde{R}_0 = R_0$.
+
+### 6.2 Expected Loss Formulas
+
+The expected loss for each possible action is:
 
 $$
 \begin{aligned}
-L_{\text{approve}} &= \text{COST\_FP} \cdot R + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\
-L_{\text{deny}} &= \text{COST\_FN} \cdot (1 - R) + \text{COST\_OPP} \cdot v_{\text{mean}} \\
+L_{\text{approve}} &= \text{COST\_FP} \cdot \tilde{R} + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\[4pt]
+L_{\text{deny}} &= \text{COST\_FN} \cdot (1 - \tilde{R}) + \text{COST\_OPP} \cdot v_{\text{mean}} \\[4pt]
 L_{\text{escalate}} &= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi_{\text{mean}}
 \end{aligned}
 $$
 
-For a detailed explanation of the governance loop and constants, see [`governance.md`](governance.md).
+where:
+
+- $\tilde{R}$ = decayed risk (Section 6.1)
+- $\text{Var}(p_c)$ = posterior variance from the conjugate model
+- $\psi_{\text{mean}}$ = epistemic uncertainty composite
+- $b_{\text{mean}}$ = estimated revenue loss from business impact
+- $v_{\text{mean}}$ = estimated opportunity value of the action
+- $\text{COST\_*}$ are constants defined in `constants.py` (see [`governance.md`](governance.md#4-configuration-constants))
+
+### 6.3 Optional CVaR for Tail Risk (Enterprise)
+
+The core engine uses standard expectation for $L_{\text{approve}}$. The enterprise layer **may** enable Conditional Value at Risk (CVaR) to penalise tail risks. When enabled (`USE_CVAR = True`, $\alpha = 0.05$), the approve loss becomes:
+
+$$
+L_{\text{approve}}^{\text{CVaR}} = \text{CVaR}_\alpha\!\left[ \text{COST\_FP} \cdot \tilde{p} + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} \right] + \text{COST\_VARIANCE} \cdot \text{Var}(p_c)
+$$
+
+where $\tilde{p}$ are posterior samples of the failure probability (drawn from $\text{Beta}(\alpha_c, \beta_c)$), and $\text{CVaR}_\alpha$ is the average of the worst $\alpha$ fraction of the per‑sample losses. This substitution replaces the simple expectation with a tail‑risk‑sensitive measure.
 
 ---
 
@@ -133,5 +166,5 @@ For a detailed explanation of the governance loop and constants, see [`governanc
 ## 8. See Also
 
 - [`core_concepts.md`](core_concepts.md) – canonical definition of `RiskScore` and execution ladder
-- [`governance.md`](governance.md) – governance loop flow and expected loss minimisation
+- [`governance.md`](governance.md) – governance loop flow and configuration constants
 - [`design.md`](design.md) – architectural decisions and trade‑offs
