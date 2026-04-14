@@ -643,6 +643,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#decision-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#decision-rule" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -921,39 +932,40 @@ L_{\text{escalate}} &amp;= c_{\text{review}} + c_{\text{unc}} \, \psi,
 <li><span class="arithmatex">\(\sigma^2\)</span> = posterior variance (from conjugate Beta model),</li>
 <li><span class="arithmatex">\(\psi\)</span> = composite epistemic uncertainty,</li>
 <li><span class="arithmatex">\(v_{\text{mean}}\)</span> = estimated opportunity value,</li>
-<li>all <span class="arithmatex">\(c\)</span> constants are defined below.</li>
+<li>all <abbr title="Cost constants defined in the table below"><span class="arithmatex">\(c\)</span> constants</abbr> are defined below.</li>
 </ul>
 <h3 id="cvarbased-approve-loss-optional-enabled-by-use_cvar-true">CVaR‑Based Approve Loss (optional, enabled by <code>USE_CVAR = True</code>)<a class="headerlink" href="#cvarbased-approve-loss-optional-enabled-by-use_cvar-true" title="Permanent link">&para;</a></h3>
 <p>When <code>USE_CVAR</code> is enabled, the approve loss is computed as the average of the worst α‑fraction of per‑sample losses from the posterior distribution, plus the variance penalty. This makes the decision more conservative when the posterior has heavy tails or high uncertainty.</p>
-<p><strong>Procedure:</strong></p>
-<ol>
-<li>
-<p>Draw <span class="arithmatex">\(N\)</span> samples from the posterior Beta distribution:
-   [
+<details>
+<summary>📘 Click to expand the CVaR calculation procedure</summary>
+
+**Procedure:**
+
+1. Draw \(N\) samples from the posterior Beta distribution:
+   \[
    p_i \sim \text{Beta}(\alpha, \beta), \quad i = 1,\dots,N
-   ]
-   where <span class="arithmatex">\((\alpha, \beta)\)</span> are the posterior parameters of the conjugate model.</p>
-</li>
-<li>
-<p>Compute the per‑sample approve loss without the variance term:
-   [
-   L_{\text{approve}}^{(i)} = c_{\text{FP}} \, p_i + c_{\text{impact}} \, \text{revenue_loss} + c_{\text{pred}} \, \text{pred_risk}.
-   ]</p>
-</li>
-<li>
-<p>Sort the losses in ascending order:
-   [
+   \]
+   where \((\alpha, \beta)\) are the posterior parameters of the conjugate model.
+
+2. Compute the per‑sample approve loss without the variance term:
+   \[
+   L_{\text{approve}}^{(i)} = c_{\text{FP}} \, p_i + c_{\text{impact}} \, \text{revenue\_loss} + c_{\text{pred}} \, \text{pred\_risk}.
+   \]
+
+3. Sort the losses in ascending order:
+   \[
    L_{\text{approve}}^{([1])} \le L_{\text{approve}}^{([2])} \le \dots \le L_{\text{approve}}^{([N])}.
-   ]</p>
-</li>
-<li>
-<p>Take the average of the smallest <span class="arithmatex">\(k = \lceil \alpha N \rceil\)</span> values:
-   [
+   \]
+
+4. Take the average of the smallest \(k = \lceil \alpha N \rceil\) values:
+   \[
    L_{\text{approve}}^{\text{CVaR}} = \frac{1}{k} \sum_{i=1}^{k} L_{\text{approve}}^{([i])} + c_{\text{var}} \, \sigma^2.
-   ]</p>
-</li>
-</ol>
-<p>Here <span class="arithmatex">\(\alpha = \text{CVAR\_ALPHA}\)</span> (default 0.05, i.e., 95% CVaR) and <span class="arithmatex">\(N = 1000\)</span> samples.</p>
+   \]
+
+Here \(\alpha = \text{CVAR\_ALPHA}\) (default 0.05, i.e., 95% CVaR) and \(N = 1000\) samples.
+
+</details>
+
 <p>The deny and escalate losses remain unchanged, as they are linear in risk (or constant).</p>
 <h4 id="why-use-cvar">Why Use CVaR?<a class="headerlink" href="#why-use-cvar" title="Permanent link">&para;</a></h4>
 <ul>
@@ -963,6 +975,16 @@ L_{\text{escalate}} &amp;= c_{\text{review}} + c_{\text{unc}} \, \psi,
 <h4 id="example-use-case">Example Use Case<a class="headerlink" href="#example-use-case" title="Permanent link">&para;</a></h4>
 <p>Suppose a model predicts a risk score <span class="arithmatex">\(\theta = 0.3\)</span> with high variance (e.g., Beta(3,7) gives variance 0.021). The expected approve loss might be low, but there is a non‑negligible probability that the true risk is much higher (e.g., 0.6). Using CVaR (<span class="arithmatex">\(\alpha = 0.05\)</span>) would average the worst 5% of the posterior samples, capturing this tail risk and potentially escalating or denying an action that would otherwise be approved under the mean loss.</p>
 <p>This aligns with a risk‑averse business policy: avoid actions that could occasionally cause catastrophic failure, even if they are safe on average.</p>
+<h3 id="decision-flow">Decision Flow<a class="headerlink" href="#decision-flow" title="Permanent link">&para;</a></h3>
+<p>The following diagram illustrates the governance loop’s decision logic:</p>
+<pre class="mermaid"><code>graph TD
+    A[Start] --&gt; B{Policy violations?}
+    B --&gt;|Yes| C[DENY]
+    B --&gt;|No| D{Epistemic uncertainty &gt; threshold?}
+    D --&gt;|Yes| E[ESCALATE]
+    D --&gt;|No| F[Compute expected losses for APPROVE, DENY, ESCALATE]
+    F --&gt; G[Select action with minimum expected loss]
+    G --&gt; H[APPROVE / DENY / ESCALATE]</code></pre>
 <h3 id="decision-rule">Decision Rule<a class="headerlink" href="#decision-rule" title="Permanent link">&para;</a></h3>
 <ul>
 <li>If policy violations exist → <strong>DENY</strong>.</li>
@@ -973,71 +995,54 @@ L_{\text{escalate}} &amp;= c_{\text{review}} + c_{\text{unc}} \, \psi,
 <table>
 <thead>
 <tr>
-<th>Constant</th>
+<th><abbr title="False positive cost"><span class="arithmatex">\(c_{\text{FP}}\)</span></abbr></th>
+<th><abbr title="False negative cost"><span class="arithmatex">\(c_{\text{FN}}\)</span></abbr></th>
+<th><abbr title="Business impact weight"><span class="arithmatex">\(c_{\text{impact}}\)</span></abbr></th>
+<th><abbr title="Predictive risk weight"><span class="arithmatex">\(c_{\text{pred}}\)</span></abbr></th>
+<th><abbr title="Variance penalty weight"><span class="arithmatex">\(c_{\text{var}}\)</span></abbr></th>
+<th><abbr title="Opportunity cost weight"><span class="arithmatex">\(c_{\text{opp}}\)</span></abbr></th>
+<th><abbr title="Human review cost"><span class="arithmatex">\(c_{\text{review}}\)</span></abbr></th>
+<th><abbr title="Epistemic uncertainty weight"><span class="arithmatex">\(c_{\text{unc}}\)</span></abbr></th>
 <th>Value</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><span class="arithmatex">\(c_{\text{FP}}\)</span></td>
 <td>10.0</td>
-<td>False positive cost</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(c_{\text{FN}}\)</span></td>
 <td>8.0</td>
-<td>False negative cost</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(c_{\text{impact}}\)</span></td>
 <td>5.0</td>
-<td>Business impact weight</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(c_{\text{pred}}\)</span></td>
 <td>2.0</td>
-<td>Predictive risk weight</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(c_{\text{var}}\)</span></td>
 <td>5.0</td>
-<td>Variance penalty weight</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(c_{\text{opp}}\)</span></td>
 <td>3.0</td>
-<td>Opportunity cost weight</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(c_{\text{review}}\)</span></td>
 <td>2.0</td>
-<td>Human review cost</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(c_{\text{unc}}\)</span></td>
 <td>4.0</td>
-<td>Epistemic uncertainty weight</td>
+<td>–</td>
+<td>–</td>
 </tr>
 <tr>
 <td><span class="arithmatex">\(\psi_{\text{thresh}}\)</span></td>
+<td><span class="arithmatex">\(\gamma\)</span> (RISK_DECAY_FACTOR)</td>
+<td><code>USE_CVAR</code></td>
+<td><code>CVAR_ALPHA</code></td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
 <td>0.5</td>
 <td>Epistemic escalation threshold</td>
 </tr>
 <tr>
-<td><span class="arithmatex">\(\gamma\)</span> (RISK_DECAY_FACTOR)</td>
 <td>0.9</td>
-<td>Smoothing factor for time‑decaying risk</td>
-</tr>
-<tr>
-<td><code>USE_CVAR</code></td>
+<td>Smoothing factor</td>
 <td>False</td>
-<td>Enable CVaR (tail risk) for approve loss</td>
-</tr>
-<tr>
-<td><code>CVAR_ALPHA</code></td>
+<td>Enable CVaR</td>
 <td>0.05</td>
-<td>Tail probability for CVaR (0.05 = 95%)</td>
+<td>Tail probability (95%)</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
 </tr>
 </tbody>
 </table>
@@ -1080,33 +1085,20 @@ p_c \sim \text{Beta}(\alpha_0, \beta_0), \quad \alpha_0 \sim \text{Gamma}(2,1),\
 R = w_{\text{conj}} \cdot p_{\text{conj}} + w_{\text{hyper}} \cdot p_{\text{hyper}} + w_{\text{hmc}} \cdot p_{\text{hmc}}
 \]</div>
 <p>Weights depend on the amount of observed data (<span class="arithmatex">\(n\)</span>) and are computed as follows:</p>
-<table>
-<thead>
-<tr>
-<th>Available components</th>
-<th>Weight formulas</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Only conjugate</td>
-<td><span class="arithmatex">\(w_{\text{conj}} = 1.0\)</span></td>
-</tr>
-<tr>
-<td>Conjugate + HMC</td>
-<td><span class="arithmatex">\(w_{\text{hmc}} = \min(1.0, \frac{n}{n_0}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}}\)</span></td>
-</tr>
-<tr>
-<td>Conjugate + hyperprior</td>
-<td><span class="arithmatex">\(w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}),\quad w_{\text{conj}} = 1 - w_{\text{hyper}}\)</span></td>
-</tr>
-<tr>
-<td>All three</td>
-<td><span class="arithmatex">\(w_{\text{hmc}} = \min(0.6, \frac{n}{n_0}),\quad w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}) \cdot (1 - w_{\text{hmc}}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}\)</span></td>
-</tr>
-</tbody>
-</table>
-<p>where <span class="arithmatex">\(n_0 = 1000\)</span> and <span class="arithmatex">\(w_{\text{hyper}}^{\text{base}} = 0.3\)</span>.</p>
+<details>
+<summary>📊 Weight calculation formulas (click to expand)</summary>
+
+| Available components | Weight formulas |
+|----------------------|-----------------|
+| Only conjugate | \(w_{\text{conj}} = 1.0\) |
+| Conjugate + HMC | \(w_{\text{hmc}} = \min(1.0, \frac{n}{n_0}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}}\) |
+| Conjugate + hyperprior | \(w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}),\quad w_{\text{conj}} = 1 - w_{\text{hyper}}\) |
+| All three | \(w_{\text{hmc}} = \min(0.6, \frac{n}{n_0}),\quad w_{\text{hyper}} = \min(w_{\text{hyper}}^{\text{base}}, \frac{n}{100}) \cdot (1 - w_{\text{hmc}}),\quad w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}\) |
+
+where \(n_0 = 1000\) and \(w_{\text{hyper}}^{\text{base}} = 0.3\).
+
+</details>
+
 <h2 id="context-multiplier">Context Multiplier<a class="headerlink" href="#context-multiplier" title="Permanent link">&para;</a></h2>
 <p>Before finalising the risk, a context multiplier <span class="arithmatex">\(m\)</span> may be applied to account for environmental risk factors (e.g., production vs. development):</p>
 <div class="arithmatex">\[
