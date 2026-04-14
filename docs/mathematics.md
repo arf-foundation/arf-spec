@@ -14,15 +14,15 @@ The engine is access‑controlled and available under outcome‑based pricing.
 
 For each action category $c \in \mathcal{C}$, we maintain a Beta posterior:
 
-```math
+$$
 p_c \sim \text{Beta}(\alpha_c, \beta_c)
-```
+$$
 
 where $(\alpha_c, \beta_c)$ start from expert‑elicited priors. Upon observing a binary outcome $y \in {0,1}$ ($y=1$ = failure), we update:
 
-```math
+$$
 (\alpha_c, \beta_c) \leftarrow (\alpha_c + y,\; \beta_c + (1-y))
-```
+$$
 
 allows us to construct credible intervals (e.g., 90% HDI) and express uncertainty.
 
@@ -34,9 +34,9 @@ allows us to construct credible intervals (e.g., 90% HDI) and express uncertaint
 
 Complex interactions (time‑of‑day, user role, environment) are captured by a logistic regression with HMC sampling:
 
-```math
+$$
 \operatorname{logit}(p) = \beta_0 + \beta_{\text{role}} x_{\text{role}} + \beta_{\text{env}} x_{\text{env}} + \beta_{\sin}\sin\!\left(\frac{2\pi t}{24}\right) + \beta_{\cos}\cos\!\left(\frac{2\pi t}{24}\right) + \sum_{k}\beta_k x_k
-```
+$$
 
 We place weakly informative priors on coefficients, e.g., $\beta_j \sim \operatorname{Normal}(0, 1)$. The posterior is sampled using the No‑U‑Turn Sampler (NUTS) implemented in PyMC. The resulting posterior over coefficients gives us not only point estimates but also full uncertainty about predictions, which we propagate into the final risk.
 
@@ -48,15 +48,15 @@ We place weakly informative priors on coefficients, e.g., $\beta_j \sim \operato
 
 To share statistical strength across categories, we introduce a hierarchical Beta model:
 
-```math
+$$
 p_c \sim \operatorname{Beta}(\alpha_0, \beta_0) \quad\text{for all }c
-```
+$$
 
 with global hyperparameters $\alpha_0, \beta_0 \sim \operatorname{Gamma}(2,1)$. This model is fit via variational inference (SVI) in Pyro, yielding posterior summaries for each category that are shrunk toward the global mean. The hyperprior contribution is weighted by data availability:
 
-```math
+$$
 w_{\text{hyper}} = \min\!\left( \frac{n}{n_{\text{hyper}}},\, w_{\text{max}} \right)
-```
+$$
 
 where $n$ is the total number of outcomes.
 
@@ -65,23 +65,23 @@ where $n$ is the total number of outcomes.
 
 The final risk $R$ for a given intent is a weighted combination:
 
-```math
+$$
 R = w_{\text{conj}} \cdot \frac{\alpha_c}{\alpha_c+\beta_c} + w_{\text{hmc}} \cdot p_{\text{hmc}} + w_{\text{hyper}} \cdot p_{\text{hyper}}
-```
+$$
 
 Weights are dynamic:
 
-```math
+$$
 w_{\text{hmc}} = \min\!\left(1,\, \frac{n}{n_0}\right)
-```
+$$
 
-```math
+$$
 w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\text{hyper}}}\right)
-```
+$$
 
-```math
+$$
 w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
-```
+$$
 
 with $n_0 = 1000$ and $n_{\text{hyper}} = 100$ as defaults. The final risk is then multiplied by a context factor $\kappa(\text{env}, \text{cost}, \text{violations})$ to account for external factors.
 
@@ -104,13 +104,13 @@ These intervals are displayed in the frontend and used to trigger human‑in‑t
 
 The risk score feeds into the governance loop’s expected loss calculation:
 
-```math
+$$
 \begin{aligned}
 L_{\text{approve}} &= \text{COST\_FP} \cdot R + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\
 L_{\text{deny}} &= \text{COST\_FN} \cdot (1 - R) + \text{COST\_OPP} \cdot v_{\text{mean}} \\
 L_{\text{escalate}} &= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi_{\text{mean}}
 \end{aligned}
-```
+$$
 
 For a detailed explanation of the governance loop and constants, see [governance.md](https://governance.md/).
 
