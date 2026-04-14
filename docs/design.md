@@ -374,17 +374,17 @@ To understand feedback loops and emergent behaviour, we model ARF as a **causal 
 
 ```mermaid
 graph TD
-    A[Agent Action Request] --> B[Risk Score θ]
-    B --> C[Expected Loss L]
-    C --> D[Decision: Approve/Deny/Escalate]
-    D --> E[Outcome Success/Failure]
-    E --> F[Update Beta Priors]
+    A["Agent Action Request"] --> B["Risk Score θ"]
+    B --> C["Expected Loss L"]
+    C --> D["Decision: Approve/Deny/Escalate"]
+    D --> E["Outcome Success/Failure"]
+    E --> F["Update Beta Priors"]
     F --> B
-    B --> G[Epistemic Uncertainty ψ]
-    G --> H{Escalation Gate?}
-    H -->|ψ > threshold| D
-    H -->|ψ low| C
-    D --> I[Human Review (if escalate)]
+    B --> G["Epistemic Uncertainty ψ"]
+    G --> H{"Escalation Gate?"}
+    H -->|"ψ > threshold"| D
+    H -->|"ψ low"| C
+    D --> I["Human Review (if escalate)"]
     I --> E
 ```
 
