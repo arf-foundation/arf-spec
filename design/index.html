@@ -1574,17 +1574,17 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi
 <p>To understand feedback loops and emergent behaviour, we model ARF as a <strong>causal loop diagram</strong>.</p>
 <h3 id="111-core-feedback-loops">11.1 Core Feedback Loops<a class="headerlink" href="#111-core-feedback-loops" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>graph TD
-    A[Agent Action Request] --&gt; B[Risk Score θ]
-    B --&gt; C[Expected Loss L]
-    C --&gt; D[Decision: Approve/Deny/Escalate]
-    D --&gt; E[Outcome Success/Failure]
-    E --&gt; F[Update Beta Priors]
+    A["Agent Action Request"] --&gt; B["Risk Score θ"]
+    B --&gt; C["Expected Loss L"]
+    C --&gt; D["Decision: Approve/Deny/Escalate"]
+    D --&gt; E["Outcome Success/Failure"]
+    E --&gt; F["Update Beta Priors"]
     F --&gt; B
-    B --&gt; G[Epistemic Uncertainty ψ]
-    G --&gt; H{Escalation Gate?}
-    H --&gt;|ψ &gt; threshold| D
-    H --&gt;|ψ low| C
-    D --&gt; I[Human Review (if escalate)]
+    B --&gt; G["Epistemic Uncertainty ψ"]
+    G --&gt; H{"Escalation Gate?"}
+    H --&gt;|"ψ &gt; threshold"| D
+    H --&gt;|"ψ low"| C
+    D --&gt; I["Human Review (if escalate)"]
     I --&gt; E</code></pre>
 <p><strong>Reinforcing loops:</strong></p>
 <ul>
