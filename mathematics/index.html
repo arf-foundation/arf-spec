@@ -804,40 +804,49 @@ The engine is access‑controlled and available under outcome‑based pricing.</
 <hr />
 <h2 id="1-conjugate-betabinomial-model-online-learning">1. Conjugate Beta‑Binomial Model (Online Learning)<a class="headerlink" href="#1-conjugate-betabinomial-model-online-learning" title="Permanent link">&para;</a></h2>
 <p>For each action category <span class="arithmatex">\(c \in \mathcal{C}\)</span>, we maintain a Beta posterior:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>p_c \sim \text{Beta}(\alpha_c, \beta_c)
-</code></pre></div>
+<div class="arithmatex">\[
+p_c \sim \text{Beta}(\alpha_c, \beta_c)
+\]</div>
 <p>where <span class="arithmatex">\((\alpha_c, \beta_c)\)</span> start from expert‑elicited priors. Upon observing a binary outcome <span class="arithmatex">\(y \in {0,1}\)</span> (<span class="arithmatex">\(y=1\)</span> = failure), we update:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>(\alpha_c, \beta_c) \leftarrow (\alpha_c + y,\; \beta_c + (1-y))
-</code></pre></div>
+<div class="arithmatex">\[
+(\alpha_c, \beta_c) \leftarrow (\alpha_c + y,\; \beta_c + (1-y))
+\]</div>
 <p>allows us to construct credible intervals (e.g., 90% HDI) and express uncertainty.</p>
 <p><strong>Choice of Priors:</strong> To encode domain expertise, we use informative priors that are <strong>pessimistic</strong> for high‑impact categories (e.g., database modifications: <span class="arithmatex">\(\alpha=1.5, \beta=8.0\)</span> gives prior mean <span class="arithmatex">\(\approx 0.16\)</span>). This counteracts optimism bias and ensures safe early decisions.</p>
 <hr />
 <h2 id="2-hamiltonian-monte-carlo-for-offline-pattern-discovery">2. Hamiltonian Monte Carlo for Offline Pattern Discovery<a class="headerlink" href="#2-hamiltonian-monte-carlo-for-offline-pattern-discovery" title="Permanent link">&para;</a></h2>
 <p>Complex interactions (time‑of‑day, user role, environment) are captured by a logistic regression with HMC sampling:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>\operatorname{logit}(p) = \beta_0 + \beta_{\text{role}} x_{\text{role}} + \beta_{\text{env}} x_{\text{env}} + \beta_{\sin}\sin\!\left(\frac{2\pi t}{24}\right) + \beta_{\cos}\cos\!\left(\frac{2\pi t}{24}\right) + \sum_{k}\beta_k x_k
-</code></pre></div>
+<div class="arithmatex">\[
+\operatorname{logit}(p) = \beta_0 + \beta_{\text{role}} x_{\text{role}} + \beta_{\text{env}} x_{\text{env}} + \beta_{\sin}\sin\!\left(\frac{2\pi t}{24}\right) + \beta_{\cos}\cos\!\left(\frac{2\pi t}{24}\right) + \sum_{k}\beta_k x_k
+\]</div>
 <p>We place weakly informative priors on coefficients, e.g., <span class="arithmatex">\(\beta_j \sim \operatorname{Normal}(0, 1)\)</span>. The posterior is sampled using the No‑U‑Turn Sampler (NUTS) implemented in PyMC. The resulting posterior over coefficients gives us not only point estimates but also full uncertainty about predictions, which we propagate into the final risk.</p>
 <p><strong>Why HMC?</strong> HMC efficiently explores high‑dimensional parameter spaces, avoids random‑walk behavior, and yields effective sample sizes orders of magnitude higher than Metropolis‑Hastings. This is critical for learning from sparse historical data.</p>
 <hr />
 <h2 id="3-hierarchical-hyperpriors-shrinkage">3. Hierarchical Hyperpriors (Shrinkage)<a class="headerlink" href="#3-hierarchical-hyperpriors-shrinkage" title="Permanent link">&para;</a></h2>
 <p>To share statistical strength across categories, we introduce a hierarchical Beta model:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>p_c \sim \operatorname{Beta}(\alpha_0, \beta_0) \quad\text{for all }c
-</code></pre></div>
+<div class="arithmatex">\[
+p_c \sim \operatorname{Beta}(\alpha_0, \beta_0) \quad\text{for all }c
+\]</div>
 <p>with global hyperparameters <span class="arithmatex">\(\alpha_0, \beta_0 \sim \operatorname{Gamma}(2,1)\)</span>. This model is fit via variational inference (SVI) in Pyro, yielding posterior summaries for each category that are shrunk toward the global mean. The hyperprior contribution is weighted by data availability:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>w_{\text{hyper}} = \min\!\left( \frac{n}{n_{\text{hyper}}},\, w_{\text{max}} \right)
-</code></pre></div>
+<div class="arithmatex">\[
+w_{\text{hyper}} = \min\!\left( \frac{n}{n_{\text{hyper}}},\, w_{\text{max}} \right)
+\]</div>
 <p>where <span class="arithmatex">\(n\)</span> is the total number of outcomes.</p>
 <h2 id="4-hybrid-risk-fusion">4. Hybrid Risk Fusion<a class="headerlink" href="#4-hybrid-risk-fusion" title="Permanent link">&para;</a></h2>
 <p>The final risk <span class="arithmatex">\(R\)</span> for a given intent is a weighted combination:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>R = w_{\text{conj}} \cdot \frac{\alpha_c}{\alpha_c+\beta_c} + w_{\text{hmc}} \cdot p_{\text{hmc}} + w_{\text{hyper}} \cdot p_{\text{hyper}}
-</code></pre></div>
+<div class="arithmatex">\[
+R = w_{\text{conj}} \cdot \frac{\alpha_c}{\alpha_c+\beta_c} + w_{\text{hmc}} \cdot p_{\text{hmc}} + w_{\text{hyper}} \cdot p_{\text{hyper}}
+\]</div>
 <p>Weights are dynamic:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>w_{\text{hmc}} = \min\!\left(1,\, \frac{n}{n_0}\right)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\text{hyper}}}\right)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
-</code></pre></div>
+<div class="arithmatex">\[
+w_{\text{hmc}} = \min\!\left(1,\, \frac{n}{n_0}\right)
+\]</div>
+<div class="arithmatex">\[
+w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\text{hyper}}}\right)
+\]</div>
+<div class="arithmatex">\[
+w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
+\]</div>
 <p>with <span class="arithmatex">\(n_0 = 1000\)</span> and <span class="arithmatex">\(n_{\text{hyper}} = 100\)</span> as defaults. The final risk is then multiplied by a context factor <span class="arithmatex">\(\kappa(\text{env}, \text{cost}, \text{violations})\)</span> to account for external factors.</p>
 <h2 id="5-uncertainty-quantification">5. Uncertainty Quantification<a class="headerlink" href="#5-uncertainty-quantification" title="Permanent link">&para;</a></h2>
 <p>Every risk prediction includes a <strong>90% highest density interval</strong> (HDI) computed via:</p>
@@ -855,12 +864,13 @@ The engine is access‑controlled and available under outcome‑based pricing.</
 <p>These intervals are displayed in the frontend and used to trigger human‑in‑the‑loop escalation when uncertainty is high (e.g., interval width <span class="arithmatex">\(&gt;0.3\)</span>).</p>
 <h2 id="6-expected-loss-minimisation-summary">6. Expected Loss Minimisation (Summary)<a class="headerlink" href="#6-expected-loss-minimisation-summary" title="Permanent link">&para;</a></h2>
 <p>The risk score feeds into the governance loop’s expected loss calculation:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>\begin{aligned}
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>L_{\text{approve}} &amp;= \text{COST\_FP} \cdot R + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>L_{\text{deny}} &amp;= \text{COST\_FN} \cdot (1 - R) + \text{COST\_OPP} \cdot v_{\text{mean}} \\
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>L_{\text{escalate}} &amp;= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi_{\text{mean}}
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>\end{aligned}
-</code></pre></div>
+<div class="arithmatex">\[
+\begin{aligned}
+L_{\text{approve}} &amp;= \text{COST\_FP} \cdot R + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\
+L_{\text{deny}} &amp;= \text{COST\_FN} \cdot (1 - R) + \text{COST\_OPP} \cdot v_{\text{mean}} \\
+L_{\text{escalate}} &amp;= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi_{\text{mean}}
+\end{aligned}
+\]</div>
 <p>For a detailed explanation of the governance loop and constants, see <a href="https://governance.md/">governance.md</a>.</p>
 <h2 id="7-references">7. References<a class="headerlink" href="#7-references" title="Permanent link">&para;</a></h2>
 <ul>
