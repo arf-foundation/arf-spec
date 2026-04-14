@@ -498,17 +498,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-framework-at-a-glance_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Framework at a Glance
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#why-arf" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -535,6 +524,17 @@
     <span class="md-ellipsis">
       
         Boundary Note
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-vs-proprietary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public vs. Proprietary
       
     </span>
   </a>
@@ -770,23 +770,19 @@
 
 <h2 id="the-framework-at-a-glance">The Framework at a Glance<a class="headerlink" href="#the-framework-at-a-glance" title="Permanent link">&para;</a></h2>
 <p>ARF is organized as a <strong>layered specification</strong>, each building on the one before:</p>
-<pre class="mermaid"><code>graph LR
+<p><pre class="mermaid"><code>graph LR
     A[Core Concepts] --&gt; B[Mathematics]
     B --&gt; C[Psychology]
     C --&gt; D[Governance]
     D --&gt; E[Enterprise]
     D -.-&gt; F[Temporal Reliability]
     style F stroke-dasharray: 5 5</code></pre>
-<h2 id="the-framework-at-a-glance_1">The Framework at a Glance<a class="headerlink" href="#the-framework-at-a-glance_1" title="Permanent link">&para;</a></h2>
-<p>ARF is organized as a <strong>layered specification</strong>, each building on the one before:</p>
-<ul>
-<li><strong>Core Concepts</strong> – reliability, observability, and traceability for AI agents.</li>
-<li><strong>Mathematics</strong> – Bayesian risk scoring, HMC, and expected loss minimisation.</li>
-<li><strong>Psychology</strong> – trust calibration, human‑in‑the‑loop design, and explainability.</li>
-<li><strong>Governance</strong> – policy evaluation, cost estimation, and the full governance loop.</li>
-<li><strong>Enterprise</strong> – execution ladder, audit trails, and deployment architectures.</li>
-<li><strong>Temporal Reliability</strong> – optional extension for time‑series anomaly detection and forecasting.</li>
-</ul>
+Core Concepts – reliability, observability, and traceability for AI agents.</p>
+<p>Mathematics – Bayesian risk scoring, HMC, and expected loss minimisation.</p>
+<p>Psychology – trust calibration, human‑in‑the‑loop design, and explainability.</p>
+<p>Governance – policy evaluation, cost estimation, and the full governance loop.</p>
+<p>Enterprise – execution ladder, audit trails, and deployment architectures.</p>
+<p>Temporal Reliability – optional extension for time‑series anomaly detection and forecasting.</p>
 <hr />
 <h2 id="why-arf">Why ARF?<a class="headerlink" href="#why-arf" title="Permanent link">&para;</a></h2>
 <table>
@@ -815,7 +811,7 @@
 </tr>
 <tr>
 <td><strong>Scaling from prototype to production</strong></td>
-<td>Clear boundaries between OSS advisory and enterprise enforcement</td>
+<td>Clear boundaries between core engine (proprietary) and enterprise enforcement</td>
 </tr>
 </tbody>
 </table>
@@ -839,6 +835,35 @@
 - outside the core ARF execution path
 - suitable for implementation in enterprise or extension layers</p>
 <p>This keeps the core deterministic, session‑scoped, and easy to audit.</p>
+<hr />
+<h2 id="public-vs-proprietary">Public vs. Proprietary<a class="headerlink" href="#public-vs-proprietary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This specification (<code>arf-spec</code>)</td>
+<td>✅ Public (Apache 2.0)</td>
+</tr>
+<tr>
+<td>Core engine (advisory logic)</td>
+<td>🔒 Proprietary – pilot access only</td>
+</tr>
+<tr>
+<td>Enterprise enforcement layer</td>
+<td>🔒 Proprietary – outcome‑based pricing</td>
+</tr>
+<tr>
+<td>Public demo UI (<code>arf-frontend</code>)</td>
+<td>✅ Public (Apache 2.0)</td>
+</tr>
+</tbody>
+</table>
+<p>The core engine is <strong>not open source</strong>. It is access‑controlled and available under outcome‑based pricing to qualified pilots and enterprise customers.</p>
 
 
 
