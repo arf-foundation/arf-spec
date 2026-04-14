@@ -101,18 +101,20 @@ The `risk_factors` field contains additive contributions from each Bayesian comp
 
 ## 3. Governance Loop Flow Diagram
 
-```mermaid
-graph TD
-    A["InfrastructureIntent"] --> B["Cost Estimation"]
-    B --> C["Policy Evaluation"]
-    C -->|"Violations"| D["Deny"]
-    C -->|"No violations"| E["Risk Calculation"]
-    E --> F["Predictive Foresight"]
-    F --> G["Epistemic Uncertainty"]
-    G --> H["Expected Loss Minimization"]
-    H --> I["APPROVE / DENY / ESCALATE"]
-    D --> J["HealingIntent"]
-    I --> J
+```text
+InfrastructureIntent
+        ↓
+   Cost Estimation
+        ↓
+   Policy Evaluation
+        ↓
+   Risk Calculation
+        ↓
+   Expected Loss Minimization
+        ↓
+   APPROVE / DENY / ESCALATE
+        ↓
+     HealingIntent
 ```
 
 ## 4. Configuration Constants
