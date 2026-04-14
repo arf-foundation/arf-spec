@@ -20,7 +20,6 @@ graph LR
     C --> D[Governance]
     D --> E[Enterprise]
     D -.-> F[Temporal Reliability]
-    linkStyle 4 stroke-dasharray: 5 5
 ```
 
 - **Core Concepts** – reliability, observability, and traceability for AI agents.
