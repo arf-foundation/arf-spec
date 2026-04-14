@@ -20,19 +20,14 @@ graph LR
     C --> D[Governance]
     D --> E[Enterprise]
     D -.-> F[Temporal Reliability]
-    style F stroke-dasharray: 5 5
+    linkStyle 4 stroke-dasharray: 5 5
 ```
-Core Concepts – reliability, observability, and traceability for AI agents.
-
-Mathematics – Bayesian risk scoring, HMC, and expected loss minimisation.
-
-Psychology – trust calibration, human‑in‑the‑loop design, and explainability.
-
-Governance – policy evaluation, cost estimation, and the full governance loop.
-
-Enterprise – execution ladder, audit trails, and deployment architectures.
-
-Temporal Reliability – optional extension for time‑series anomaly detection and forecasting.
+- **Core Concepts** – reliability, observability, and traceability for AI agents.
+- **Mathematics** – Bayesian risk scoring, HMC, and expected loss minimisation.
+- **Psychology** – trust calibration, human‑in‑the‑loop design, and explainability.
+- **Governance** – policy evaluation, cost estimation, and the full governance loop.
+- **Enterprise** – execution ladder, audit trails, and deployment architectures.
+- **Temporal Reliability** – optional extension for time‑series anomaly detection and forecasting.
 
 ---
 
