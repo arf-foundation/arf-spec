@@ -133,28 +133,28 @@ Extensibility must **not** degrade the predictability of the core engine.
 
 ```mermaid
 graph TD
-    A[User / Agent] --> B[Frontend (Next.js Dashboard)]
-    B --> C[API Control Plane (FastAPI)]
-    C --> D[Risk Engine]
-    D --> D1[Conjugate Model]
-    D --> D2[HMC Model]
-    D --> D3[Hyperprior Model]
-    D --> E[Policy Engine]
-    E --> F[Audit / Storage]
+    A["User / Agent"] --> B["Frontend (Next.js Dashboard)"]
+    B --> C["API Control Plane (FastAPI)"]
+    C --> D["Risk Engine"]
+    D --> D1["Conjugate Model"]
+    D --> D2["HMC Model"]
+    D --> D3["Hyperprior Model"]
+    D --> E["Policy Engine"]
+    E --> F["Audit / Storage"]
 ```
 
 ### 4.2 Extended Architecture (with Optional Temporal Layer)
 
 ```mermaid
 graph TD
-    A[User / Agent] --> B[Frontend]
-    B --> C[API Control Plane]
-    C --> D[Core Risk Engine (session-scoped)]
-    D --> E[Policy Engine / DPT]
-    E --> F[Audit / Storage]
-    D -.-> G[Temporal Reliability Adapter]
-    G --> H[Cross-session Aggregator]
-    H --> I[Enterprise Analytics / Governance]
+    A["User / Agent"] --> B["Frontend"]
+    B --> C["API Control Plane"]
+    C --> D["Core Risk Engine (session-scoped)"]
+    D --> E["Policy Engine / DPT"]
+    E --> F["Audit / Storage"]
+    D -.-> G["Temporal Reliability Adapter"]
+    G --> H["Cross-session Aggregator"]
+    H --> I["Enterprise Analytics / Governance"]
 ```
 
 ### 4.3 Architectural Consequences
