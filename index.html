@@ -818,12 +818,7 @@
 
 <h2 id="the-framework-at-a-glance">The Framework at a Glance<a class="headerlink" href="#the-framework-at-a-glance" title="Permanent link">&para;</a></h2>
 <p>ARF is organized as a <strong>layered specification</strong>, each building on the one before:</p>
-<pre class="mermaid"><code>graph LR
-    A[Core Concepts] --&gt; B[Mathematics]
-    B --&gt; C[Psychology]
-    C --&gt; D[Governance]
-    D --&gt; E[Enterprise]
-    D -.-&gt; F[Temporal Reliability]</code></pre>
+<p><img alt="ARF Layered Specification" src="assets/arf_mathematics_overview.png" /></p>
 <ul>
 <li><strong>Core Concepts</strong> – reliability, observability, and traceability for AI agents.</li>
 <li><strong>Mathematics</strong> – Bayesian risk scoring, HMC, and expected loss minimisation.</li>
@@ -878,11 +873,13 @@
 <hr />
 <h2 id="boundary-note">Boundary Note<a class="headerlink" href="#boundary-note" title="Permanent link">&para;</a></h2>
 <p>Temporal reliability is intentionally defined as a separate specification layer.</p>
-<p>It must remain:
-- optional
-- external to in‑session scoring
-- outside the core ARF execution path
-- suitable for implementation in enterprise or extension layers</p>
+<p>It must remain:</p>
+<ul>
+<li>optional</li>
+<li>external to in‑session scoring</li>
+<li>outside the core ARF execution path</li>
+<li>suitable for implementation in enterprise or extension layers</li>
+</ul>
 <p>This keeps the core deterministic, session‑scoped, and easy to audit.</p>
 <hr />
 <h2 id="public-vs-proprietary">Public vs. Proprietary<a class="headerlink" href="#public-vs-proprietary" title="Permanent link">&para;</a></h2>
