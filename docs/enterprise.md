@@ -6,6 +6,11 @@ This document describes the **enforcement layer** that builds on the core ARF en
 > **Canonical definitions** of the Execution Ladder, escalation gates, `InfrastructureIntent`, `HealingIntent`, and `RiskScore` are in [`core_concepts.md`](core_concepts.md).  
 > The governance loop flow and cost constants are in [`governance.md`](governance.md).
 
+```markdown
+!!! warning "Specification Status"
+    This roadmap describes **planned** capabilities. ✅ Implemented items are marked.  
+    Enterprise‑only features require a commercial license.
+```
 ---
 
 ## 1. Overview
