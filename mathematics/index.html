@@ -807,9 +807,13 @@ The engine is access‑controlled and available under outcome‑based pricing.</
 <div class="arithmatex">\[
 p_c \sim \text{Beta}(\alpha_c, \beta_c)
 \]</div>
-<p>where <span class="arithmatex">\((\alpha_c, \beta_c)\)</span> start from expert‑elicited priors. Upon observing a binary outcome <span class="arithmatex">\(y \in {0,1}\)</span> (<span class="arithmatex">\(y=1\)</span> = failure), we update:</p>
+<p>where <span class="arithmatex">\((\alpha_c, \beta_c)\)</span> start from expert‑elicited priors. Upon observing a binary outcome <span class="arithmatex">\(y \in \{0,1\}\)</span> (<span class="arithmatex">\(y=1\)</span> = failure), we update:</p>
 <div class="arithmatex">\[
 (\alpha_c, \beta_c) \leftarrow (\alpha_c + y,\; \beta_c + (1-y))
+\]</div>
+<p>The predictive mean <span class="arithmatex">\(\mathbb{E}[p_c] = \frac{\alpha_c}{\alpha_c + \beta_c}\)</span> provides the baseline risk. The posterior variance:</p>
+<div class="arithmatex">\[
+\text{Var}(p_c) = \frac{\alpha_c \beta_c}{(\alpha_c+\beta_c)^2(\alpha_c+\beta_c+1)}
 \]</div>
 <p>allows us to construct credible intervals (e.g., 90% HDI) and express uncertainty.</p>
 <p><strong>Choice of Priors:</strong> To encode domain expertise, we use informative priors that are <strong>pessimistic</strong> for high‑impact categories (e.g., database modifications: <span class="arithmatex">\(\alpha=1.5, \beta=8.0\)</span> gives prior mean <span class="arithmatex">\(\approx 0.16\)</span>). This counteracts optimism bias and ensures safe early decisions.</p>
@@ -832,6 +836,7 @@ p_c \sim \operatorname{Beta}(\alpha_0, \beta_0) \quad\text{for all }c
 w_{\text{hyper}} = \min\!\left( \frac{n}{n_{\text{hyper}}},\, w_{\text{max}} \right)
 \]</div>
 <p>where <span class="arithmatex">\(n\)</span> is the total number of outcomes.</p>
+<hr />
 <h2 id="4-hybrid-risk-fusion">4. Hybrid Risk Fusion<a class="headerlink" href="#4-hybrid-risk-fusion" title="Permanent link">&para;</a></h2>
 <p>The final risk <span class="arithmatex">\(R\)</span> for a given intent is a weighted combination:</p>
 <div class="arithmatex">\[
@@ -848,20 +853,16 @@ w_{\text{hyper}} = \min\!\left( w_{\text{hyper}}^{\text{base}},\, \frac{n}{n_{\t
 w_{\text{conj}} = 1 - w_{\text{hmc}} - w_{\text{hyper}}
 \]</div>
 <p>with <span class="arithmatex">\(n_0 = 1000\)</span> and <span class="arithmatex">\(n_{\text{hyper}} = 100\)</span> as defaults. The final risk is then multiplied by a context factor <span class="arithmatex">\(\kappa(\text{env}, \text{cost}, \text{violations})\)</span> to account for external factors.</p>
+<hr />
 <h2 id="5-uncertainty-quantification">5. Uncertainty Quantification<a class="headerlink" href="#5-uncertainty-quantification" title="Permanent link">&para;</a></h2>
-<p>Every risk prediction includes a <strong>90% highest density interval</strong> (HDI) computed via:</p>
+<p>Every risk prediction includes a <strong>90% highest density interval</strong> (HDI) computed via:</p>
 <ul>
-<li>
-<p>For conjugate part: quantiles of Beta distribution.</p>
-</li>
-<li>
-<p>For HMC part: posterior predictive samples.</p>
-</li>
-<li>
-<p>For hyperprior part: quantiles from variational posterior.</p>
-</li>
+<li>For conjugate part: quantiles of Beta distribution.</li>
+<li>For HMC part: posterior predictive samples.</li>
+<li>For hyperprior part: quantiles from variational posterior.</li>
 </ul>
 <p>These intervals are displayed in the frontend and used to trigger human‑in‑the‑loop escalation when uncertainty is high (e.g., interval width <span class="arithmatex">\(&gt;0.3\)</span>).</p>
+<hr />
 <h2 id="6-expected-loss-minimisation-summary">6. Expected Loss Minimisation (Summary)<a class="headerlink" href="#6-expected-loss-minimisation-summary" title="Permanent link">&para;</a></h2>
 <p>The risk score feeds into the governance loop’s expected loss calculation:</p>
 <div class="arithmatex">\[
@@ -871,30 +872,20 @@ L_{\text{deny}} &amp;= \text{COST\_FN} \cdot (1 - R) + \text{COST\_OPP} \cdot v_
 L_{\text{escalate}} &amp;= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi_{\text{mean}}
 \end{aligned}
 \]</div>
-<p>For a detailed explanation of the governance loop and constants, see <a href="https://governance.md/">governance.md</a>.</p>
+<p>For a detailed explanation of the governance loop and constants, see <a href="../governance/"><code>governance.md</code></a>.</p>
+<hr />
 <h2 id="7-references">7. References<a class="headerlink" href="#7-references" title="Permanent link">&para;</a></h2>
 <ul>
-<li>
-<p>Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., &amp; Rubin, D. B. (2013). <em>Bayesian Data Analysis</em> (3rd ed.). CRC Press.</p>
-</li>
-<li>
-<p>McElreath, R. (2020). <em>Statistical Rethinking: A Bayesian Course with Examples in R and Stan</em>. CRC Press.</p>
-</li>
-<li>
-<p>Hoffman, M. D., &amp; Gelman, A. (2014). The No‑U‑Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo. <em>Journal of Machine Learning Research</em>, 15(1), 1593–1623.</p>
-</li>
+<li>Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., &amp; Rubin, D. B. (2013). <em>Bayesian Data Analysis</em> (3rd ed.). CRC Press.</li>
+<li>McElreath, R. (2020). <em>Statistical Rethinking: A Bayesian Course with Examples in R and Stan</em>. CRC Press.</li>
+<li>Hoffman, M. D., &amp; Gelman, A. (2014). The No‑U‑Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo. <em>Journal of Machine Learning Research</em>, 15(1), 1593–1623.</li>
 </ul>
+<hr />
 <h2 id="8-see-also">8. See Also<a class="headerlink" href="#8-see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li>
-<p><a href="https://core_concepts.md/">core_concepts.md</a> – canonical definition of RiskScore and execution ladder</p>
-</li>
-<li>
-<p><a href="https://governance.md/">governance.md</a> – governance loop flow and expected loss minimisation</p>
-</li>
-<li>
-<p><a href="https://design.md/">design.md</a> – architectural decisions and trade‑offs</p>
-</li>
+<li><a href="../core_concepts/"><code>core_concepts.md</code></a> – canonical definition of <code>RiskScore</code> and execution ladder</li>
+<li><a href="../governance/"><code>governance.md</code></a> – governance loop flow and expected loss minimisation</li>
+<li><a href="../design/"><code>design.md</code></a> – architectural decisions and trade‑offs</li>
 </ul>
 
 
