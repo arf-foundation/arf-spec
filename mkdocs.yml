@@ -70,6 +70,7 @@ extra_css:
 
 nav:
   - Home: index.md
+  - Core Concepts: core_concepts.md
   - Roadmap: roadmap.md
   - Design: design.md
   - Mathematics: mathematics.md
