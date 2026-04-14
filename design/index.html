@@ -1309,24 +1309,24 @@ L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi
 <h2 id="4-system-architecture">4. System Architecture<a class="headerlink" href="#4-system-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="41-core-architecture-logical">4.1 Core Architecture (Logical)<a class="headerlink" href="#41-core-architecture-logical" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>graph TD
-    A[User / Agent] --&gt; B[Frontend (Next.js Dashboard)]
-    B --&gt; C[API Control Plane (FastAPI)]
-    C --&gt; D[Risk Engine]
-    D --&gt; D1[Conjugate Model]
-    D --&gt; D2[HMC Model]
-    D --&gt; D3[Hyperprior Model]
-    D --&gt; E[Policy Engine]
-    E --&gt; F[Audit / Storage]</code></pre>
+    A["User / Agent"] --&gt; B["Frontend (Next.js Dashboard)"]
+    B --&gt; C["API Control Plane (FastAPI)"]
+    C --&gt; D["Risk Engine"]
+    D --&gt; D1["Conjugate Model"]
+    D --&gt; D2["HMC Model"]
+    D --&gt; D3["Hyperprior Model"]
+    D --&gt; E["Policy Engine"]
+    E --&gt; F["Audit / Storage"]</code></pre>
 <h3 id="42-extended-architecture-with-optional-temporal-layer">4.2 Extended Architecture (with Optional Temporal Layer)<a class="headerlink" href="#42-extended-architecture-with-optional-temporal-layer" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>graph TD
-    A[User / Agent] --&gt; B[Frontend]
-    B --&gt; C[API Control Plane]
-    C --&gt; D[Core Risk Engine (session-scoped)]
-    D --&gt; E[Policy Engine / DPT]
-    E --&gt; F[Audit / Storage]
-    D -.-&gt; G[Temporal Reliability Adapter]
-    G --&gt; H[Cross-session Aggregator]
-    H --&gt; I[Enterprise Analytics / Governance]</code></pre>
+    A["User / Agent"] --&gt; B["Frontend"]
+    B --&gt; C["API Control Plane"]
+    C --&gt; D["Core Risk Engine (session-scoped)"]
+    D --&gt; E["Policy Engine / DPT"]
+    E --&gt; F["Audit / Storage"]
+    D -.-&gt; G["Temporal Reliability Adapter"]
+    G --&gt; H["Cross-session Aggregator"]
+    H --&gt; I["Enterprise Analytics / Governance"]</code></pre>
 <h3 id="43-architectural-consequences">4.3 Architectural Consequences<a class="headerlink" href="#43-architectural-consequences" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
