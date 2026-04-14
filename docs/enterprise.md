@@ -6,11 +6,13 @@ This document describes the **enforcement layer** that builds on the core ARF en
 > **Canonical definitions** of the Execution Ladder, escalation gates, `InfrastructureIntent`, `HealingIntent`, and `RiskScore` are in [`core_concepts.md`](core_concepts.md).  
 > The governance loop flow and cost constants are in [`governance.md`](governance.md).
 
-```markdown
+---
+
 !!! warning "Specification Status"
-    This roadmap describes **planned** capabilities. ✅ Implemented items are marked.  
-    Enterprise‑only features require a commercial license.
-```
+    This document describes **planned** and **enterprise‑only** capabilities.  
+    ✅ Implemented items are marked.  
+    Enterprise features require a commercial license.
+
 ---
 
 ## 1. Overview
@@ -29,10 +31,10 @@ The ARF Enterprise layer adds **mechanical enforcement**, **audit trails**, **mu
 
 ## 2. Execution Ladder Enforcement (Proprietary)
 
-The Execution Ladder (defined in `core_concepts.md`) is **mechanically enforced** only in the enterprise layer.
+The Execution Ladder (defined in [`core_concepts.md`](core_concepts.md)) is **mechanically enforced** only in the enterprise layer.
 
-| Level | OSS Core (Advisory) | Enterprise (Enforcement) |
-|-------|---------------------|---------------------------|
+| Level | Core Engine (Advisory) | Enterprise (Enforcement) |
+|-------|------------------------|---------------------------|
 | Advisory Only | ✅ Recommends | ✅ Blocks execution |
 | Operator Review | ✅ Recommends | ✅ Requires human confirmation |
 | Supervised | ✅ Recommends | ✅ Requires live oversight |
@@ -46,7 +48,7 @@ The Execution Ladder (defined in `core_concepts.md`) is **mechanically enforced*
 
 ## 3. Escalation Gates (Mechanical Validation)
 
-The following gates (defined in `core_concepts.md`) are **validated in code** by the enterprise layer:
+The following gates (defined in [`core_concepts.md`](core_concepts.md)) are **validated in code** by the enterprise layer:
 
 | Gate | Validation Logic | Failure Action |
 |------|----------------|----------------|
@@ -142,14 +144,14 @@ The enterprise layer supports multiple deployment models:
 
 ## 8. Longitudinal Trust Tracking (Enterprise Optional)
 
-The enterprise layer may include a **temporal reliability module** that builds on the contract defined in `temporal_reliability.md`. This module:
+The enterprise layer may include a **temporal reliability module** that builds on the contract defined in [`temporal_reliability.md`](temporal_reliability.md). This module:
 
 - Aggregates `ReliabilitySignal` outputs across sessions
 - Applies exponential decay and time windows
 - Computes `WindowedReliabilityResult` with trend and sample count
 - Feeds longitudinal scores back into policy decisions (e.g., lower autonomy for degrading trust)
 
-**Boundary:** This module is **external** to the core engine and respects the isolation rules defined in `design.md` and `temporal_reliability.md`.
+**Boundary:** This module is **external** to the core engine and respects the isolation rules defined in [`design.md`](design.md) and [`temporal_reliability.md`](temporal_reliability.md).
 
 ---
 
