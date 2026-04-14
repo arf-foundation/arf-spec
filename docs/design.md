@@ -278,7 +278,6 @@ Temporal extensions **may** use:
 Temporal layers **must not**:
 
 - Alter in‑session scoring behaviour  
-- Alter DPT thresholds  
 - Mutate the meaning of `ReliabilitySignal`  
 - Force persistence into the core runtime path  
 - Create hidden coupling to enterprise identity or analytics systems  
