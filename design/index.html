@@ -1261,87 +1261,51 @@ Optional layers may add history‑aware behaviour without changing the semantics
 <h3 id="32-decisiontheoretic-action-selection">3.2 Decision‑Theoretic Action Selection<a class="headerlink" href="#32-decisiontheoretic-action-selection" title="Permanent link">&para;</a></h3>
 <p>Risk predictions are probabilistic, but the final action (<code>APPROVE</code>, <code>DENY</code>, <code>ESCALATE</code>) is chosen by <strong>minimising expected loss</strong>, not by fixed probability thresholds.</p>
 <p>The expected loss for each action is:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$$
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>\begin{aligned}
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>L<span class="ge">_{\text{approve}} &amp;= c_</span>{FP}\,\theta \;+\; c<span class="ge">_{\text{impact}}\,\text{revenue\_</span>loss} \;+\; c<span class="ge">_{\text{pred}}\,\text{pred\_</span>risk} \;+\; c_{\text{var}}\,\sigma^2 \\[4pt]
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>L<span class="ge">_{\text{deny}} &amp;= c_</span>{FN}\,(1-\theta) \;+\; c<span class="ge">_{\text{opp}}\,v_</span>{\text{mean}} \\[4pt]
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>L<span class="ge">_{\text{escalate}} &amp;= c_</span>{\text{review}} \;+\; c_{\text{unc}}\,\psi
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>\end{aligned}
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>$$
-</code></pre></div>
+<div class="arithmatex">\[
+\begin{aligned}
+L_{\text{approve}} &amp;= c_{FP}\,\theta \;+\; c_{\text{impact}}\,\text{revenue\_loss} \;+\; c_{\text{pred}}\,\text{pred\_risk} \;+\; c_{\text{var}}\,\sigma^2 \\[4pt]
+L_{\text{deny}} &amp;= c_{FN}\,(1-\theta) \;+\; c_{\text{opp}}\,v_{\text{mean}} \\[4pt]
+L_{\text{escalate}} &amp;= c_{\text{review}} \;+\; c_{\text{unc}}\,\psi
+\end{aligned}
+\]</div>
 <p>Where:</p>
 <ul>
-<li>
-<p>θ_θ_ = Bayesian posterior failure probability (risk_score)</p>
-</li>
-<li>
-<p>σ2_σ_2 = posterior variance (from the conjugate Beta model)</p>
-</li>
-<li>
-<p>ψ_ψ_ = epistemic uncertainty (composite of hallucination, forecast, and sparsity)</p>
-</li>
-<li>
-<p>vmean_v_mean​ = estimated opportunity value of the action</p>
-</li>
-<li>
-<p>c∗<em>c</em>∗​ = cost constants (see <a href="https://governance.md/#4-configuration-constants">governance.md</a>)</p>
-</li>
+<li><span class="arithmatex">\(\theta\)</span> = Bayesian posterior failure probability (<code>risk_score</code>)</li>
+<li><span class="arithmatex">\(\sigma^2\)</span> = posterior variance (from the conjugate Beta model)</li>
+<li><span class="arithmatex">\(\psi\)</span> = epistemic uncertainty (composite of hallucination, forecast, and sparsity)</li>
+<li><span class="arithmatex">\(v_{\text{mean}}\)</span> = estimated opportunity value of the action</li>
+<li><span class="arithmatex">\(c_{*}\)</span> = cost constants (see <a href="../governance/#4-configuration-constants"><code>governance.md</code></a>)</li>
 </ul>
 <p><strong>Decision rules:</strong></p>
 <ul>
-<li>
-<p>Policy violations → force DENY</p>
-</li>
-<li>
-<p>If USE_EPISTEMIC_GATE is true and ψ&gt;ψthresh_ψ_&gt;_ψ_thresh​ → force ESCALATE</p>
-</li>
-<li>
-<p>Else → action with smallest L_L_</p>
-</li>
+<li>Policy violations → force <code>DENY</code></li>
+<li>If <code>USE_EPISTEMIC_GATE</code> is true and <span class="arithmatex">\(\psi &gt; \psi_{\text{thresh}}\)</span> → force <code>ESCALATE</code></li>
+<li>Else → action with smallest <span class="arithmatex">\(L\)</span></li>
 </ul>
 <p>This approach is strictly more expressive than fixed thresholds and provides a full audit trail.</p>
 <h3 id="33-modularity">3.3 Modularity<a class="headerlink" href="#33-modularity" title="Permanent link">&para;</a></h3>
 <p>Each ARF capability should be independently testable and replaceable. Modules communicate through explicit interfaces rather than implicit side effects.</p>
 <p><strong>Benefits:</strong></p>
 <ul>
-<li>
-<p>Isolated unit testing</p>
-</li>
-<li>
-<p>Incremental development</p>
-</li>
-<li>
-<p>Safe replacement of components</p>
-</li>
-<li>
-<p>Easier external contribution</p>
-</li>
-<li>
-<p>Cleaner enterprise extension paths</p>
-</li>
+<li>Isolated unit testing</li>
+<li>Incremental development</li>
+<li>Safe replacement of components</li>
+<li>Easier external contribution</li>
+<li>Cleaner enterprise extension paths</li>
 </ul>
 <h3 id="34-determinism-at-the-boundary">3.4 Determinism at the Boundary<a class="headerlink" href="#34-determinism-at-the-boundary" title="Permanent link">&para;</a></h3>
-<p>The same inputs must always produce the same decision under the same policy configuration. Where probabilistic methods are used, they serve as <strong>advisory or scoring inputs</strong>, not as sources of non‑deterministic enforcement.</p>
+<p>The same inputs must always produce the same decision under the same policy configuration. Where probabilistic methods are used, they serve as <strong>advisory or scoring inputs</strong>, not as sources of non‑deterministic enforcement.</p>
 <h3 id="35-extensibility">3.5 Extensibility<a class="headerlink" href="#35-extensibility" title="Permanent link">&para;</a></h3>
 <p>ARF supports:</p>
 <ul>
-<li>
-<p>Research modules</p>
-</li>
-<li>
-<p>Enterprise modules</p>
-</li>
-<li>
-<p>Optional adapters</p>
-</li>
-<li>
-<p>External scoring layers</p>
-</li>
-<li>
-<p>Additional observability tools</p>
-</li>
+<li>Research modules</li>
+<li>Enterprise modules</li>
+<li>Optional adapters</li>
+<li>External scoring layers</li>
+<li>Additional observability tools</li>
 </ul>
-<p>Extensibility must <strong>not</strong> degrade the predictability of the core engine.</p>
+<p>Extensibility must <strong>not</strong> degrade the predictability of the core engine.</p>
+<hr />
 <h2 id="4-system-architecture">4. System Architecture<a class="headerlink" href="#4-system-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="41-core-architecture-logical">4.1 Core Architecture (Logical)<a class="headerlink" href="#41-core-architecture-logical" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>graph TD
@@ -1357,17 +1321,12 @@ Optional layers may add history‑aware behaviour without changing the semantics
 <pre class="mermaid"><code>graph TD
     A[User / Agent] --&gt; B[Frontend]
     B --&gt; C[API Control Plane]
-    C --&gt; D[Core Risk Engine (session‑scoped)]
+    C --&gt; D[Core Risk Engine (session-scoped)]
     D --&gt; E[Policy Engine / DPT]
     E --&gt; F[Audit / Storage]
-
     D -.-&gt; G[Temporal Reliability Adapter]
-    G --&gt; H[Cross‑session Aggregator]
-    H --&gt; I[Enterprise Analytics / Governance]
-
-    style G stroke-dasharray: 5 5
-    style H stroke-dasharray: 5 5
-    style I stroke-dasharray: 5 5</code></pre>
+    G --&gt; H[Cross-session Aggregator]
+    H --&gt; I[Enterprise Analytics / Governance]</code></pre>
 <h3 id="43-architectural-consequences">4.3 Architectural Consequences<a class="headerlink" href="#43-architectural-consequences" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
@@ -1385,31 +1344,33 @@ Optional layers may add history‑aware behaviour without changing the semantics
 </ul>
 <h2 id="5-package-structure">5. Package Structure<a class="headerlink" href="#5-package-structure" title="Permanent link">&para;</a></h2>
 <h3 id="51-core-package-proprietary">5.1 Core Package (Proprietary)<a class="headerlink" href="#51-core-package-proprietary" title="Permanent link">&para;</a></h3>
-<p>agentic_reliability_framework/
-├── runtime/
-│   └── engine.py
-├── governance/
-│   ├── policy_engine.py
-│   └── governance_loop.py
-├── advisory/
-│   └── advisory.py
-├── persistence/
-│   └── persistence.py
-└── tests/
-    └── test_advisory.py</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>agentic_reliability_framework/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── runtime/
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   └── engine.py
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── governance/
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── policy_engine.py
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   └── governance_loop.py
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── advisory/
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   └── advisory.py
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── persistence/
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   └── persistence.py
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>└── tests/
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    └── test_advisory.py
+</code></pre></div>
 <h3 id="52-optional-enterprise-or-extension-structure">5.2 Optional Enterprise or Extension Structure<a class="headerlink" href="#52-optional-enterprise-or-extension-structure" title="Permanent link">&para;</a></h3>
-<p>enterprise/
-├── temporal/
-│   ├── adapter.py
-│   ├── aggregator.py
-│   ├── decay.py
-│   └── storage.py
-├── audit/
-│   └── audit_trail.py
-├── governance/
-│   └── longitudinal_controls.py
-└── tests/
-    └── test_temporal_reliability.py</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>enterprise/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── temporal/
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│   ├── adapter.py
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│   ├── aggregator.py
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│   ├── decay.py
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│   └── storage.py
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>├── audit/
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│   └── audit_trail.py
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>├── governance/
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│   └── longitudinal_controls.py
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>└── tests/
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    └── test_temporal_reliability.py
+</code></pre></div>
 <h2 id="53-package-boundary-rules">5.3 Package Boundary Rules<a class="headerlink" href="#53-package-boundary-rules" title="Permanent link">&para;</a></h2>
 <p>The temporal layer must not be imported by the core runtime engine unless explicitly activated in an external integration layer.</p>
 <p>Core runtime modules should not depend on:</p>
@@ -1620,12 +1581,10 @@ Optional layers may add history‑aware behaviour without changing the semantics
     D --&gt; E[Outcome Success/Failure]
     E --&gt; F[Update Beta Priors]
     F --&gt; B
-
     B --&gt; G[Epistemic Uncertainty ψ]
     G --&gt; H{Escalation Gate?}
     H --&gt;|ψ &gt; threshold| D
     H --&gt;|ψ low| C
-
     D --&gt; I[Human Review (if escalate)]
     I --&gt; E</code></pre>
 <p><strong>Reinforcing loops:</strong></p>
