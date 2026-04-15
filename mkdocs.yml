@@ -1,5 +1,5 @@
 site_name: ARF Specification
-site_description: Agentic Reliability Framework – canonical specification
+site_description: Agentic Reliability Framework – canonical specification (public)
 site_author: ARF Foundation
 repo_url: https://github.com/arf-foundation/arf-spec
 edit_uri: edit/main/docs/
@@ -71,14 +71,10 @@ extra_css:
 nav:
   - Home: index.md
   - Core Concepts: core_concepts.md
-  - Roadmap: roadmap.md
   - Design: design.md
   - Mathematics: mathematics.md
   - Psychology: psychology.md
   - Philosophy: philosophy.md
   - History: history.md
   - Governance: governance.md
-  - Enterprise: enterprise.md
-  - Temporal Reliability: temporal_reliability.md
-  - Industry Use Cases: use_cases.md
   - Glossary: glossary.md
