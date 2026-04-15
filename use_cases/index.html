@@ -1359,45 +1359,7 @@
 <h1 id="industry-use-cases">Industry Use Cases<a class="headerlink" href="#industry-use-cases" title="Permanent link">&para;</a></h1>
 <p>This page shows how the Agentic Reliability Framework (ARF) delivers concrete benefits across different industries. The diagram below maps the core ARF components to the sectors where they create the most value.</p>
 <h2 id="how-arf-supports-different-industries">How ARF Supports Different Industries<a class="headerlink" href="#how-arf-supports-different-industries" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>graph TD
-    subgraph ARF["ARF Core Components"]
-        Risk["Bayesian Risk Scoring"]
-        Loss["Expected Loss Minimisation"]
-        Gates["Escalation Gates"]
-        Audit["Audit Trails"]
-        Memory["Semantic Memory"]
-        Ladder["Execution Ladder"]
-    end
-
-    Fintech["Fintech &amp; Banking"] --&gt; Risk
-    Fintech --&gt; Loss
-    Fintech --&gt; Audit
-
-    Healthcare["Healthcare &amp; Life Sciences"] --&gt; Risk
-    Healthcare --&gt; Gates
-    Healthcare --&gt; Loss
-
-    Cloud["Cloud Infrastructure &amp; DevOps"] --&gt; Memory
-    Cloud --&gt; Ladder
-    Cloud --&gt; Risk
-
-    Manufacturing["Manufacturing &amp; IIoT"] --&gt; Gates
-    Manufacturing --&gt; Loss
-
-    Ecommerce["E‑commerce &amp; Retail"] --&gt; Loss
-    Ecommerce --&gt; Audit
-
-    Government["Government &amp; Defense"] --&gt; Gates
-    Government --&gt; Audit
-    Government --&gt; Ladder
-
-    style ARF fill:#1e3a8a,stroke:#3b82f6,color:#fff
-    style Fintech fill:#065f46,stroke:#10b981,color:#fff
-    style Healthcare fill:#065f46,stroke:#10b981,color:#fff
-    style Cloud fill:#065f46,stroke:#10b981,color:#fff
-    style Manufacturing fill:#065f46,stroke:#10b981,color:#fff
-    style Ecommerce fill:#065f46,stroke:#10b981,color:#fff
-    style Government fill:#065f46,stroke:#10b981,color:#fff</code></pre>
+<p><img alt="ARF Use Case by Industry" src="../assets/ARF-use-cases.png" /></p>
 <h2 id="1-fintech-banking">1. Fintech &amp; Banking<a class="headerlink" href="#1-fintech-banking" title="Permanent link">&para;</a></h2>
 <h3 id="the-challenge">The Challenge<a class="headerlink" href="#the-challenge" title="Permanent link">&para;</a></h3>
 <p>AI agents that approve payments, detect fraud, or execute trades must never make a mistake – a single error can cost millions and violate strict regulations like PCI‑DSS and SOX.</p>
