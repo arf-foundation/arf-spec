@@ -4,56 +4,7 @@ This page defines the core concepts, components, and mathematical terms used thr
 
 ## Concept Map
 
-```mermaid
-graph LR
-    subgraph Core
-        Intent["s1"]
-        Healing["s2"]
-        Loop["s3"]
-        Risk["s4"]
-    end
-
-    subgraph Decision
-        Loss["s5"]
-        Action["s6"]
-        Gate["s7"]
-    end
-
-    subgraph Mathematics
-        Conj["s8"]
-        HMC["s9"]
-        Hyper["s10"]
-        Lyap["s11"]
-    end
-
-    subgraph Enterprise
-        Ladder["s12"]
-        Audit["s13"]
-        Temp["s14"]
-    end
-
-    Intent --> Loop
-    Loop --> Risk
-    Risk --> Loss
-    Loss --> Action
-    Gate --> Action
-    Action --> Healing
-    Loop --> Healing
-
-    Conj --> Risk
-    HMC --> Risk
-    Hyper --> Risk
-    Lyap --> Loop
-
-    Healing --> Ladder
-    Ladder --> Audit
-    Loop -.-> Temp
-
-    style Core fill:#1e3a8a,stroke:#3b82f6,color:#fff
-    style Decision fill:#854d0e,stroke:#eab308,color:#fff
-    style Mathematics fill:#065f46,stroke:#10b981,color:#fff
-    style Enterprise fill:#4c1d95,stroke:#8b5cf6,color:#fff
-```
+![ARF Concept Map](assets/ARF-Glossary.png)
 
 ## Definitions
 
