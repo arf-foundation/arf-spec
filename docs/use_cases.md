@@ -5,48 +5,23 @@ This page shows how the Agentic Reliability Framework (ARF) delivers concrete be
 ## How ARF Supports Different Industries
 
 ```mermaid
-%%{init: { 
-    "themeVariables": { 
-        "animationDuration": "1.5s",
-        "curve": "basis"
-    },
-    "layout": "elk"
-}}%%
-flowchart TD
-    %% Top-level ARF Engine
+graph TD
     Engine["⚙️ ARF Engine (Core Processor)"]
 
-    %% Industry category grouping
-    subgraph Private[" "]
-        direction TB
-        Fintech["💰 Fintech & Banking"]
-        Ecommerce["🛒 E‑commerce & Retail"]
-    end
+    Fintech["💰 Fintech & Banking"]
+    Ecommerce["🛒 E‑commerce & Retail"]
+    Healthcare["🏥 Healthcare & Life Sciences"]
+    Government["🏛️ Government & Defense"]
+    Cloud["☁️ Cloud Infrastructure & DevOps"]
+    Manufacturing["🏭 Manufacturing & IIoT"]
 
-    subgraph Public[" "]
-        direction TB
-        Healthcare["🏥 Healthcare & Life Sciences"]
-        Government["🏛️ Government & Defense"]
-    end
+    Risk["📊 Bayesian Risk Scoring"]
+    Loss["⚖️ Expected Loss Minimisation"]
+    Gates["🚪 Escalation Gates"]
+    Audit["🧾 Audit Trails"]
+    Memory["🧠 Semantic Memory"]
+    Ladder["🪜 Execution Ladder"]
 
-    subgraph Tech[" "]
-        direction TB
-        Cloud["☁️ Cloud Infrastructure & DevOps"]
-        Manufacturing["🏭 Manufacturing & IIoT"]
-    end
-
-    %% ARF Core Components with gradient depth and activity markers
-    subgraph ARF[" "]
-        direction TB
-        Risk["📊 Bayesian Risk Scoring 🔵"]
-        Loss["⚖️ Expected Loss Minimisation 🔵"]
-        Gates["🚪 Escalation Gates 🔵"]
-        Audit["🧾 Audit Trails 🔵"]
-        Memory["🧠 Semantic Memory 🔵"]
-        Ladder["🪜 Execution Ladder 🔵"]
-    end
-
-    %% Flow connections
     Engine --> Fintech
     Engine --> Healthcare
     Engine --> Cloud
@@ -76,25 +51,17 @@ flowchart TD
     Government --> Audit
     Government --> Ladder
 
-    %% Styling: colors, gradients, and pseudo-animations
-    classDef engine stroke:#a855f7,fill:#f5f3ff,color:#581c87,font-weight:bold,stroke-width:3px
-    classDef private stroke:#2dd4bf,fill:#f0fdfa,color:#064e3b,font-weight:bold
-    classDef public stroke:#facc15,fill:#fefce8,color:#78350f,font-weight:bold
-    classDef tech stroke:#38bdf8,fill:#f0f9ff,color:#0c4a6e,font-weight:bold
-    classDef core stroke:#818cf8,fill:#eef2ff,color:#1e3a8a,font-weight:bold,stroke-width:2px
+    classDef engine fill:#f5f3ff,stroke:#a855f7,stroke-width:3px,color:#581c87,font-weight:bold
+    classDef private fill:#f0fdfa,stroke:#2dd4bf,color:#064e3b,font-weight:bold
+    classDef public fill:#fefce8,stroke:#facc15,color:#78350f,font-weight:bold
+    classDef tech fill:#f0f9ff,stroke:#38bdf8,color:#0c4a6e,font-weight:bold
+    classDef core fill:#eef2ff,stroke:#818cf8,stroke-width:2px,color:#1e3a8a,font-weight:bold
 
-    %% Pseudo “pulsing” motion for active nodes (symbolic)
-    classDef active animation:pulse 2s infinite ease-in-out
-
-    %% Assign classes
     class Engine engine
     class Fintech,Ecommerce private
     class Healthcare,Government public
     class Cloud,Manufacturing tech
-    class ARF,Risk,Loss,Gates,Audit,Memory,Ladder core,active
-
-    %% Links styling and transition effects
-    linkStyle default stroke:#94a3b8,stroke-width:2px,opacity:0.8,transition:stroke-width 0.3s ease-out
+    class Risk,Loss,Gates,Audit,Memory,Ladder core
 ```
 
 1\. Fintech & Banking
