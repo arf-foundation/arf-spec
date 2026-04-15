@@ -4,65 +4,7 @@ This page shows how the Agentic Reliability Framework (ARF) delivers concrete be
 
 ## How ARF Supports Different Industries
 
-```mermaid
-graph TD
-    Engine["ARF Engine (Core Processor)"]
-
-    Fintech["Fintech & Banking"]
-    Ecommerce["E‑commerce & Retail"]
-    Healthcare["Healthcare & Life Sciences"]
-    Government["Government & Defense"]
-    Cloud["Cloud Infrastructure & DevOps"]
-    Manufacturing["Manufacturing & IIoT"]
-
-    Risk["Bayesian Risk Scoring"]
-    Loss["Expected Loss Minimisation"]
-    Gates["Escalation Gates"]
-    Audit["Audit Trails"]
-    Memory["Semantic Memory"]
-    Ladder["Execution Ladder"]
-
-    Engine --> Fintech
-    Engine --> Healthcare
-    Engine --> Cloud
-    Engine --> Manufacturing
-    Engine --> Ecommerce
-    Engine --> Government
-
-    Fintech --> Risk
-    Fintech --> Loss
-    Fintech --> Audit
-
-    Healthcare --> Risk
-    Healthcare --> Gates
-    Healthcare --> Loss
-
-    Cloud --> Memory
-    Cloud --> Ladder
-    Cloud --> Risk
-
-    Manufacturing --> Gates
-    Manufacturing --> Loss
-
-    Ecommerce --> Loss
-    Ecommerce --> Audit
-
-    Government --> Gates
-    Government --> Audit
-    Government --> Ladder
-
-    classDef engine fill:#f5f3ff,stroke:#a855f7,stroke-width:3px,color:#581c87,font-weight:bold
-    classDef private fill:#f0fdfa,stroke:#2dd4bf,color:#064e3b,font-weight:bold
-    classDef public fill:#fefce8,stroke:#facc15,color:#78350f,font-weight:bold
-    classDef tech fill:#f0f9ff,stroke:#38bdf8,color:#0c4a6e,font-weight:bold
-    classDef core fill:#eef2ff,stroke:#818cf8,stroke-width:2px,color:#1e3a8a,font-weight:bold
-
-    class Engine engine
-    class Fintech,Ecommerce private
-    class Healthcare,Government public
-    class Cloud,Manufacturing tech
-    class Risk,Loss,Gates,Audit,Memory,Ladder core
-```
+![ARF Use Cases by Industry](assets/ARF-use-cases.png)
 
 1\. Fintech & Banking
 ---------------------
