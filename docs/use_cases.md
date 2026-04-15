@@ -6,34 +6,34 @@ This page shows how the Agentic Reliability Framework (ARF) delivers concrete be
 
 ```mermaid
 graph TD
-    subgraph ARF["⚙️ ARF Core Components"]
-        Risk[Bayesian Risk Scoring]
-        Loss[Expected Loss Minimisation]
-        Gates[Escalation Gates]
-        Audit[Audit Trails]
-        Memory[Semantic Memory]
-        Ladder[Execution Ladder]
+    subgraph ARF["ARF Core Components"]
+        Risk["Bayesian Risk Scoring"]
+        Loss["Expected Loss Minimisation"]
+        Gates["Escalation Gates"]
+        Audit["Audit Trails"]
+        Memory["Semantic Memory"]
+        Ladder["Execution Ladder"]
     end
 
-    Fintech[Fintech & Banking] --> Risk
+    Fintech["Fintech & Banking"] --> Risk
     Fintech --> Loss
     Fintech --> Audit
 
-    Healthcare[Healthcare & Life Sciences] --> Risk
+    Healthcare["Healthcare & Life Sciences"] --> Risk
     Healthcare --> Gates
     Healthcare --> Loss
 
-    Cloud[Cloud Infrastructure & DevOps] --> Memory
+    Cloud["Cloud Infrastructure & DevOps"] --> Memory
     Cloud --> Ladder
     Cloud --> Risk
 
-    Manufacturing[Manufacturing & IIoT] --> Gates
+    Manufacturing["Manufacturing & IIoT"] --> Gates
     Manufacturing --> Loss
 
-    Ecommerce[E‑commerce & Retail] --> Loss
+    Ecommerce["E‑commerce & Retail"] --> Loss
     Ecommerce --> Audit
 
-    Government[Government & Defense] --> Gates
+    Government["Government & Defense"] --> Gates
     Government --> Audit
     Government --> Ladder
 
