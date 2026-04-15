@@ -7,29 +7,29 @@ This page defines the core concepts, components, and mathematical terms used thr
 ```mermaid
 graph LR
     subgraph Core
-        Intent[InfrastructureIntent]
-        Healing[HealingIntent]
-        Loop[GovernanceLoop]
-        Risk[RiskScore]
+        Intent["s1"]
+        Healing["s2"]
+        Loop["s3"]
+        Risk["s4"]
     end
 
     subgraph Decision
-        Loss[Expected Loss Minimisation]
-        Action[RecommendedAction]
-        Gate[Escalation Gates]
+        Loss["s5"]
+        Action["s6"]
+        Gate["s7"]
     end
 
     subgraph Mathematics
-        Conj[Conjugate Beta]
-        HMC[HMC Logistic Regression]
-        Hyper[Hyperprior Shrinkage]
-        Lyap[Lyapunov Stability]
+        Conj["s8"]
+        HMC["s9"]
+        Hyper["s10"]
+        Lyap["s11"]
     end
 
     subgraph Enterprise
-        Ladder[Execution Ladder]
-        Audit[Audit Trails]
-        Temp[Temporal Reliability]
+        Ladder["s12"]
+        Audit["s13"]
+        Temp["s14"]
     end
 
     Intent --> Loop
