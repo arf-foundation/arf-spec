@@ -13,7 +13,7 @@
 
 ARF is organized as a **layered specification**, each building on the one before:
 
-![ARF Layered Specification](assets/arf_mathematics_overview.png)
+![ARF Layered Specification](assets/ARF-layered-specification.png)
 
 - **Core Concepts** – reliability, observability, and traceability for AI agents.
 - **Mathematics** – Bayesian risk scoring, HMC, and expected loss minimisation.
