@@ -6,21 +6,21 @@ This page shows how the Agentic Reliability Framework (ARF) delivers concrete be
 
 ```mermaid
 graph TD
-    Engine["⚙️ ARF Engine (Core Processor)"]
+    Engine["ARF Engine (Core Processor)"]
 
-    Fintech["💰 Fintech & Banking"]
-    Ecommerce["🛒 E‑commerce & Retail"]
-    Healthcare["🏥 Healthcare & Life Sciences"]
-    Government["🏛️ Government & Defense"]
-    Cloud["☁️ Cloud Infrastructure & DevOps"]
-    Manufacturing["🏭 Manufacturing & IIoT"]
+    Fintech["Fintech & Banking"]
+    Ecommerce["E‑commerce & Retail"]
+    Healthcare["Healthcare & Life Sciences"]
+    Government["Government & Defense"]
+    Cloud["Cloud Infrastructure & DevOps"]
+    Manufacturing["Manufacturing & IIoT"]
 
-    Risk["📊 Bayesian Risk Scoring"]
-    Loss["⚖️ Expected Loss Minimisation"]
-    Gates["🚪 Escalation Gates"]
-    Audit["🧾 Audit Trails"]
-    Memory["🧠 Semantic Memory"]
-    Ladder["🪜 Execution Ladder"]
+    Risk["Bayesian Risk Scoring"]
+    Loss["Expected Loss Minimisation"]
+    Gates["Escalation Gates"]
+    Audit["Audit Trails"]
+    Memory["Semantic Memory"]
+    Ladder["Execution Ladder"]
 
     Engine --> Fintech
     Engine --> Healthcare
