@@ -4,47 +4,7 @@ This page shows how the Agentic Reliability Framework (ARF) delivers concrete be
 
 ## How ARF Supports Different Industries
 
-```mermaid
-graph TD
-    subgraph ARF["ARF Core Components"]
-        Risk["Bayesian Risk Scoring"]
-        Loss["Expected Loss Minimisation"]
-        Gates["Escalation Gates"]
-        Audit["Audit Trails"]
-        Memory["Semantic Memory"]
-        Ladder["Execution Ladder"]
-    end
-
-    Fintech["Fintech & Banking"] --> Risk
-    Fintech --> Loss
-    Fintech --> Audit
-
-    Healthcare["Healthcare & Life Sciences"] --> Risk
-    Healthcare --> Gates
-    Healthcare --> Loss
-
-    Cloud["Cloud Infrastructure & DevOps"] --> Memory
-    Cloud --> Ladder
-    Cloud --> Risk
-
-    Manufacturing["Manufacturing & IIoT"] --> Gates
-    Manufacturing --> Loss
-
-    Ecommerce["E‑commerce & Retail"] --> Loss
-    Ecommerce --> Audit
-
-    Government["Government & Defense"] --> Gates
-    Government --> Audit
-    Government --> Ladder
-
-    style ARF fill:#1e3a8a,stroke:#3b82f6,color:#fff
-    style Fintech fill:#065f46,stroke:#10b981,color:#fff
-    style Healthcare fill:#065f46,stroke:#10b981,color:#fff
-    style Cloud fill:#065f46,stroke:#10b981,color:#fff
-    style Manufacturing fill:#065f46,stroke:#10b981,color:#fff
-    style Ecommerce fill:#065f46,stroke:#10b981,color:#fff
-    style Government fill:#065f46,stroke:#10b981,color:#fff
-```
+![ARF Use Case by Industry](assets/ARF-use-cases.png)
 
 1\. Fintech & Banking
 ---------------------
