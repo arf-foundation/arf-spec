@@ -2,10 +2,6 @@
 
 This page defines the core concepts, components, and mathematical terms used throughout the ARF Specification. The diagram below shows how key entities relate to each other.
 
-## Concept Map
-
-![ARF Concept Map](assets/ARF-Glossary.png)
-
 ## Definitions
 
 | Term | Definition | Category | See also |
