@@ -43,25 +43,9 @@ ARF is organized as a **layered specification**, each building on the one before
 - [Mathematics](mathematics.md) – the Bayesian engine behind risk scoring
 - [Psychology](psychology.md) – building trust through transparency
 - [Governance](governance.md) – the decision‑making loop in action
-- [Enterprise](enterprise.md) – scaling to production with enforcement and audit
-- [Temporal Reliability](temporal_reliability.md) – optional time‑series extensions
 
 ---
 
-## Boundary Note
-
-Temporal reliability is intentionally defined as a separate specification layer.
-
-It must remain:
-
-- optional
-- external to in‑session scoring
-- outside the core ARF execution path
-- suitable for implementation in enterprise or extension layers
-
-This keeps the core deterministic, session‑scoped, and easy to audit.
-
----
 
 ## Public vs. Proprietary
 
