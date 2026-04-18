@@ -718,18 +718,7 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-stepbystep-execution-continued" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Step‑by‑Step Execution (continued)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Step‑by‑Step Execution (continued)">
+    <nav class="md-nav" aria-label="2. Step‑by‑Step Execution">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -807,6 +796,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Step 7 – Expected Loss Calculation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-risk-decay-exponential-smoothing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Risk Decay (Exponential Smoothing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-expected-loss-formulas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Expected Loss Formulas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-enterprise-extension-cvar-for-tail-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Enterprise Extension: CVaR for Tail Risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -848,10 +876,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-governance-loop-flow-diagram" class="md-nav__link">
+  <a href="#3-configuration-constants" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Governance Loop Flow Diagram
+        3. Configuration Constants
       
     </span>
   </a>
@@ -859,10 +887,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-configuration-constants" class="md-nav__link">
+  <a href="#4-example-output-healingintent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Configuration Constants
+        4. Example Output (HealingIntent)
       
     </span>
   </a>
@@ -870,10 +898,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-example-output-healingintent" class="md-nav__link">
+  <a href="#5-calibration-diagnostics-proprietary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Example Output (HealingIntent)
+        5. Calibration Diagnostics (Proprietary)
       
     </span>
   </a>
@@ -958,97 +986,160 @@
 
 
 <h1 id="governance-loop-flow-configuration">Governance Loop – Flow &amp; Configuration<a class="headerlink" href="#governance-loop-flow-configuration" title="Permanent link">&para;</a></h1>
-<p>This document describes the <strong>step‑by‑step execution</strong> of the ARF Core Engine’s governance loop, the <strong>constants</strong> that control its behaviour, and the <strong>expected loss minimisation</strong> formula.</p>
+<p>This document describes the <strong>step‑by‑step execution</strong> of the ARF Core Engine’s governance loop, the <strong>constants</strong> that control its behaviour, and the <strong>expected loss minimisation</strong> decision rule.</p>
 <blockquote>
-<p><strong>Canonical definitions</strong> of <code>InfrastructureIntent</code>, <code>HealingIntent</code>, <code>RiskScore</code>, and <code>GovernanceLoop</code> are in <a href="../core_concepts/"><code>core_concepts.md</code></a>.</p>
+<p><strong>Canonical definitions</strong> of <code>InfrastructureIntent</code>, <code>HealingIntent</code>, <code>RiskScore</code>, and <code>GovernanceLoop</code> are in <a href="../core_concepts/"><code>core_concepts.md</code></a>.<br />
+<strong>Mathematical foundations</strong> of risk scoring and expected loss are detailed in <a href="../mathematics/"><code>mathematics.md</code></a>.</p>
 </blockquote>
+<p><strong>Implementation status:</strong> The behaviour described here is implemented in the <strong>proprietary core engine</strong>. The engine is access‑controlled and available under outcome‑based pricing. This public specification describes <em>what</em> the engine does, not <em>how</em> it is implemented internally.</p>
 <hr />
 <h2 id="1-overview">1. Overview<a class="headerlink" href="#1-overview" title="Permanent link">&para;</a></h2>
 <p>The governance loop processes an <code>InfrastructureIntent</code> and returns a <code>HealingIntent</code> containing:</p>
 <ul>
 <li>A recommended action (<code>APPROVE</code>, <code>DENY</code>, or <code>ESCALATE</code>)</li>
-<li>A risk score (<code>RiskScore</code>) with decomposition</li>
+<li>A calibrated risk score (<code>RiskScore</code>) with component decomposition</li>
 <li>A detailed justification</li>
 <li>Full metadata for traceability (epistemic uncertainty, business impact, forecasts, etc.)</li>
 </ul>
 <p>The loop is <strong>deterministic</strong> for a given input, ensuring reproducibility and auditability.</p>
 <hr />
 <h2 id="2-stepbystep-execution">2. Step‑by‑Step Execution<a class="headerlink" href="#2-stepbystep-execution" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">intent</span><span class="p">:</span> <span class="n">InfrastructureIntent</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HealingIntent</span><span class="p">:</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>InfrastructureIntent
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>        ↓
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>   Cost Estimation
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        ↓
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>   Policy Evaluation
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        ↓
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>   Risk Calculation (Bayesian fusion)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        ↓
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>   Predictive Foresight (optional)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        ↓
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>   Business Impact Estimation
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        ↓
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>   Epistemic Uncertainty (optional)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        ↓
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>   Expected Loss Minimisation
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        ↓
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>   Decision Selection
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        ↓
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>   Semantic Memory Retrieval (optional)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        ↓
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>     HealingIntent
 </code></pre></div>
-<h2 id="2-stepbystep-execution-continued">2. Step‑by‑Step Execution (continued)<a class="headerlink" href="#2-stepbystep-execution-continued" title="Permanent link">&para;</a></h2>
 <h3 id="step-1-cost-estimation">Step 1 – Cost Estimation<a class="headerlink" href="#step-1-cost-estimation" title="Permanent link">&para;</a></h3>
 <p><code>cost_estimator.estimate_monthly_cost(intent)</code> returns a projected monthly cost (if available).<br />
 Failures are logged but do not block evaluation.</p>
 <h3 id="step-2-policy-evaluation">Step 2 – Policy Evaluation<a class="headerlink" href="#step-2-policy-evaluation" title="Permanent link">&para;</a></h3>
 <p><code>policy_evaluator.evaluate(intent, policy_context)</code> returns a list of policy violations (empty if none).<br />
-<strong>If any violations exist</strong>, the loop immediately sets the recommended action to <code>DENY</code> (policy overrides all other factors).</p>
+<strong>If any violations exist, the loop immediately sets the recommended action to <code>DENY</code></strong> – policy rules are hard constraints that override all other factors.</p>
 <h3 id="step-3-risk-calculation">Step 3 – Risk Calculation<a class="headerlink" href="#step-3-risk-calculation" title="Permanent link">&para;</a></h3>
 <p><code>risk_engine.calculate_risk(intent, cost_estimate, policy_violations)</code> returns:</p>
 <ul>
-<li><code>risk_score</code> – final Bayesian risk (posterior mean)</li>
+<li><code>risk_score</code> – final Bayesian risk (posterior mean) in <span class="arithmatex">\([0,1]\)</span></li>
 <li><code>explanation</code> – human‑readable justification</li>
 <li><code>contributions</code> – dictionary with per‑component means (<code>conjugate_mean</code>, <code>hyper_mean</code>, <code>hmc_prediction</code>) and their weights</li>
 </ul>
-<p>Posterior variance is computed from the Beta parameters for the conjugate component.</p>
+<p>Posterior variance <span class="arithmatex">\(\text{Var}(p_c)\)</span> is computed from the Beta parameters for the conjugate component.<br />
+The raw risk is smoothed using exponential decay before loss calculation (see Section 7.1).</p>
 <h3 id="step-4-predictive-foresight-optional">Step 4 – Predictive Foresight (Optional)<a class="headerlink" href="#step-4-predictive-foresight-optional" title="Permanent link">&para;</a></h3>
 <p>If a <code>SimplePredictiveEngine</code> is configured, it forecasts service health for the next few time steps.<br />
-A weighted average of risk levels (mapped to numeric values) gives a <code>predictive_risk</code> score.</p>
+Each forecast has a <code>risk_level</code> (<code>low</code>, <code>medium</code>, <code>high</code>, <code>critical</code>) and a <code>confidence</code> in <span class="arithmatex">\([0,1]\)</span>.<br />
+Risk levels are mapped to numeric values:</p>
+<table>
+<thead>
+<tr>
+<th>Risk Level</th>
+<th>Numeric Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>low</code></td>
+<td>0.1</td>
+</tr>
+<tr>
+<td><code>medium</code></td>
+<td>0.4</td>
+</tr>
+<tr>
+<td><code>high</code></td>
+<td>0.7</td>
+</tr>
+<tr>
+<td><code>critical</code></td>
+<td>0.95</td>
+</tr>
+</tbody>
+</table>
+<p>The weighted average of these numeric risks, using softmax over confidences as weights, is multiplied by the mean confidence to yield a <code>predictive_risk</code> score.</p>
 <h3 id="step-5-business-impact">Step 5 – Business Impact<a class="headerlink" href="#step-5-business-impact" title="Permanent link">&para;</a></h3>
-<p>Using the <code>BusinessImpactCalculator</code>, the loop estimates potential revenue loss (<code>b_mean</code>) based on current service telemetry.</p>
+<p>Using the <code>BusinessImpactCalculator</code>, the loop estimates potential revenue loss <span class="arithmatex">\(b_{\text{mean}}\)</span> based on current service telemetry (latency, error rate, throughput).</p>
 <h3 id="step-6-epistemic-uncertainty-optional">Step 6 – Epistemic Uncertainty (Optional)<a class="headerlink" href="#step-6-epistemic-uncertainty-optional" title="Permanent link">&para;</a></h3>
-<p>If <code>enable_epistemic</code> is <code>True</code>, the loop computes a composite epistemic uncertainty score <code>psi_mean</code> as:</p>
-<p>psi_mean = 1 - (1 - hallucination_risk) * (1 - forecast_uncertainty) * (1 - data_sparsity)</p>
+<p>If <code>enable_epistemic</code> is <code>True</code>, the loop computes a composite epistemic uncertainty score <span class="arithmatex">\(\psi_{\text{mean}}\)</span> as:</p>
+<div class="arithmatex">\[
+\psi_{\text{mean}} = 1 - (1 - \text{hallucination\_risk}) \cdot (1 - \text{forecast\_uncertainty}) \cdot (1 - \text{data\_sparsity})
+\]</div>
 <p>where:</p>
 <ul>
-<li><code>hallucination_risk</code> comes from an ECLIPSE probe (if provided)</li>
-<li><code>forecast_uncertainty</code> = 1 - mean(confidence) of the forecasts</li>
-<li><code>data_sparsity</code> = exp(-0.05 * len(history)) – decays with more data</li>
+<li><code>hallucination_risk</code> is obtained from an <strong>ECLIPSE probe</strong> (if available) using <code>entropy</code>, <code>evidence_lift</code>, and <code>contradiction</code> signals.</li>
+<li><code>forecast_uncertainty</code> <span class="arithmatex">\(= 1 - \text{mean}(\text{confidence})\)</span> of the forecasts.</li>
+<li><code>data_sparsity</code> <span class="arithmatex">\(= \exp(-0.05 \cdot \text{len}(\text{history}))\)</span> – decays exponentially with more historical data.</li>
 </ul>
+<p>If any component is unavailable, it defaults to 0.</p>
 <h3 id="step-7-expected-loss-calculation">Step 7 – Expected Loss Calculation<a class="headerlink" href="#step-7-expected-loss-calculation" title="Permanent link">&para;</a></h3>
-<p>For each possible action, the loop computes an expected loss using configurable cost constants:</p>
-<p>L_approve = (COST_FP * risk_score +
-COST_IMPACT * b_mean +
-COST_PREDICTIVE * predictive_risk +
-COST_VARIANCE * variance)</p>
-<p>L_deny = COST_FN * (1 - risk_score) + COST_OPP * v_mean # v_mean = estimated value (optional)</p>
-<p>L_escalate = COST_REVIEW + COST_UNCERTAINTY * psi_mean</p>
-<h3 id="step-8-decision-selection">Step 8 – Decision Selection<a class="headerlink" href="#step-8-decision-selection" title="Permanent link">&para;</a></h3>
+<p>For each possible action <span class="arithmatex">\(a \in \{\text{approve}, \text{deny}, \text{escalate}\}\)</span>, the loop computes an expected loss using configurable cost constants.</p>
+<h4 id="71-risk-decay-exponential-smoothing">7.1 Risk Decay (Exponential Smoothing)<a class="headerlink" href="#71-risk-decay-exponential-smoothing" title="Permanent link">&para;</a></h4>
+<p>To avoid single‑session outliers dominating decisions, the raw risk score <span class="arithmatex">\(R_t\)</span> is smoothed using a per‑component exponential moving average:</p>
+<div class="arithmatex">\[
+\tilde{R}_t = \gamma \cdot \tilde{R}_{t-1} + (1-\gamma) \cdot R_t
+\]</div>
+<p>with default <span class="arithmatex">\(\gamma = 0.9\)</span> (configurable via <code>RISK_DECAY_FACTOR</code>). For the first evaluation of a component, <span class="arithmatex">\(\tilde{R}_0 = R_0\)</span>.<br />
+The decayed risk <span class="arithmatex">\(\tilde{R}\)</span> is used in the loss formulas below.</p>
+<h4 id="72-expected-loss-formulas">7.2 Expected Loss Formulas<a class="headerlink" href="#72-expected-loss-formulas" title="Permanent link">&para;</a></h4>
+<div class="arithmatex">\[
+\begin{aligned}
+L_{\text{approve}} &amp;= \text{COST\_FP} \cdot \tilde{R} + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} + \text{COST\_VARIANCE} \cdot \text{Var}(p_c) \\[4pt]
+L_{\text{deny}} &amp;= \text{COST\_FN} \cdot (1 - \tilde{R}) + \text{COST\_OPP} \cdot v_{\text{mean}} \\[4pt]
+L_{\text{escalate}} &amp;= \text{COST\_REVIEW} + \text{COST\_UNCERTAINTY} \cdot \psi_{\text{mean}}
+\end{aligned}
+\]</div>
+<p>where:</p>
 <ul>
-<li>If policy violations exist → <code>DENY</code></li>
-<li>Else if <code>USE_EPISTEMIC_GATE</code> is <code>True</code> <strong>and</strong> <code>psi_mean &gt; EPISTEMIC_ESCALATION_THRESHOLD</code> → <code>ESCALATE</code></li>
-<li>Else → action with the <strong>minimum expected loss</strong></li>
+<li><span class="arithmatex">\(\tilde{R}\)</span> = decayed risk (Section 7.1)</li>
+<li><span class="arithmatex">\(\text{Var}(p_c)\)</span> = posterior variance of the conjugate Beta distribution</li>
+<li><span class="arithmatex">\(\psi_{\text{mean}}\)</span> = epistemic uncertainty composite (Step 6)</li>
+<li><span class="arithmatex">\(b_{\text{mean}}\)</span> = estimated revenue loss from business impact</li>
+<li><span class="arithmatex">\(v_{\text{mean}}\)</span> = estimated opportunity value of the action (optional, default 0)</li>
+<li><span class="arithmatex">\(\text{COST\_*}\)</span> are configuration constants (see Section 3)</li>
 </ul>
+<h4 id="73-enterprise-extension-cvar-for-tail-risk">7.3 Enterprise Extension: CVaR for Tail Risk<a class="headerlink" href="#73-enterprise-extension-cvar-for-tail-risk" title="Permanent link">&para;</a></h4>
+<p>When <code>USE_CVAR</code> is <code>True</code> (default: <code>False</code>), the approve loss is computed using Conditional Value at Risk (CVaR) instead of expectation. Posterior samples of the failure probability <span class="arithmatex">\(\tilde{p} \sim \text{Beta}(\alpha_c, \beta_c)\)</span> are drawn, and the average of the worst <span class="arithmatex">\(\alpha\)</span> fraction (typically <span class="arithmatex">\(\alpha = 0.05\)</span>) of per‑sample losses is used:</p>
+<div class="arithmatex">\[
+L_{\text{approve}}^{\text{CVaR}} = \text{CVaR}_\alpha\!\left[ \text{COST\_FP} \cdot \tilde{p} + \text{COST\_IMPACT} \cdot b_{\text{mean}} + \text{COST\_PREDICTIVE} \cdot \text{predictive\_risk} \right] + \text{COST\_VARIANCE} \cdot \text{Var}(p_c)
+\]</div>
+<p>This feature is <strong>disabled by default</strong> in the core engine and may be enabled by enterprise customers.</p>
+<h3 id="step-8-decision-selection">Step 8 – Decision Selection<a class="headerlink" href="#step-8-decision-selection" title="Permanent link">&para;</a></h3>
+<p>The recommended action <span class="arithmatex">\(a^*\)</span> is chosen in the following order of precedence:</p>
+<ol>
+<li><strong>If any policy violation exists:</strong> <span class="arithmatex">\(a^* = \text{DENY}\)</span> (hard constraint)</li>
+<li><strong>Else if</strong> <code>USE_EPISTEMIC_GATE</code> is <code>True</code> <strong>and</strong> <span class="arithmatex">\(\psi_{\text{mean}} &gt; \text{EPISTEMIC\_ESCALATION\_THRESHOLD}\)</span>: <span class="arithmatex">\(a^* = \text{ESCALATE}\)</span></li>
+<li><strong>Else:</strong> <span class="arithmatex">\(a^* = \arg\min_{a} L_a\)</span></li>
+</ol>
+<p>By default, <code>USE_EPISTEMIC_GATE = True</code> and <code>EPISTEMIC_ESCALATION_THRESHOLD = 0.5</code>.</p>
 <h3 id="step-9-semantic-memory-retrieval-optional">Step 9 – Semantic Memory Retrieval (Optional)<a class="headerlink" href="#step-9-semantic-memory-retrieval-optional" title="Permanent link">&para;</a></h3>
-<p>If a <code>RAGGraphMemory</code> is available, the loop retrieves similar past incidents and adds them to the metadata.</p>
+<p>If a <code>RAGGraphMemory</code> is available, the loop retrieves similar past incidents and adds them to the metadata for contextual explanation.</p>
 <h3 id="step-10-build-the-healingintent">Step 10 – Build the <code>HealingIntent</code><a class="headerlink" href="#step-10-build-the-healingintent" title="Permanent link">&para;</a></h3>
 <p>All data (risk factors, expected losses, epistemic breakdown, forecasts, business impact, etc.) are stored in the <code>metadata</code> field.<br />
-The <code>risk_factors</code> field contains additive contributions from each Bayesian component (conjugate, hyperprior, HMC), using the weights returned by the risk engine.</p>
+The <code>risk_factors</code> field contains <strong>additive contributions</strong> from each Bayesian component (conjugate, hyperprior, HMC), using the weights returned by the risk engine, providing full explainability of the final risk score.</p>
 <hr />
-<h2 id="3-governance-loop-flow-diagram">3. Governance Loop Flow Diagram<a class="headerlink" href="#3-governance-loop-flow-diagram" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>InfrastructureIntent
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>        ↓
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>   Cost Estimation
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        ↓
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>   Policy Evaluation
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        ↓
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>   Risk Calculation
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        ↓
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>   Expected Loss Minimization
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        ↓
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>   APPROVE / DENY / ESCALATE
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        ↓
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>     HealingIntent
-</code></pre></div>
-<h2 id="4-configuration-constants">4. Configuration Constants<a class="headerlink" href="#4-configuration-constants" title="Permanent link">&para;</a></h2>
-<p>The following constants are defined in the proprietary core engine’s configuration module.<br />
-They control the behaviour of expected loss minimisation and epistemic gating.</p>
+<h2 id="3-configuration-constants">3. Configuration Constants<a class="headerlink" href="#3-configuration-constants" title="Permanent link">&para;</a></h2>
+<p>The following constants control the behaviour of expected loss minimisation and epistemic gating. <strong>Exact values are proprietary</strong> and may be tuned per deployment. The values shown below are the <strong>defaults implemented in the proprietary core engine</strong> (as of the current release) and are provided for transparency.</p>
 <table>
 <thead>
 <tr>
 <th>Constant</th>
 <th>Description</th>
-<th>Default</th>
+<th>Default Value</th>
 </tr>
 </thead>
 <tbody>
@@ -1060,87 +1151,107 @@ They control the behaviour of expected loss minimisation and epistemic gating.</
 <tr>
 <td><code>COST_FN</code></td>
 <td>Cost of a false negative (denying a safe action)</td>
-<td>5.0</td>
+<td>8.0</td>
 </tr>
 <tr>
 <td><code>COST_IMPACT</code></td>
 <td>Weight for business impact in approve loss</td>
-<td>1.0</td>
+<td>5.0</td>
 </tr>
 <tr>
 <td><code>COST_PREDICTIVE</code></td>
 <td>Weight for predictive risk</td>
-<td>0.5</td>
+<td>2.0</td>
 </tr>
 <tr>
 <td><code>COST_VARIANCE</code></td>
 <td>Weight for posterior variance</td>
-<td>0.3</td>
+<td>5.0</td>
 </tr>
 <tr>
 <td><code>COST_OPP</code></td>
 <td>Opportunity cost weight (used in deny loss)</td>
-<td>2.0</td>
+<td>3.0</td>
 </tr>
 <tr>
 <td><code>COST_REVIEW</code></td>
 <td>Cost of human review (escalate loss)</td>
-<td>15.0</td>
+<td>2.0</td>
 </tr>
 <tr>
 <td><code>COST_UNCERTAINTY</code></td>
 <td>Weight for epistemic uncertainty in escalate loss</td>
-<td>1.0</td>
+<td>4.0</td>
 </tr>
 <tr>
 <td><code>EPISTEMIC_ESCALATION_THRESHOLD</code></td>
-<td>If <code>psi_mean</code> &gt; threshold, force escalate</td>
+<td>If <span class="arithmatex">\(\psi_{\text{mean}}\)</span> exceeds this, force escalate</td>
 <td>0.5</td>
 </tr>
 <tr>
 <td><code>USE_EPISTEMIC_GATE</code></td>
 <td>Boolean to enable/disable epistemic‑based escalation</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>RISK_DECAY_FACTOR</code> (<span class="arithmatex">\(\gamma\)</span>)</td>
+<td>Exponential smoothing factor for risk</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td><code>USE_CVAR</code></td>
+<td>Enable CVaR for approve loss</td>
 <td><code>False</code></td>
+</tr>
+<tr>
+<td><code>CVAR_ALPHA</code></td>
+<td>Tail probability for CVaR</td>
+<td>0.05</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Note:</strong> These defaults are advisory. Enterprise customers may override them via configuration.</p>
+<p><strong>Note:</strong> Enterprise customers may override these values via configuration to align with their business risk tolerance.</p>
 <hr />
-<h2 id="5-example-output-healingintent">5. Example Output (<code>HealingIntent</code>)<a class="headerlink" href="#5-example-output-healingintent" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ESCALATE&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;justification&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Risk score 0.38, epistemic uncertainty 0.45, expected losses: approve=18.2, deny=12.7, escalate=11.5&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;risk_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.38</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;risk_factors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nt">&quot;conjugate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.22</span><span class="p">,</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="nt">&quot;hmc&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.16</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="nt">&quot;predictive_risk&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.25</span><span class="p">,</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="nt">&quot;epistemic_breakdown&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">      </span><span class="nt">&quot;hallucination&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">      </span><span class="nt">&quot;forecast_uncertainty&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">      </span><span class="nt">&quot;data_sparsity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">    </span><span class="nt">&quot;decision_trace&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">      </span><span class="nt">&quot;expected_losses&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;APPROVE&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">18.2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;DENY&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">12.7</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ESCALATE&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">11.5</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">      </span><span class="nt">&quot;selected_action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ESCALATE&quot;</span>
-<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="p">}</span>
+<h2 id="4-example-output-healingintent">4. Example Output (<code>HealingIntent</code>)<a class="headerlink" href="#4-example-output-healingintent" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ESCALATE&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;justification&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Risk score 0.38, epistemic uncertainty 0.45, expected losses: approve=18.2, deny=12.7, escalate=11.5&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;risk_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.38</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">&quot;risk_factors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">&quot;conjugate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.22</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">&quot;hmc&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.16</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="nt">&quot;predictive_risk&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.25</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="nt">&quot;epistemic_breakdown&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">      </span><span class="nt">&quot;hallucination&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="nt">&quot;forecast_uncertainty&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">&quot;data_sparsity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.2</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="nt">&quot;decision_trace&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">      </span><span class="nt">&quot;expected_losses&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;APPROVE&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">18.2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;DENY&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">12.7</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ESCALATE&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">11.5</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">      </span><span class="nt">&quot;selected_action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ESCALATE&quot;</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="p">}</span>
 </code></pre></div>
+<h2 id="5-calibration-diagnostics-proprietary">5. Calibration Diagnostics (Proprietary)<a class="headerlink" href="#5-calibration-diagnostics-proprietary" title="Permanent link">&para;</a></h2>
+<p>The core engine maintains internal calibration metrics (reliability diagrams, Expected Calibration Error) to validate that the risk score can be interpreted as a calibrated probability. These diagnostics are used for model monitoring and are not exposed in the public API.</p>
 <h2 id="6-related-code-proprietary">6. Related Code (Proprietary)<a class="headerlink" href="#6-related-code-proprietary" title="Permanent link">&para;</a></h2>
-<p>The governance loop is implemented in the proprietary core engine at:<br />
-<code>agentic_reliability_framework/core/governance/governance_loop.py</code>  </p>
-<p>Configuration constants are defined in:<br />
-<code>agentic_reliability_framework/core/config/constants.py</code>  </p>
-<p>These files are <strong>not public</strong>, but the behaviour described here matches their implementation.</p>
-<hr />
+<p>The governance loop is implemented in the proprietary core engine at:agentic_reliability_framework/core/governance/governance_loop.py</p>
+<p>Configuration constants are defined in:agentic_reliability_framework/core/config/constants.py</p>
+<p>These files are <strong>not public</strong>, but the behaviour described here matches their implementation.</p>
 <h2 id="7-see-also">7. See Also<a class="headerlink" href="#7-see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../core_concepts/"><code>core_concepts.md</code></a> – canonical definitions of intents, risk score, and execution ladder</li>
-<li><a href="../mathematics/"><code>mathematics.md</code></a> – Bayesian risk scoring formulas</li>
-<li><a href="../design/"><code>design.md</code></a> – architectural decisions and trade‑offs</li>
+<li>
+<p><a href="https://core_concepts.md/">core_concepts.md</a> – canonical definitions of intents, risk score, and execution ladder</p>
+</li>
+<li>
+<p><a href="https://mathematics.md/">mathematics.md</a> – Bayesian risk scoring and expected loss minimisation formulas</p>
+</li>
+<li>
+<p><a href="https://design.md/">design.md</a> – architectural decisions and trade‑offs</p>
+</li>
 </ul>
 
 
