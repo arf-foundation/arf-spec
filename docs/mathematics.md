@@ -1,12 +1,14 @@
 # Mathematical Foundations
 
-This document describes the Bayesian mathematics underlying the ARF Core Engine’s risk scoring.  
-The canonical definition of the **risk score** used throughout this specification is the posterior mean of the conjugate Beta distribution, optionally blended with HMC and hyperprior components as described below.
+This document describes the Bayesian mathematics underlying the ARF Core Engine’s risk scoring and decision‑making.  
+The canonical definition of the **risk score** used throughout this specification is the posterior mean of the conjugate Beta distribution, optionally blended with HMC and hyperprior components as described below. The operative decision rule is **expected loss minimisation** over the action set {approve, deny, escalate}.
 
 > **Canonical reference:** See [`core_concepts.md`](core_concepts.md#3-risk-score) for the definition of `RiskScore`.
 
 **Implementation status:** The mathematics defined here are implemented in the proprietary core engine.  
-The engine is access‑controlled and available under outcome‑based pricing.
+The engine is access‑controlled and available under outcome‑based pricing. Public components (specification, demo UI) are open‑source (Apache 2.0).
+
+---
 
 ## Mathematical Foundations at a Glance
 
@@ -112,9 +114,9 @@ These intervals are displayed in the frontend and used to trigger human‑in‑t
 
 ---
 
-## 6. Expected Loss Minimisation
+## 6. Expected Loss Minimisation (Decision Rule)
 
-The risk score feeds into the governance loop’s expected loss calculation.
+The risk score feeds into the governance loop’s expected loss calculation to select the optimal action.
 
 ### 6.1 Risk Decay Across Evaluations
 
@@ -128,7 +130,7 @@ where $\gamma = 0.9$ (configurable via `RISK_DECAY_FACTOR`), $R_t$ is the hybrid
 
 ### 6.2 Expected Loss Formulas
 
-The expected loss for each possible action is:
+Given context $x$ and decayed risk $\tilde{R}$, the expected loss for each possible action $a \in \{\text{approve}, \text{deny}, \text{escalate}\}$ is:
 
 $$
 \begin{aligned}
@@ -147,6 +149,14 @@ where:
 - $v_{\text{mean}}$ = estimated opportunity value of the action
 - $\text{COST\_*}$ are constants defined in `constants.py` (see [`governance.md`](governance.md#4-configuration-constants))
 
+The recommended action is:
+
+$$
+a^* = \arg\min_{a} L_a
+$$
+
+**Policy Violations:** If any policy rule is violated, the decision is forced to `deny` regardless of expected loss.
+
 ### 6.3 Optional CVaR for Tail Risk (Enterprise)
 
 The core engine uses standard expectation for $L_{\text{approve}}$. The enterprise layer **may** enable Conditional Value at Risk (CVaR) to penalise tail risks. When enabled (`USE_CVAR = True`, $\alpha = 0.05$), the approve loss becomes:
@@ -159,11 +169,22 @@ where $\tilde{p}$ are posterior samples of the failure probability (drawn from $
 
 ---
 
-## 7. Lyapunov Stability for Healing Actions
+## 7. Calibration Diagnostics
+
+To ensure the risk score can be interpreted as a calibrated probability, the core engine maintains a buffer of (predicted risk, observed outcome) pairs and computes standard calibration metrics:
+
+- **Reliability Diagram:** bins predictions and plots observed failure frequency vs. predicted risk.
+- **Expected Calibration Error (ECE):** weighted average of absolute differences between bin‑wise mean prediction and observed frequency.
+
+These diagnostics are available via internal APIs and are used to validate model performance. They are not exposed in the public sandbox.
+
+---
+
+## 8. Lyapunov Stability for Healing Actions
 
 The `LyapunovStabilityController` provides a stability guarantee for the healing loop under discrete‑time nonlinear dynamics. It ensures that selected actions drive the system toward a desired equilibrium while reducing a Lyapunov candidate function.
 
-### 7.1 System Model
+### 8.1 System Model
 
 Let $x_t \in \mathbb{R}^n$ be the system state at time $t$ (e.g., resource usage, latency, error rates), and $u_t \in \mathbb{R}^m$ the healing action (e.g., scaling, restart, rollback). The dynamics are:
 
@@ -173,7 +194,7 @@ $$
 
 with $f$ known or approximated from telemetry. The risk score $r_t = \text{RiskScore}(x_t)$ is a function of the state.
 
-### 7.2 Lyapunov Candidate Function
+### 8.2 Lyapunov Candidate Function
 
 We define a quadratic Lyapunov candidate:
 
@@ -189,7 +210,7 @@ where:
 
 This function is positive definite: $V(x, r) = 0$ iff $r = 0$ and $x = x_{\text{des}}$, and $V > 0$ otherwise.
 
-### 7.3 Stability Constraint
+### 8.3 Stability Constraint
 
 For asymptotic stability, we require the Lyapunov function to decrease along trajectories, with a decay proportional to the state norm:
 
@@ -199,7 +220,7 @@ $$
 
 where $\gamma > 0$ (default $\gamma = 0.1$) controls the convergence rate. This is a discrete‑time version of the Lyapunov decrease condition.
 
-### 7.4 Action Selection with Stability Guarantee
+### 8.4 Action Selection with Stability Guarantee
 
 Given current state $x_t$ and risk $r_t$, the controller solves:
 
@@ -213,7 +234,7 @@ $$
 
 If a feasible $u_t$ exists, it is executed. Otherwise, a conservative fallback (e.g., `ESCALATE`) is triggered.
 
-### 7.5 Stability Result
+### 8.5 Stability Result
 
 For any sequence of actions satisfying the constraint, the closed‑loop system satisfies:
 
@@ -223,44 +244,46 @@ $$
 
 provided the dynamics $f$ are Lipschitz and the risk function $r(\cdot)$ is continuous. This gives a **local, asymptotic stability guarantee** under the model assumptions.
 
-### 7.6 Integration with Governance Loop
+### 8.6 Integration with Governance Loop
 
 The stability controller is invoked **after** expected loss minimisation when a healing action (e.g., `APPROVE` with an action parameter) is selected. If no stabilizing action exists, the loop forces `ESCALATE`, adding a safety layer beyond the probabilistic risk assessment.
 
 ---
 
-## 8. Cryptographic Integrity of HealingIntents (Light Reference)
+## 9. Cryptographic Integrity of HealingIntents (Light Reference)
 
 > **Status:** Work in progress – basic signing and verification implemented; advanced key management and rotation planned.
 
 To ensure tamper‑proof transport of `HealingIntent` from the Python core engine to the Rust‑based enterprise execution layer, ARF uses **Ed25519 signatures** (via `ed25519_dalek`). The same mechanism can be extended to audit logs and license validation.
 
-### 8.1 Signing Flow (Python Core)
+### 9.1 Signing Flow (Python Core)
 
 - A `HealingIntent` is serialised into canonical JSON **excluding** the `signature` and `public_key_fingerprint` fields.
 - The JSON string is signed using an Ed25519 private key (or RSA, but Ed25519 is preferred for the enterprise boundary).
 - The signature (base64) and public key fingerprint (hex of the 32‑byte public key) are attached to the intent.
 
-### 8.2 Verification Flow (Rust Enterprise)
+### 9.2 Verification Flow (Rust Enterprise)
 
 - The Rust execution engine receives the `IntentPayload` (equivalent to `HealingIntent`).
 - It recomputes the canonical JSON (again excluding signature/fingerprint).
 - Using the public key fingerprint, it retrieves or decodes the public key.
 - The signature is verified with `verify_strict()`. Failure rejects the intent.
 
-### 8.3 Security Properties
+### 9.3 Security Properties
 
 - **Integrity:** Any modification of the intent fields invalidates the signature.
 - **Authenticity:** Only the holder of the private key can produce valid signatures.
 - **Non‑repudiation:** Signatures are cryptographically verifiable by third parties.
 
-### 8.4 Implementation Notes
+### 9.4 Implementation Notes
 
 - Core engine (`healing_intent.py`) uses `cryptography.hazmat` (RSA also available; Ed25519 used in enterprise boundary).
 - Enterprise engine (`arf_execution/src/crypto.rs`) uses `ed25519_dalek`.
 - Future work: key rotation, HSM integration, signed audit trails, and license validation.
 
-## 9. References
+---
+
+## 10. References
 
 - Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). *Bayesian Data Analysis* (3rd ed.). CRC Press.
 - McElreath, R. (2020). *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*. CRC Press.
@@ -269,7 +292,7 @@ To ensure tamper‑proof transport of `HealingIntent` from the Python core engin
 
 ---
 
-## 10. See Also
+## 11. See Also
 
 - [`core_concepts.md`](core_concepts.md) – canonical definition of `RiskScore` and execution ladder
 - [`governance.md`](governance.md) – governance loop flow and configuration constants
